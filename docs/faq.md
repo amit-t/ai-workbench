@@ -1,6 +1,9 @@
 ---
 title: FAQ
 layout: default
+kicker: FAQ
+eyebrow: faq
+tagline: Common questions on per-bundle scope, Devin vs Claude, conflicts, secrets, and upstream PRs.
 ---
 
 # FAQ

@@ -1,8 +1,18 @@
 title: AI Workbench
-description: A per-bundle private AI harness for developer and QA collaboration — turns Jira epics into PRDs, engineering specs, TDDs, BDDs, test cases, and ralph fix_plans across multiple code repos.
-remote_theme: pages-themes/cayman@v0.2.0
+description: A per-bundle private AI harness for dev and QA collaboration. Turns Jira epics into PRDs, engineering specs, TDDs, BDDs, test cases, and ralph fix_plans across multiple code repos.
+url: https://amit-t.github.io
+baseurl: /ai-workbench
+
 plugins:
-  - jekyll-remote-theme
   - jekyll-seo-tag
 
-show_downloads: false
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

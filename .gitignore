@@ -16,3 +16,7 @@ ralph/*.pid
 # Editor junk
 .idea/
 .vscode/
+
+# Jekyll build output
+docs/_site/
+docs/.jekyll-cache/

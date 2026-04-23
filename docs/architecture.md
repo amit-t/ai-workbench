@@ -1,6 +1,9 @@
 ---
 title: Architecture
 layout: default
+kicker: Architecture
+eyebrow: arch
+tagline: Two-repo shape, directory tree, manifest policy, and the ralph adapter contract.
 ---
 
 # Architecture

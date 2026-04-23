@@ -1,6 +1,9 @@
 ---
 title: Ralph integration
 layout: default
+kicker: Ralph
+eyebrow: ralph
+tagline: Workspace-mode planning, context routing, parallel dispatch across service and automation repos.
 ---
 
 # Ralph integration

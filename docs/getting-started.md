@@ -1,6 +1,9 @@
 ---
 title: Getting started
 layout: default
+kicker: Start here
+eyebrow: start
+tagline: Install the devkit once. Stamp a workbench per Jira epic bundle. Share with your counterpart.
 ---
 
 # Getting started

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title and page.url != "/" %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+  {% seo %}
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode"></button>
+
+  <header class="site-nav container">
+    <a class="site-brand" href="{{ '/' | relative_url }}">
+      <span class="brand-mark">AI</span>
+      <span class="brand-text">workbench</span>
+    </a>
+    <nav class="site-links" aria-label="Primary">
+      <a href="{{ '/getting-started.html' | relative_url }}">Start</a>
+      <a href="{{ '/architecture.html' | relative_url }}">Architecture</a>
+      <a href="{{ '/lifecycle.html' | relative_url }}">Lifecycle</a>
+      <a href="{{ '/skills.html' | relative_url }}">Skills</a>
+      <a href="{{ '/ralph.html' | relative_url }}">Ralph</a>
+      <a href="{{ '/faq.html' | relative_url }}">FAQ</a>
+      <a class="site-links-repo" href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+  </header>
+
+  <hr class="divider container">
+
+  <main>
+    {% if page.url == "/" or page.layout == "landing" %}
+      {{ content }}
+    {% else %}
+    <section class="container page-head">
+      <span class="section-eyebrow eyebrow-{{ page.eyebrow | default: 'doc' }}">{{ page.kicker | default: 'Docs' }}</span>
+      <h1>{{ page.title }}</h1>
+      {% if page.tagline %}<p class="page-tagline">{{ page.tagline }}</p>{% endif %}
+    </section>
+
+    <hr class="divider container">
+
+    <section class="container section">
+      <article class="prose">
+        {{ content }}
+      </article>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="container footer">
+    <div class="footer-grid">
+      <div>
+        <span class="section-eyebrow eyebrow-readme">Source</span>
+        <p>Plain markdown under <code>docs/</code>. Edit on GitHub, push, GitHub Pages rebuilds.</p>
+      </div>
+      <div>
+        <span class="section-eyebrow eyebrow-eng">Repo</span>
+        <p><a href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">amit-t/ai-workbench</a> &middot; template, cloned per epic bundle.</p>
+      </div>
+      <div>
+        <span class="section-eyebrow eyebrow-changelog">Companion</span>
+        <p><a href="https://github.com/amit-t/ai-devkit" target="_blank" rel="noreferrer">amit-t/ai-devkit</a> &middot; global CLI (<code>init.wb</code>, <code>join.wb</code>, <code>update.wb</code>).</p>
+      </div>
+    </div>
+    <p class="footer-note">Neo-brutalist. No spinners. No loaders. Just the harness.</p>
+  </footer>
+
+  <script src="{{ '/assets/site.js' | relative_url }}"></script>
+</body>
+</html>

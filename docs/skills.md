@@ -1,6 +1,9 @@
 ---
 title: Skills reference
 layout: default
+kicker: Skills
+eyebrow: skills
+tagline: Eighteen bundled skills. Slash commands grouped by role — PO, dev, QA, UX, and agent ops.
 ---
 
 # Skills reference

@@ -1,6 +1,9 @@
 ---
 title: Artifact lifecycle
 layout: default
+kicker: Lifecycle
+eyebrow: lifecycle
+tagline: Every artifact flows draft → published → approved. Agents write drafts. Humans gate the rest.
 ---
 
 # Artifact lifecycle
