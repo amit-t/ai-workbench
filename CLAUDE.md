@@ -16,6 +16,7 @@ You never write production code from the workbench. Code lives in `repos/*/`, an
 
 Every session, in this order:
 
+0. **Template-dev detection.** If `project.conf` does NOT exist and `SESSION-HANDOFF.md` does exist at repo root, you are in the **ai-workbench template repo itself** (not a stamped workbench instance). Read `SESSION-HANDOFF.md` first and follow steps 1–7 only if they still apply to template-dev work. Otherwise continue:
 1. `git pull --rebase` — workbench is shared with a collaborator; pull first.
 2. Read `project.conf` — workspace label, epics in scope, registered repos and their roles.
 3. Read `EPIC-PIPELINE.md` — current status per epic and PRD.
