@@ -223,6 +223,25 @@ for i in items:
 PYEOF
 }
 
+# wb.rejected — list rejected artifacts with reasons (symmetry with wb.published / wb.approved)
+wb.rejected() {
+  python3 - "$WB_ROOT" <<'PYEOF'
+import json, os, sys
+root = sys.argv[1]
+try:
+    with open(os.path.join(root, '.workbench-state', 'rejected.json')) as f:
+        state = json.load(f)
+except FileNotFoundError:
+    print("No rejected.json yet."); sys.exit(0)
+items = state.get('items', [])
+if not items:
+    print("Nothing rejected."); sys.exit(0)
+print(f"Rejected ({len(items)}):")
+for i in items:
+    print(f"  [{i.get('id','?')}]  {i.get('rejected_at','?')[:10]}  by {i.get('rejected_by','?')}  — {i.get('reason','?')}")
+PYEOF
+}
+
 # ── Git helpers ───────────────────────────────────────────────────────────────
 wb.pull()   { (cd "$WB_ROOT" && git pull --rebase); }
 wb.status() { (cd "$WB_ROOT" && git status --short); }
