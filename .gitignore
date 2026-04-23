@@ -1,0 +1,18 @@
+# Code repos manage their own git history
+repos/*
+!repos/.gitkeep
+
+# Secrets — per-collaborator
+.mcp.json
+
+# Dispatch runtime
+ralph/dispatch.log
+ralph/*.pid
+
+# OS junk
+.DS_Store
+*.swp
+
+# Editor junk
+.idea/
+.vscode/

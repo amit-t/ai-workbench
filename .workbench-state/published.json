@@ -1,0 +1,4 @@
+{
+  "_comment": "Artifacts that humans have published for review/approval. Populated by wb.publish, drained by wb.approve or wb.reject.",
+  "items": []
+}

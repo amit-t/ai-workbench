@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy to .mcp.json on init/join. Each collaborator supplies their own env vars. Never commit secrets.",
+  "mcpServers": {
+    "atlassian": {
+      "_enabled_by_default": false,
+      "command": "npx",
+      "args": ["-y", "@atlassian/mcp-server"],
+      "env": { "ATLASSIAN_TOKEN": "${ATLASSIAN_TOKEN}" }
+    },
+    "figma": {
+      "_enabled_by_default": false,
+      "command": "npx",
+      "args": ["-y", "@figma/mcp-server"],
+      "env": { "FIGMA_TOKEN": "${FIGMA_TOKEN}" }
+    }
+  }
+}

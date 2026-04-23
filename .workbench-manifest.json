@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "description": "Source of truth for what update.wb is allowed to overwrite. Do not edit without bumping version.",
+  "template_owned": [
+    "CLAUDE.md",
+    "AGENTS.md",
+    "README.md",
+    "aliases.sh",
+    ".gitignore",
+    ".workbench-manifest.json",
+    ".mcp.json.template",
+    "project.conf.template",
+    "EPIC-PIPELINE.md.template",
+    "scripts/**",
+    "skills/**",
+    "tests/**"
+  ],
+  "user_owned": [
+    "project.conf",
+    "EPIC-PIPELINE.md",
+    ".mcp.json",
+    ".github/CODEOWNERS",
+    "product/**",
+    "design/**",
+    "engineering/**",
+    "qa/**",
+    "ralph/**",
+    "repos/**",
+    ".workbench-state/**"
+  ]
+}

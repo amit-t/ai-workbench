@@ -1,0 +1,60 @@
+# {{LABEL}} — Workbench Pipeline
+
+Tracks every Jira epic in scope, every PRD under each epic, and the full chain of downstream artifacts and fix_plan execution.
+
+**Update this file at the end of every session.** Read it at the start of every session.
+
+---
+
+## Pipeline key
+
+| Symbol | Meaning |
+|--------|---------|
+| ✓ | Complete |
+| ~ | In progress / in review |
+| — | Not started |
+| ✗ | Blocked |
+
+---
+
+## Active epics
+
+{{EPIC_SECTIONS}}
+
+---
+
+## Queued PRDs (write next, in priority order)
+
+| Priority | Epic | PRD | Rationale | Depends on |
+|----------|------|-----|-----------|------------|
+
+---
+
+## Completed
+
+| Epic | PRD | Shipped |
+|------|-----|---------|
+
+---
+
+## File locations
+
+| Artifact | Location |
+|----------|----------|
+| Epic bodies | `product/context-library/epics/` |
+| PRDs | `product/outputs/prds/` |
+| Approved PRDs | `product/outputs/prds/approved/` |
+| Engineering specs | `engineering/outputs/specs/` |
+| TDDs | `engineering/outputs/tdd/` |
+| ERDs | `engineering/outputs/erd/` |
+| ADRs | `engineering/outputs/adrs/` |
+| BDD features | `qa/outputs/bdd/` |
+| Test cases | `qa/outputs/test-cases/` |
+| Test spec | `qa/outputs/test-spec/` |
+| Test ERD | `qa/outputs/test-erd/` |
+| Workspace plan rollup | `ralph/workspace-plan.md` |
+| Per-repo fix_plan | `repos/<name>/.ralph/fix_plan.md` |
+
+---
+
+_Created: {{CREATED_AT}} by {{CREATED_BY}}_

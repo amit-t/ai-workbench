@@ -1,0 +1,186 @@
+---
+title: Architecture
+layout: default
+---
+
+# Architecture
+
+## Problem and motivation
+
+Individual-contributor engineers and QAs currently split work across Jira, Confluence, service repos, automation repos, and ad-hoc prompts. They want a single harness to take one or more Jira epics, generate a PRD, engineering spec, TDD, ERD, ADRs, BDDs, test cases, and a test spec; wear PM / architect / staff-engineer / UX hats without switching tools; share generated drafts with the counterpart (dev ↔ QA) via git for review and approval; plan code changes across multiple service repos in a single ralph workspace-mode session; dispatch parallel autonomous ralph loops; and keep the workbench private, per-bundle, and disposable — not a long-running OS.
+
+## Two-repo shape
+
+The harness is two GitHub repos, independent, published under `<your-org>` (defaults to your GitHub login).
+
+| Repo | Role | Lives at |
+|------|------|----------|
+| `ai-workbench` | Template. Cloned per work-bundle. Ships skills, scripts, lifecycle aliases, config templates. | `https://github.com/amit-t/ai-workbench` |
+| `ai-devkit` | Global CLI. Installs `init.wb`, `join.wb`, `update.wb`. | `https://github.com/amit-t/ai-devkit` |
+
+You never clone `ai-workbench` directly — `init.wb` stamps private instances from it via `gh repo create --template`.
+
+## Workbench directory tree
+
+A stamped workbench (`wb-<label>`) looks like this:
+
+```
+wb-<label>/
+  CLAUDE.md                       # session start, plan-mode, role inference
+  AGENTS.md                       # shared agent constitution (Claude + Devin + Codex)
+  README.md                       # what this template does + how to use init.wb
+  .gitignore
+  .workbench-manifest.json        # which paths are template-owned vs user-owned
+  .mcp.json.template              # optional MCPs (Jira, Figma) — env-ref style
+  project.conf                    # filled in by init.wb (identity, epics, repos)
+  EPIC-PIPELINE.md                # pipeline rollup — one H2 per epic
+  aliases.sh                      # wb.* commands sourced per workbench
+  .github/
+    CODEOWNERS                    # initiator + joiners appended
+  product/
+    context-library/
+      epics/                      # pulled Jira epic bodies (one MD per epic)
+    outputs/
+      prds/                       # PRDs (lifecycle tracked in .workbench-state/)
+  design/
+    context-library/
+      figma-links.md
+      design-system-ref.md
+    outputs/
+      wireframes/
+      screens/
+      handoffs/
+  engineering/
+    context-library/
+    outputs/
+      specs/                      # engineering spec
+      tdd/                        # technical design docs
+      erd/                        # entity/component diagrams
+      adrs/                       # architecture decision records
+  qa/
+    context-library/
+    outputs/
+      bdd/                        # Gherkin .feature files
+      test-cases/                 # structured test cases (MD or CSV)
+      test-spec/                  # QA equivalent of engineering spec
+      test-erd/                   # test coverage model
+  ralph/
+    workspace-plan.md             # human-readable rollup of per-repo fix_plans
+    dispatch.log                  # parallel loop launch log (gitignored)
+  repos/                          # gitignored — code repos cloned here
+    .gitkeep
+  .workbench-state/               # lifecycle state (shared via git)
+    published.json                # draft → published transitions
+    approved.json                 # published → approved transitions (ralph gate)
+    rejected.json                 # reason-tracked rejections
+  scripts/
+    sync-context.sh               # workbench → repos/{x}/ai/
+    ralph-context.sh              # identical target, used by ralph-plan
+    ralph-plan.sh                 # wraps ralph-plan --workspace
+    ralph-loop.sh                 # cd repos/{x} && rpc.int | rpd.int | rpx.int
+    ralph-dispatch.sh             # parallel launch across repos
+    register-repo.sh              # append a repo entry to project.conf
+  skills/                         # symlinked into .claude/.agents/.devin at init
+    epic-intake/SKILL.md
+    prd-draft/SKILL.md
+    prd-review-panel/SKILL.md
+    bdd-gen/SKILL.md
+    test-cases-gen/SKILL.md
+    test-spec/SKILL.md
+    eng-spec/SKILL.md
+    tdd/SKILL.md
+    erd/SKILL.md
+    adr/SKILL.md
+    figma-pull/SKILL.md
+    ds-screen-gen/SKILL.md
+    design-draft/SKILL.md
+    design-review/SKILL.md
+    ralph-workspace-plan/SKILL.md
+    ralph-dispatch/SKILL.md
+    grill-me/SKILL.md
+    pmo-status/SKILL.md
+```
+
+## `project.conf` — the per-workbench manifest
+
+`project.conf` is a committed shell file written by `init.wb` and extended by `join.wb`. Aliases and scripts source it.
+
+```bash
+#!/usr/bin/env bash
+# Workbench configuration — written by init.wb, appended by join.wb
+
+# --- Identity ---
+WORKBENCH_LABEL="example"
+WORKBENCH_REPO="https://github.com/<your-org>/wb-example"
+WORKBENCH_TEMPLATE_UPSTREAM="https://github.com/<your-org>/ai-workbench"
+WORKBENCH_CREATED_BY="<gh-user>"
+WORKBENCH_CREATED_AT="2026-04-23"
+
+# --- Epics in scope ---
+EPICS=("EPIC-001" "EPIC-002")
+
+# --- Managed code repos ---
+# Each entry: name=<name>;url=<git_url>;role=<service|automation-tests|shared-lib|infra>;stack=<short>;added_by=<gh-user>
+REPOS=(
+  "name=example-service;url=https://github.com/<your-org>/example-service;role=service;stack=node-nest;added_by=<gh-user>"
+  "name=example-automation-tests;url=https://github.com/<your-org>/example-automation-tests;role=automation-tests;stack=playwright;added_by=<qa-gh-user>"
+)
+```
+
+## `.workbench-manifest.json` — template-owned vs user-owned
+
+Only paths in `template_owned` are touched by `update.wb`. Everything else (your PRDs, specs, BDDs, test cases, code repos, lifecycle state) is `user_owned` and never overwritten.
+
+```json
+{
+  "version": 1,
+  "template_owned": [
+    "CLAUDE.md",
+    "AGENTS.md",
+    "README.md",
+    "aliases.sh",
+    ".gitignore",
+    ".workbench-manifest.json",
+    "scripts/**",
+    "skills/**"
+  ],
+  "user_owned": [
+    "project.conf",
+    "EPIC-PIPELINE.md",
+    ".mcp.json",
+    ".github/CODEOWNERS",
+    "product/**",
+    "design/**",
+    "engineering/**",
+    "qa/**",
+    "ralph/**",
+    "repos/**",
+    ".workbench-state/**"
+  ]
+}
+```
+
+Rules:
+
+- Every tracked path must appear in exactly one of the two lists.
+- `update.wb` only pulls `template_owned`.
+- Do not hand-edit template-owned paths in an instance — propose a PR to `ai-workbench` upstream instead.
+
+## Lifecycle
+
+Every generated artifact (PRD, spec, TDD, ERD, ADR, BDD, test cases, test spec) flows through `draft → published → approved`. See [Artifact lifecycle](./lifecycle.html) for the full state machine, downstream preconditions, and lifecycle commands.
+
+## Security model
+
+- Workbench repos are **private**. Only CODEOWNERS-listed accounts have push access.
+- MCP tokens stay in env vars per collaborator; never committed.
+- `.mcp.json.template` documents the agreed MCP server set; `.mcp.json` itself is gitignored.
+- `gh auth status` is inspected before every command that touches GitHub. HTTPS or SSH (with custom hostname alias) is respected.
+- No force-push anywhere. No bypass of hooks or branch protections.
+
+## Naming rules
+
+- Workbench repo name must match `^wb-[a-z0-9][a-z0-9-]*$`.
+- Max length 60 chars.
+- `init.wb` normalises input and rejects duplicates.
+- Fallback label: `wb-<primary-epic-id-lowercased>-YYYYMMDD`.

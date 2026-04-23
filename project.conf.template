@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Workbench configuration — rendered by init.wb, appended by join.wb.
+# DO NOT edit placeholders by hand. Re-run init.wb or join.wb to regenerate safely.
+
+# --- Identity ---
+WORKBENCH_LABEL="{{LABEL}}"
+WORKBENCH_REPO="{{REPO_URL}}"
+WORKBENCH_TEMPLATE_UPSTREAM="{{TEMPLATE_UPSTREAM_URL}}"
+WORKBENCH_CREATED_BY="{{CREATED_BY}}"
+WORKBENCH_CREATED_AT="{{CREATED_AT}}"
+WORKBENCH_ORG="{{ORG}}"
+
+# --- Epics in scope (Jira epic IDs) ---
+EPICS=({{EPICS_BASH_ARRAY}})
+
+# --- Managed code repos ---
+# Each entry: name=<name>;url=<git_url>;role=<service|automation-tests|shared-lib|infra>;stack=<short>;added_by=<gh-user>
+REPOS=(
+{{REPOS_BASH_ENTRIES}}
+)
+
+# --- Optional: agent defaults for this workbench ---
+# Set DEVIN_DEFAULT=true to prefer Devin whenever ralph/init/join is invoked without --agent.
+DEVIN_DEFAULT="true"
