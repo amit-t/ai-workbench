@@ -46,6 +46,33 @@ See `DESIGN.md` in the harness root for the full tree and the `template_owned` /
 
 `skills/` holds the bundled skills. At `init.wb` time, `.claude/skills`, `.agents/skills`, `.devin/skills` are symlinked to this one dir. Every agent sees the same skills.
 
+## Skills catalogue
+
+18 skills ship with every workbench, grouped by hat. All outputs land at `status: draft`; promotion is human-driven via `wb.publish` / `wb.approve`.
+
+| Skill | Hat | Short purpose |
+|-------|-----|---------------|
+| `/epic-intake` | PO | Pull Jira epic into workbench as draft context. |
+| `/prd-draft` | PO | PRD from approved epic — goals, scope, NFRs, acceptance. |
+| `/prd-review-panel` | PO | 7-perspective PRD review; blocks approve on P0. |
+| `/design-draft` | UXD | End-to-end UX — brief → wireframes → hi-fi → handoff. |
+| `/figma-pull` | UXD | Park Figma links; optional Figma-MCP export. |
+| `/ds-screen-gen` | UXD | Hi-fi HTML/JSX screens using design-system ref. |
+| `/design-review` | UXD | 5-perspective screen review; blocks handoff on P0. |
+| `/eng-spec` | Eng | Architecture, contracts, data, rollout, observability. |
+| `/tdd` | Eng | File map, interfaces, sequence diagrams, failure matrix. |
+| `/erd` | Eng | Mermaid ER + C4-L2 component + hot-path sequence. |
+| `/adr` | Eng | MADR-lite ADR — context, drivers, options, decision. |
+| `/bdd-gen` | QA | Gherkin `.feature` — happy/edge/error/security paths. |
+| `/test-cases-gen` | QA | BDDs → test-case table with priority + automation flags. |
+| `/test-spec` | QA | QA engg spec + test ERD — coverage, env, flaky strategy. |
+| `/ralph-workspace-plan` | Orchestrator | Sync approved context; produce per-repo fix_plans. |
+| `/ralph-dispatch` | Orchestrator | Parallel ralph loops across workbench repos. |
+| `/grill-me` | Cross-cutting | Relentless interview to stress-test any draft. |
+| `/pmo-status` | Cross-cutting | Workbench status rollup from `.workbench-state/`. |
+
+Deep dives — inputs, outputs, lifecycle gates, frontmatter, examples — live at **[docs/skills](https://amit-t.github.io/ai-workbench/skills.html)** with one page per skill. Skill source lives under `skills/<name>/SKILL.md`.
+
 ## Artifact lifecycle
 
 Every artifact (PRD, eng spec, TDD, BDD, test spec, etc.) moves through three stages:
