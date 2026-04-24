@@ -86,6 +86,27 @@ sync_one() {
 
   echo "── $name ($role) ──"
 
+  # Steering (template + overlay) is copied to every repo unconditionally.
+  # Principles are cross-cutting; role-filtering would be wrong here.
+  if [[ -d "$WB_ROOT/steering" ]]; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+      echo "  [dry-run] steering/ -> ai/steering/"
+    else
+      mkdir -p "$repo_dir/ai/steering"
+      rsync -a --delete "$WB_ROOT/steering/" "$repo_dir/ai/steering/"
+      echo "  steering/  ->  ai/steering/"
+    fi
+  fi
+  if [[ -d "$WB_ROOT/steering.local" ]]; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+      echo "  [dry-run] steering.local/ -> ai/steering.local/"
+    else
+      mkdir -p "$repo_dir/ai/steering.local"
+      rsync -a --delete "$WB_ROOT/steering.local/" "$repo_dir/ai/steering.local/"
+      echo "  steering.local/  ->  ai/steering.local/"
+    fi
+  fi
+
   WB_ROOT="$WB_ROOT" REPO_DIR="$repo_dir" ROLE="$role" DRY_RUN="$DRY_RUN" \
   python3 - <<'PYEOF'
 import json, os, shutil, pathlib

@@ -1,0 +1,60 @@
+name: steering drift digest
+
+# Weekly aggregator. Finds every GitHub repo in the org with topic
+# `ai-workbench` (stamped by init.wb), reads each repo's steering.local/ via
+# the GitHub API, and posts a single digest issue in this template repo so
+# Architecture Council and QA Council can see drift without joining every
+# workbench.
+#
+# Uses a GitHub App installation token (org-wide read-only on repos matching
+# pattern). Setup steps: docs/steering/setup.md.
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC.
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    # Allow manual runs for testing.
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout template
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App installation token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.AI_WORKBENCH_APP_ID }}
+          private-key: ${{ secrets.AI_WORKBENCH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Collect overlays from each stamped workbench
+        id: collect
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ORG: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          python3 .github/workflows/scripts/drift-digest.py \
+            --org "$ORG" \
+            --output digest.md
+
+      - name: Open or update digest issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          TODAY=$(date -u +%Y-%m-%d)
+          TITLE="steering drift digest — week of ${TODAY}"
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "$TITLE" \
+            --body-file digest.md \
+            --label drift-digest

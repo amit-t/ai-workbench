@@ -1,4 +1,41 @@
 # Auto-managed by ai-devkit. Initiator and joiners are appended to the `*` line.
+# `{{INITIATOR_GH_USER}}` and `{{ORG}}` are substituted at `init.wb` stamp time.
 # Manual edits below this header survive updates.
+#
+# The `{{ORG}}/*` team slugs below are placeholders. Teams must exist in the
+# GitHub org before CODEOWNERS can enforce them. In the `ai-workbench`
+# template repo itself, substitute `{{ORG}}` with the repo's org (for example
+# `Invenco-Cloud-Systems-ICS`).
 
 *  @{{INITIATOR_GH_USER}}
+
+# ── Steering ──────────────────────────────────────────────────────────────────
+# Authors of org-wide policy rules consumed by every AI agent in every stamped
+# workbench. Per-directory granularity so QA Council review does not gate
+# engineering changes and vice versa.
+
+/steering/golden-principles/       @{{ORG}}/architecture-council
+/steering/roles/dev/                @{{ORG}}/architecture-council
+/steering/roles/po/                 @{{ORG}}/architecture-council
+/steering/roles/qa/                 @{{ORG}}/qa-council
+/steering/roles/uxd/                @{{ORG}}/ux-council
+/steering/artifacts/prd/            @{{ORG}}/architecture-council @amit-t
+/steering/artifacts/eng-spec/       @{{ORG}}/architecture-council
+/steering/artifacts/tdd/            @{{ORG}}/architecture-council
+/steering/artifacts/erd/            @{{ORG}}/architecture-council
+/steering/artifacts/adr/            @{{ORG}}/architecture-council
+/steering/artifacts/bdd/            @{{ORG}}/qa-council
+/steering/artifacts/test-cases/     @{{ORG}}/qa-council
+/steering/artifacts/test-spec/      @{{ORG}}/qa-council
+/steering/topics/api-design/        @{{ORG}}/architecture-council
+/steering/topics/test-data/         @{{ORG}}/qa-council
+/steering/config.yaml               @{{ORG}}/architecture-council
+/steering/README.md                 @{{ORG}}/architecture-council
+
+# Loader, linter, drift-digest infrastructure. Architecture Council owns.
+/scripts/steering-load.py           @{{ORG}}/architecture-council
+/scripts/steering-lint.py           @{{ORG}}/architecture-council
+/scripts/steering-post-tool-hook.sh @{{ORG}}/architecture-council
+/.github/workflows/steering-lint.yml @{{ORG}}/architecture-council
+/.github/workflows/drift-digest.yml  @{{ORG}}/architecture-council
+/.github/workflows/scripts/drift-digest.py @{{ORG}}/architecture-council
