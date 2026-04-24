@@ -31,3 +31,17 @@
 - `tests/smoke.sh` re-enabled the BDD round-trip case (publish flips header, approve flips again, `sync-context` routes to `role=automation-tests` only).
 - Audited `grep -r "prds/approved"`: no Phase-1 stragglers remain in `skills/`, `scripts/`, or `docs/`.
 - Clarified artifact lifecycle section in `README.md` (diagram, stage semantics, upstream gates, dev + QA flows, inspection aliases).
+
+### Steering system V1 (2026-04-24)
+- Added `steering/` (template-owned) and `steering.local/` (user-owned) trees with structured rule files (one markdown file per rule, YAML frontmatter). Overlay semantics: add, `supersedes: [ID]` explicit field, `<ID>.removed.md` sidecar. See `steering/README.md` for the file format and `steering/config.yaml` for the canonical scope mapping.
+- Progressive disclosure in three layers: Layer 0 (golden) at session start, Layer 1 (role: dev / qa / po / uxd) on role-inference match, Layer 2 (artifact / topic) as step 0 of each skill. Loader: `scripts/steering-load.py <scope>`. Linter: `scripts/steering-lint.py`.
+- Aliases: `wb.steering`, `wb.steering-refresh`, `wb.steering-lint`.
+- Freshness hook: `.claude/settings.json` PostToolUse wiring re-emits Layer 0 after `update.wb`, `git pull`, `git merge`, or any Edit/Write touching `steering/**` or `steering.local/**`.
+- Drift visibility: `pmo-status` shows local overrides (M1); weekly Monday GitHub Action in the template repo queries the org for repos with topic `ai-workbench` and posts a digest issue (M2, see `docs/steering/setup.md` for GitHub App install); promotion PRs from `steering.local/` to `steering/` are the M3 flow.
+- Critical-path skills updated with step 0 + `relevant_topics:` frontmatter: `prd-draft`, `eng-spec`, `tdd`, `bdd-gen`, `test-cases-gen`, `test-spec`.
+- Seeded content: 60 starter rule files (10 golden, 19 role, 28 artifact, 7 topic), each with Rule / Why / How to apply / Anti-pattern.
+- Docs: new "Steering workflow" section in the root `README.md` (role-split between Architecture Council / QA Council / UX Council / Director of Engineering / teams); deep guide at `docs/steering/index.md`; GitHub App setup at `docs/steering/setup.md`.
+- CODEOWNERS is now granular per steering directory with `{{ORG}}/<team>` placeholders (substituted at `init.wb` stamp time once the devkit follow-up lands).
+- Manifest v2: `steering/`, `.claude/settings.json`, `.github/workflows/**`, `.github/CODEOWNERS` moved into `template_owned`; `steering.local/` added to `user_owned`.
+- Smoke extended from 9 to 13 assertions (steering copied to every registered repo, loader non-empty output, overlay add + supersede + remove round-trip, lint pass).
+- Parked in companion `ai-devkit` PR: `init.wb` must tag stamped repos with topic `ai-workbench` (required for M2 discovery); `update.wb` should print the count of local steering overrides after a pull as a local nag.
