@@ -2,7 +2,7 @@
 title: Skills Reference
 layout: default
 eyebrow: Skills
-subtitle: "18 skills grouped by hat. Click any skill to expand its summary, then follow the deep-dive link."
+subtitle: "18 skills, one collapsible panel per role hat. Pick a hat, scan its skills, open any row for the deep dive."
 ---
 
 ## Lifecycle at a Glance
@@ -17,228 +17,77 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 
 ---
 
-## Product (PO)
+## Browse by Hat
 
-<details>
-<summary><strong><code>/epic-intake</code></strong> — Pull Jira epic into workbench as draft context.</summary>
+<details markdown="1">
+<summary><strong>Product (PO)</strong> — 3 skills · epic intake → PRD draft → PRD review panel</summary>
 
-- **Input:** Jira epic ID.
-- **Output:** `product/context-library/epics/<EPIC-ID>.md`
-- **Unblocks:** `/prd-draft` once epic-context is `approved`.
-
-[Deep dive →](skills/epic-intake.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/epic-intake/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/prd-draft</code></strong> — PRD from approved epic.</summary>
-
-- **Input gate:** epic-context approved.
-- **Output:** `product/outputs/prds/PRD-NNN-<slug>.md`
-- **Unblocks:** `/eng-spec`, `/bdd-gen`, `/design-draft`.
-
-[Deep dive →](skills/prd-draft.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/prd-draft/SKILL.md)
+| Skill | Purpose | Input gate |
+|---|---|---|
+| [`/epic-intake`](skills/epic-intake.html) | Pull Jira epic into workbench as draft context | none (entry point) |
+| [`/prd-draft`](skills/prd-draft.html) | PRD from approved epic | epic-context approved |
+| [`/prd-review-panel`](skills/prd-review-panel.html) | 7-perspective PRD review; blocks approve on any P0 | PRD draft |
 
 </details>
 
-<details>
-<summary><strong><code>/prd-review-panel</code></strong> — 7-perspective PRD review.</summary>
+<details markdown="1">
+<summary><strong>UX Design</strong> — 4 skills · workflow orchestrator, Figma, screen gen, review</summary>
 
-- **Input:** PRD draft.
-- **Output:** Review file beside PRD. Blocks `wb.approve` on any P0.
-- **Reviewers:** engineer, designer, executive, legal, UX research, skeptic, customer voice.
-
-[Deep dive →](skills/prd-review-panel.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/prd-review-panel/SKILL.md)
-
-</details>
-
----
-
-## UX Design
-
-<details>
-<summary><strong><code>/design-draft</code></strong> — End-to-end UX workflow.</summary>
-
-- **Input gate:** PRD approved.
-- **Output:** `design/outputs/<PRD-NNN>/…`
-- **Orchestrates:** `/figma-pull`, `/ds-screen-gen`, `/design-review`.
-
-[Deep dive →](skills/design-draft.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/design-draft/SKILL.md)
+| Skill | Purpose | Input gate |
+|---|---|---|
+| [`/design-draft`](skills/design-draft.html) | End-to-end UX workflow; orchestrates the three below | PRD approved |
+| [`/figma-pull`](skills/figma-pull.html) | Park Figma links; optional MCP export | PRD ID + Figma URL |
+| [`/ds-screen-gen`](skills/ds-screen-gen.html) | Hi-fi HTML/JSX from design-system ref in default / empty / loading / error states | PRD + design-system ref |
+| [`/design-review`](skills/design-review.html) | 5-perspective screen review; blocks handoff on P0 | generated screen set |
 
 </details>
 
-<details>
-<summary><strong><code>/figma-pull</code></strong> — Park Figma links; optional MCP export.</summary>
+<details markdown="1">
+<summary><strong>Engineering</strong> — 4 skills · spec → TDD → ERD → ADR</summary>
 
-- **Input:** PRD ID + Figma URL.
-- **Output:** `design/context-library/figma-links.md` and optional `design/outputs/screens/PRD-NNN/`.
-- **Default path:** link parking only — no network call.
-
-[Deep dive →](skills/figma-pull.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/figma-pull/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/ds-screen-gen</code></strong> — Hi-fi HTML/JSX from design-system ref.</summary>
-
-- **Input:** PRD + `design/context-library/design-system-ref.md`.
-- **Output:** `design/outputs/screens/PRD-NNN/` — every screen in default / empty / loading / error states.
-
-[Deep dive →](skills/ds-screen-gen.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/ds-screen-gen/SKILL.md)
+| Skill | Purpose | Input gate |
+|---|---|---|
+| [`/eng-spec`](skills/eng-spec.html) | Architecture, contracts, data, rollout, observability | PRD approved |
+| [`/tdd`](skills/tdd.html) | Technical design doc: file map, interfaces, failure matrix | eng-spec approved |
+| [`/erd`](skills/erd.html) | Mermaid ER + C4-L2 component + optional sequence; renders in GitHub | SPEC (may be draft) |
+| [`/adr`](skills/adr.html) | MADR-lite Architecture Decision Record | SPEC if exists, else none |
 
 </details>
 
-<details>
-<summary><strong><code>/design-review</code></strong> — 5-perspective screen review.</summary>
+<details markdown="1">
+<summary><strong>QA</strong> — 3 skills · BDDs → test cases → test spec</summary>
 
-- **Input:** Generated screen set.
-- **Reviewers:** UX researcher, a11y auditor, engineer, brand guardian, end-user voice.
-- **Blocks:** handoff until P0 items resolved.
+| Skill | Purpose | Input gate |
+|---|---|---|
+| [`/bdd-gen`](skills/bdd-gen.html) | Gherkin `.feature` covering happy / edge / error / security paths | PRD approved |
+| [`/test-cases-gen`](skills/test-cases-gen.html) | Expand BDDs into priority / type / automation-flag table | BDDs approved |
+| [`/test-spec`](skills/test-spec.html) | QA engineering spec + test ERD: coverage, data, envs, flaky strategy | PRD + BDDs + test cases approved |
 
-[Deep dive →](skills/design-review.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/design-review/SKILL.md)
+</details>
+
+<details markdown="1">
+<summary><strong>Orchestrator (Ralph)</strong> — 2 skills · workspace plan → parallel dispatch</summary>
+
+| Skill | Purpose | Input gate |
+|---|---|---|
+| [`/ralph-workspace-plan`](skills/ralph-workspace-plan.html) | Sync context and run workspace-mode plan; writes per-repo `fix_plan.md` | PRD + eng-spec + TDD + test-spec approved |
+| [`/ralph-dispatch`](skills/ralph-dispatch.html) | Parallel ralph loops across repos (cross-repo parallelism; ralph native is within-repo) | approved fix_plans in `repos/*/ai/` |
+
+</details>
+
+<details markdown="1">
+<summary><strong>Cross-Cutting</strong> — 2 skills · grill-me interview, PMO status rollup</summary>
+
+| Skill | Purpose | Input gate |
+|---|---|---|
+| [`/grill-me`](skills/grill-me.html) | Relentless decision-tree interview on any draft before publish | any draft artifact |
+| [`/pmo-status`](skills/pmo-status.html) | Terminal rollup of epics, PRDs, specs, TDDs, BDDs, fix_plan coverage, dispatch state | none (read-only) |
 
 </details>
 
 ---
 
-## Engineering
-
-<details>
-<summary><strong><code>/eng-spec</code></strong> — Architecture, contracts, data, rollout, observability.</summary>
-
-- **Input gate:** PRD approved.
-- **Output:** `engineering/outputs/specs/SPEC-NNN-<slug>.md`
-- **Unblocks:** `/tdd`, `/erd`, `/adr`, `/ralph-workspace-plan`.
-
-[Deep dive →](skills/eng-spec.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/eng-spec/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/tdd</code></strong> — Technical design doc: file map, interfaces, failure matrix.</summary>
-
-- **Input gate:** eng-spec approved.
-- **Output:** `engineering/outputs/tdd/TDD-NNN-<slug>.md`
-- **Unblocks:** `/ralph-workspace-plan`.
-
-[Deep dive →](skills/tdd.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/tdd/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/erd</code></strong> — Mermaid ER + C4-L2 component + optional sequence.</summary>
-
-- **Input:** SPEC (may still be draft).
-- **Output:** `engineering/outputs/erd/ERD-NNN-<slug>.md`
-- **Renders in GitHub without external tooling.**
-
-[Deep dive →](skills/erd.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/erd/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/adr</code></strong> — MADR-lite Architecture Decision Record.</summary>
-
-- **Input:** SPEC (may still be draft) or standalone.
-- **Output:** `engineering/outputs/adrs/ADR-NNN-<slug>.md`
-- **Sections:** context, drivers, options (≥2), decision, consequences.
-
-[Deep dive →](skills/adr.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/adr/SKILL.md)
-
-</details>
-
----
-
-## QA
-
-<details>
-<summary><strong><code>/bdd-gen</code></strong> — Gherkin <code>.feature</code> from approved PRD.</summary>
-
-- **Input gate:** PRD approved.
-- **Output:** `qa/outputs/bdd/<epic>.feature`
-- **Coverage:** happy, edge, error, security paths.
-
-[Deep dive →](skills/bdd-gen.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/bdd-gen/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/test-cases-gen</code></strong> — Expand BDDs into detailed test-case table.</summary>
-
-- **Input gate:** BDDs approved.
-- **Output:** `qa/outputs/test-cases/<epic>.md`
-- **Fields:** priority, type, automation-candidate flag.
-
-[Deep dive →](skills/test-cases-gen.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/test-cases-gen/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/test-spec</code></strong> — QA engineering spec + test ERD.</summary>
-
-- **Input gate:** PRD + BDDs + test cases approved.
-- **Output:** `qa/outputs/test-spec/<epic>.md`, `qa/outputs/test-erd/<epic>.md`
-- **Covers:** coverage matrix, automation entry, test data, environments, parallelism, flaky strategy.
-
-[Deep dive →](skills/test-spec.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/test-spec/SKILL.md)
-
-</details>
-
----
-
-## Orchestrator (Ralph)
-
-<details>
-<summary><strong><code>/ralph-workspace-plan</code></strong> — Sync context and run workspace-mode plan.</summary>
-
-- **Input gate:** PRD + eng-spec + TDD + test-spec approved.
-- **Output:** `repos/*/ai/fix_plan.md` per-repo + workbench rollup.
-- **Wraps:** `scripts/ralph-plan.sh`.
-
-[Deep dive →](skills/ralph-workspace-plan.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/ralph-workspace-plan/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/ralph-dispatch</code></strong> — Parallel ralph loops across repos.</summary>
-
-- **Input:** Approved fix_plans in `repos/*/ai/`.
-- **Output:** Per-repo ralph loop state.
-- **Net-new:** cross-repo parallelism — ralph native is within-repo only.
-
-[Deep dive →](skills/ralph-dispatch.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/ralph-dispatch/SKILL.md)
-
-</details>
-
----
-
-## Cross-Cutting
-
-<details>
-<summary><strong><code>/grill-me</code></strong> — Relentless decision-tree interview on any draft.</summary>
-
-- **Input:** Any draft artifact (epic, PRD, SPEC, TDD, BDD, design).
-- **Output:** Notes inline or companion file.
-- **When:** before `wb.publish`, whenever reviewer says "grill me".
-
-[Deep dive →](skills/grill-me.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/grill-me/SKILL.md)
-
-</details>
-
-<details>
-<summary><strong><code>/pmo-status</code></strong> — Workbench status rollup.</summary>
-
-- **Input:** None (read-only).
-- **Output:** Terminal report of epics, PRDs, specs, TDDs, BDDs, fix_plan coverage per repo, dispatch state.
-- **Source of truth:** `.workbench-state/`.
-
-[Deep dive →](skills/pmo-status.html) · [Source](https://github.com/amit-t/ai-workbench/blob/main/skills/pmo-status/SKILL.md)
-
-</details>
-
----
-
-## Hat-By-Hat Summary
+## Hat-by-Hat Summary
 
 | Hat | Skills |
 |-----|--------|
