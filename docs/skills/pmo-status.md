@@ -1,7 +1,7 @@
 ---
 title: /pmo-status
 layout: default
-eyebrow: CROSS-CUTTING
+eyebrow: Cross-Cutting
 subtitle: "Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDDs, ralph fix_plan coverage per repo, dispatch state. Reads `.workbench-state/` as source of truth; never guesses."
 ---
 
@@ -9,7 +9,7 @@ subtitle: "Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDD
 |-----|-------|---------------|--------|
 | Cross-cutting | Status | None (read-only) | Terminal report (no file writes) |
 
-## When to use
+## When to Use
 
 - Start of a workbench session — orient before deciding next action.
 - Before dispatching ralph — confirm upstream gates are green.
@@ -20,7 +20,7 @@ subtitle: "Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDD
 - Workbench initialised — `EPIC-PIPELINE.md` exists, `.workbench-state/approved.json` exists (empty is fine).
 - `project.conf` sourced (REPOS list).
 
-## Reads in parallel (never infers)
+## Reads in Parallel (Never Infers)
 
 1. `EPIC-PIPELINE.md`
 2. `.workbench-state/approved.json`
@@ -29,7 +29,7 @@ subtitle: "Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDD
 5. Directory listings — `product/outputs/prds/`, `engineering/outputs/{specs,tdds,adrs,erd}/`, `qa/outputs/{bdd,test-cases,test-specs}/`, `design/outputs/{screens,handoffs}/`.
 6. Per repo — `repos/{repo}/.ralph/fix_plan.md`, `ralph/{repo}.pid`, `ralph/logs/{repo}.log` last line.
 
-## Output format (verbatim)
+## Output Format (Verbatim)
 
 ```
 # Workbench status — {today}
@@ -58,7 +58,7 @@ Legend: ✓ approved, ~ published/awaiting-approval, · draft, — none
 1. {specific command or file edit — not a vague TODO}
 ```
 
-## Stage resolution
+## Stage Resolution
 
 | Rule | Stage |
 |------|-------|
@@ -67,11 +67,11 @@ Legend: ✓ approved, ~ published/awaiting-approval, · draft, — none
 | Else file exists with `status: draft` | draft |
 | Else | missing |
 
-## Dispatch state
+## Dispatch State
 
 `idle` (no pidfile) · `running` (pidfile + live PID) · `stale` (pidfile, PID gone) · `done` (log ends exit code 0) · `failed` (non-zero).
 
-## Do not
+## Do Not
 
 - Infer `approved` from existence of a file. `.workbench-state/approved.json` is the only gate.
 - Stall on a missing repo checkout — render `fix_plan?: ✗ (not cloned)` and move on.

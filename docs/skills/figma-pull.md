@@ -9,7 +9,7 @@ subtitle: "Park Figma links for a PRD. If Figma MCP is enabled, pull frame list 
 |-----|-------|---------------|--------|----------|
 | UXD | Design input | PRD ID + Figma URL | `design/context-library/figma-links.md`; optional `design/outputs/screens/PRD-NNN/` | `/ds-screen-gen`, `/design-review` |
 
-## When to use
+## When to Use
 
 - PRD exists and designer has a Figma file for its screens.
 - Engineer / QA wants current frame list beside the PRD without loading Figma UI.
@@ -40,7 +40,7 @@ subtitle: "Park Figma links for a PRD. If Figma MCP is enabled, pull frame list 
     - **Link-parking:** stop, inform user MCP disabled.
     - **MCP:** list frames → save `design/outputs/screens/PRD-{NNN}/frames.json`. Ask before export (`y/N`). Skip `Archived-*` / `_*` frames. Save `<slug>.png` per node. Write `design/outputs/screens/PRD-{NNN}/index.md` at `status: draft`.
 
-## Output frontmatter (MCP mode, index.md)
+## Output Frontmatter (MCP mode, `index.md`)
 
 ```yaml
 id: DESIGN-PRD-{NNN}
@@ -53,7 +53,7 @@ exported: {today}
 
 `index.md` is the lifecycle artifact (type `design`). PNGs are binary assets tracked by git but not by `wb.publish`.
 
-## Do not
+## Do Not
 
 - Hardcode a Figma access token. MCP server reads its own credentials per-workbench.
 - Export private / archived frames. Respect naming convention.

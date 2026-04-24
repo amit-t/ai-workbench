@@ -1,28 +1,36 @@
 (function () {
   'use strict';
 
-  // ===== THEME TOGGLE =====
+  // ===== THEME CYCLE: light → dark → cyberpunk =====
   const THEME_KEY = 'wb-theme';
-  const root = document.body;
+  const CYCLE = ['light', 'dark', 'cyberpunk'];
+  const ICON = { light: '🌙', dark: '🌃', cyberpunk: '⚡' };
+  const body = document.body;
   const toggle = document.getElementById('theme-toggle');
 
   function apply(theme) {
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      if (toggle) toggle.textContent = '☀️';
-    } else {
-      root.classList.remove('dark');
-      if (toggle) toggle.textContent = '🌙';
+    body.classList.remove('dark', 'cyberpunk');
+    if (theme === 'dark') body.classList.add('dark');
+    else if (theme === 'cyberpunk') body.classList.add('cyberpunk');
+    if (toggle) {
+      toggle.textContent = ICON[theme] || ICON.light;
+      toggle.dataset.theme = theme;
+      toggle.setAttribute('aria-label', 'Theme: ' + theme + '. Click to cycle.');
     }
   }
 
-  const stored = localStorage.getItem(THEME_KEY);
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  apply(stored || (prefersDark ? 'dark' : 'light'));
+  function readStored() {
+    const s = localStorage.getItem(THEME_KEY);
+    if (CYCLE.indexOf(s) !== -1) return s;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  apply(readStored());
 
   if (toggle) {
     toggle.addEventListener('click', function () {
-      const next = root.classList.contains('dark') ? 'light' : 'dark';
+      const current = toggle.dataset.theme || 'light';
+      const next = CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length];
       localStorage.setItem(THEME_KEY, next);
       apply(next);
     });
@@ -37,15 +45,15 @@
       btn.type = 'button';
       btn.className = 'copy-btn';
       btn.setAttribute('aria-label', 'Copy code');
-      btn.textContent = 'COPY';
+      btn.textContent = 'Copy';
       btn.addEventListener('click', function () {
         const code = pre.querySelector('code') || pre;
         const text = code.innerText;
         navigator.clipboard.writeText(text).then(function () {
-          btn.textContent = 'COPIED';
+          btn.textContent = 'Copied';
           btn.classList.add('copied');
           setTimeout(function () {
-            btn.textContent = 'COPY';
+            btn.textContent = 'Copy';
             btn.classList.remove('copied');
           }, 1600);
         });

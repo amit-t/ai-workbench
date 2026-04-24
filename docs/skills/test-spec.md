@@ -9,7 +9,7 @@ subtitle: "QA engineering spec + test ERD — coverage matrix, automation entry,
 |-----|-------|---------------|--------|----------|
 | QA | QA | PRD + BDDs + test cases approved | `qa/outputs/test-spec/TSD-NNN-<slug>.md` + `qa/outputs/test-erd/TERD-NNN-<slug>.md` | `/ralph-workspace-plan` |
 
-## When to use
+## When to Use
 
 Approved PRD + approved BDDs + approved test cases. User wants QA engg spec before kicking automation into ralph.
 
@@ -26,7 +26,7 @@ Approved PRD + approved BDDs + approved test cases. User wants QA engg spec befo
 4. Write `qa/outputs/test-erd/TERD-{NNN}-{slug}.md` — Mermaid `graph LR` linking PRD → Features → TCs → automation files, plus Coverage gaps section.
 5. Update `EPIC-PIPELINE.md` — set Test Spec column.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: TSD-{NNN}
@@ -44,7 +44,7 @@ automation_repo: {name}
 automation_stack: {stack hint}
 ```
 
-## Do not
+## Do Not
 
 - Duplicate engineering-spec content — reference it.
 - Cover unit tests here — those live with service code.

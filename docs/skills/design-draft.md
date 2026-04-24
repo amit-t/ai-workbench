@@ -9,7 +9,7 @@ subtitle: "End-to-end UX workflow for an approved PRD — brief, user flow, wire
 |-----|-------|---------------|--------|----------|
 | UXD | Design | PRD approved | `design/outputs/{briefs,user-flows,wireframes,screens,handoffs}/PRD-NNN-*` | Engineering handoff |
 
-## When to use
+## When to Use
 
 - PRD reached `status: approved` and UX designer (or dev pinch-hitting) wants to run the full design pass.
 - Resuming a partial pass for same PRD (skip steps whose outputs exist).
@@ -19,7 +19,7 @@ subtitle: "End-to-end UX workflow for an approved PRD — brief, user flow, wire
 - `.workbench-state/approved.json` contains the target PRD. Refuse otherwise.
 - `design/context-library/design-system-ref.md` filled in (≥ 1 DS block) OR user producing DS-free wireframes only.
 
-## Protocol — 6 steps, 6 artifacts
+## Protocol — 6 Steps, 6 Artifacts
 
 | # | Step | Artifact |
 |---|------|----------|
@@ -30,11 +30,11 @@ subtitle: "End-to-end UX workflow for an approved PRD — brief, user flow, wire
 | E | Review — invoke `/design-review`; P0 fails loop back to Step D | `design/outputs/handoffs/PRD-{NNN}-review.md` |
 | F | Handoff (tokens, components mapping, states per screen, open items) | `design/outputs/handoffs/PRD-{NNN}-handoff.md` |
 
-## Resume support
+## Resume Support
 
 `--from {step}` (brief / flow / wireframes / screens / review / handoff) — jump; read prior outputs, don't regenerate.
 
-## Publish prompts (prints verbatim at end)
+## Publish Prompts (Prints Verbatim at End)
 
 ```
 wb.publish DESIGN-PRD-{NNN} design/outputs/screens/PRD-{NNN}/index.md design
@@ -43,7 +43,7 @@ wb.approve DESIGN-PRD-{NNN}
 wb.approve DESIGN-HANDOFF-PRD-{NNN}
 ```
 
-## Do not
+## Do Not
 
 - Start without an approved PRD.
 - Skip review just because P0s would delay — that's exactly when it matters.

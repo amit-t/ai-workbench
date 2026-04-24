@@ -9,7 +9,7 @@ subtitle: "Draft a PRD under an approved epic — goals, users, scope, NFRs, acc
 |-----|-------|---------------|--------|----------|
 | PO | Product | `epic-context` approved | `product/outputs/prds/PRD-NNN-<slug>.md` | `/eng-spec`, `/bdd-gen`, `/design-draft` |
 
-## When to use
+## When to Use
 
 An epic-context file is approved and the user wants to scope a PRD.
 
@@ -26,7 +26,7 @@ An epic-context file is approved and the user wants to scope a PRD.
 4. Write `product/outputs/prds/PRD-{NNN}-{slug}.md` with 9 sections: Problem, Goal, Users+Stakeholders, Acceptance criteria, Non-goals, Dependencies, Open questions, Risks, Metrics.
 5. Update `EPIC-PIPELINE.md` — append PRD row.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: PRD-{NNN}
@@ -38,7 +38,7 @@ epic: {EPIC_ID}
 scope: {service | automation | both}
 ```
 
-## Do not
+## Do Not
 
 - Copy into any gate folder — gate is `.workbench-state/approved.json`, not a directory.
 - Span multiple epics in one PRD. If scope leaks, split into two.

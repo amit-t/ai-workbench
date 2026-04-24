@@ -1,14 +1,14 @@
 ---
-title: Ralph integration
+title: Ralph Integration
 layout: default
-eyebrow: RALPH
+eyebrow: Ralph
 ---
 
-## What ai-ralph is
+## What ai-ralph Is
 
 **ai-ralph** is a multi-engine autonomous AI development loop: given a `fix_plan.md` inside a code repo, it drives a Claude / Devin / Codex agent in a controlled loop, committing incrementally, until the plan is done. The workbench points at an `ai-ralph` fork under your org — e.g. `<your-org>/ai-ralph` — but any ai-ralph-compatible CLI with a `plan` + `int` surface works.
 
-## What the workbench adds
+## What the Workbench Adds
 
 ai-ralph natively operates on a single repo. The workbench layers two things on top:
 
@@ -17,7 +17,7 @@ ai-ralph natively operates on a single repo. The workbench layers two things on 
 
 This gives you "one plan, multiple repos, dispatch them in parallel" — which ai-ralph native parallelism (within a single repo) does not cover.
 
-## Workspace-mode planning
+## Workspace-Mode Planning
 
 `wb.ralph-plan` is assumed to invoke ai-ralph's **workspace mode** — a planning command that, when run from a workbench root, aggregates all approved workbench context, scans `repos/*`, writes per-repo `.ralph/fix_plan.md` files, and emits a rollup at `ralph/workspace-plan.md`.
 
@@ -25,7 +25,7 @@ If workspace mode is not yet merged in the ai-ralph fork you point at, the workb
 
 > **Plan B** tracks finalising the workspace-mode flag (`--workspace` vs `--workbench`) once the upstream PR merges. Only `scripts/ralph-plan.sh` changes when that happens.
 
-## Adapter scripts
+## Adapter Scripts
 
 ```
 scripts/ralph-context.sh
@@ -52,7 +52,7 @@ scripts/ralph-dispatch.sh [--repos r1,r2,...] [--agent ...]
   # Status: ralph-dispatch.sh --status reads the log and git status of each worktree
 ```
 
-## Hard rules
+## Hard Rules
 
 - **Never generate a fix_plan entry for a repo without an approved PRD** and, for service repos, an approved engineering spec.
 - **Ralph always runs from a code repo's cwd**, never from the workbench root.

@@ -9,7 +9,7 @@ subtitle: "Generate Gherkin `.feature` files from an approved PRD. Covers happy 
 |-----|-------|---------------|--------|----------|
 | QA | QA | PRD approved | `qa/outputs/bdd/PRD-NNN-<capability>.feature` | `/test-cases-gen`, `/test-spec` |
 
-## When to use
+## When to Use
 
 PRD is approved; user wants executable behavior specs.
 
@@ -40,11 +40,11 @@ PRD is approved; user wants executable behavior specs.
 4. **Coverage rule:** every AC → at least one scenario. Every file includes at minimum one `@happy-path`, one `@edge`, one `@error`, and one `@security` (when PRD touches a user-facing endpoint).
 5. Update `EPIC-PIPELINE.md` — comma-joined BDD IDs in BDD column.
 
-## Lifecycle note
+## Lifecycle Note
 
 `wb.publish` / `wb.approve` / `wb.reject` detect `.feature` files and rewrite the `# status:` header comment (not YAML frontmatter). The header line must exist before first `wb.publish`.
 
-## Do not
+## Do Not
 
 - Write scenarios that cannot be automated without unreasonable setup. Tag `@manual` if needed.
 - Include PII or real account numbers in Examples tables.

@@ -1,7 +1,7 @@
 ---
 title: /grill-me
 layout: default
-eyebrow: CROSS-CUTTING
+eyebrow: Cross-Cutting
 subtitle: "Relentless interview that stress-tests any draft artifact before approval. Walks the decision tree one branch at a time."
 ---
 
@@ -9,7 +9,7 @@ subtitle: "Relentless interview that stress-tests any draft artifact before appr
 |-----|-------|---------------|--------|
 | Cross-cutting | Review helper | Any draft artifact | Inline `<!-- grill-me … -->` scratch block on target |
 
-## When to use
+## When to Use
 
 - User wants gaps surfaced before moving an artifact from `draft` → `published`.
 - Any other skill's output feels hand-wavy.
@@ -20,7 +20,7 @@ subtitle: "Relentless interview that stress-tests any draft artifact before appr
 - Concrete target — path on disk or artifact id resolvable via `.workbench-state/`.
 - Target still `status: draft`. Grilling after `approved` is too late — fork a follow-up PRD instead.
 
-## Stance by artifact type
+## Stance by Artifact Type
 
 | Type | Stance |
 |------|--------|
@@ -49,7 +49,7 @@ subtitle: "Relentless interview that stress-tests any draft artifact before appr
 
 6. Exit when every branch resolved, every `[parked]` item has owner + date, OR user types "stop grill". Summarise opens with one-line recommendations.
 
-## Do not
+## Do Not
 
 - Edit artifact body during interview. Only scratch block changes.
 - Continue past 20 questions without summarising and asking user whether to go deeper.
