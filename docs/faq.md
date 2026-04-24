@@ -1,9 +1,8 @@
 ---
 title: FAQ
 layout: default
+eyebrow: FAQ
 ---
-
-# FAQ
 
 ## Why a workbench per epic bundle, not a permanent hub?
 

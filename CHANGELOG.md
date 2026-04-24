@@ -23,4 +23,11 @@
 - All skills are three-stage lifecycle aware and follow the Phase 2 structure (When to use / Prerequisites / Steps / Output contract / Do not) with a concrete example in at least one step.
 - Added `wb.rejected` lister for symmetry with `wb.published` / `wb.approved`.
 - Added `SESSION-HANDOFF.md` + template-dev detection to `CLAUDE.md` so new sessions pick up template-dev state automatically.
-- Parked, still open: `scripts/lifecycle.py` extraction, BDD `.feature` lifecycle handler, concurrency lockfile, approved-folder audit. Details in `docs/superpowers/plans/PARKED-plan-D-remaining-skills.md` (not tracked in this repo; lives in `/Users/amittiwari/Projects/harness/`).
+
+### Lifecycle polish (2026-04-24)
+- Extracted `scripts/lifecycle.py`: single CLI with subcommands `publish | approve | reject | list` replaces three Python heredocs in `aliases.sh`. `aliases.sh` now 6 one-line shell wrappers.
+- BDD `.feature` lifecycle support: CLI detects `.feature` extension and rewrites the `# status:` header comment (instead of YAML frontmatter). Updated `skills/bdd-gen/SKILL.md` to remove the old limitation note.
+- Advisory `flock` on `.workbench-state/.lock` around every read-modify-write cycle, removing the last-writer-wins race for concurrent collaborators.
+- `tests/smoke.sh` re-enabled the BDD round-trip case (publish flips header, approve flips again, `sync-context` routes to `role=automation-tests` only).
+- Audited `grep -r "prds/approved"`: no Phase-1 stragglers remain in `skills/`, `scripts/`, or `docs/`.
+- Clarified artifact lifecycle section in `README.md` (diagram, stage semantics, upstream gates, dev + QA flows, inspection aliases).

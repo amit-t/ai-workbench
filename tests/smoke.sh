@@ -108,7 +108,7 @@ status: draft
 # SPEC-001 Smoke
 EOF
 
-mkdir -p qa/outputs/test-cases
+mkdir -p qa/outputs/test-cases qa/outputs/bdd
 cat > qa/outputs/test-cases/PRD-001-smoke-cases.md <<'EOF'
 ---
 id: TC-set-001
@@ -119,6 +119,20 @@ status: draft
 | TC ID | Title | Priority |
 |-------|-------|----------|
 | TC-001 | smoke happy path | P0 |
+EOF
+
+cat > qa/outputs/bdd/PRD-001-smoke.feature <<'EOF'
+# id: BDD-001
+# status: draft
+# epic: EPIC-TEST-001
+# prd: PRD-001
+
+@epic-EPIC-TEST-001 @prd-PRD-001
+Feature: Smoke
+  Scenario: happy path
+    Given a smoke test
+    When it runs
+    Then it passes
 EOF
 
 # Ensure state files exist (empty) — the template ships them empty
@@ -139,30 +153,34 @@ pass "sync-context with empty approved.json leaks nothing"
 
 # 6. wb.publish each artifact
 source aliases.sh
-wb.publish PRD-001  product/outputs/prds/PRD-001-smoke.md         prd      >/dev/null
-wb.publish SPEC-001 engineering/outputs/specs/SPEC-001-smoke.md   eng-spec >/dev/null
-wb.publish TC-set-001 qa/outputs/test-cases/PRD-001-smoke-cases.md test-cases >/dev/null
+wb.publish PRD-001    product/outputs/prds/PRD-001-smoke.md         prd        >/dev/null
+wb.publish SPEC-001   engineering/outputs/specs/SPEC-001-smoke.md   eng-spec   >/dev/null
+wb.publish TC-set-001 qa/outputs/test-cases/PRD-001-smoke-cases.md  test-cases >/dev/null
+wb.publish BDD-001    qa/outputs/bdd/PRD-001-smoke.feature          bdd        >/dev/null
 
 pub_count=$(python3 -c "import json; print(len(json.load(open('.workbench-state/published.json'))['items']))")
-[[ "$pub_count" == "3" ]] || fail "expected 3 published, got $pub_count"
+[[ "$pub_count" == "4" ]] || fail "expected 4 published, got $pub_count"
 grep -q '^status: published' product/outputs/prds/PRD-001-smoke.md || fail "PRD frontmatter not flipped"
-pass "three artifacts published"
+grep -q '^# status: published' qa/outputs/bdd/PRD-001-smoke.feature || fail "BDD feature header not flipped"
+pass "four artifacts published (incl. BDD .feature)"
 
 # 7. Attempting wb.approve of non-existent id fails
 if wb.approve NOPE 2>/dev/null; then fail "wb.approve of unknown id should fail"; fi
 pass "wb.approve refuses unknown id"
 
-# 8. Approve all three
-wb.approve PRD-001  >/dev/null
-wb.approve SPEC-001 >/dev/null
+# 8. Approve all four
+wb.approve PRD-001    >/dev/null
+wb.approve SPEC-001   >/dev/null
 wb.approve TC-set-001 >/dev/null
+wb.approve BDD-001    >/dev/null
 
 app_count=$(python3 -c "import json; print(len(json.load(open('.workbench-state/approved.json'))['items']))")
 pub_count=$(python3 -c "import json; print(len(json.load(open('.workbench-state/published.json'))['items']))")
-[[ "$app_count" == "3" ]] || fail "expected 3 approved, got $app_count"
+[[ "$app_count" == "4" ]] || fail "expected 4 approved, got $app_count"
 [[ "$pub_count" == "0" ]] || fail "expected 0 published after approval, got $pub_count"
-grep -q '^status: approved' product/outputs/prds/PRD-001-smoke.md || fail "PRD frontmatter not approved"
-pass "all three approved; published drained"
+grep -q '^status: approved'   product/outputs/prds/PRD-001-smoke.md || fail "PRD frontmatter not approved"
+grep -q '^# status: approved' qa/outputs/bdd/PRD-001-smoke.feature  || fail "BDD feature header not approved"
+pass "all four approved; published drained"
 
 # 9. sync-context routes correctly
 ./scripts/sync-context.sh >/dev/null
@@ -171,8 +189,10 @@ pass "all three approved; published drained"
 [[ ! -f repos/svc-a/ai/outputs/test-cases/PRD-001-smoke-cases.md ]]              || fail "svc-a should not have test-cases"
 [[ -f repos/automation-tests/ai/outputs/prds/PRD-001-smoke.md ]]                 || fail "automation missing PRD"
 [[ -f repos/automation-tests/ai/outputs/test-cases/PRD-001-smoke-cases.md ]]     || fail "automation missing test-cases"
+[[ -f repos/automation-tests/ai/outputs/bdd/PRD-001-smoke.feature ]]             || fail "automation missing BDD feature"
 [[ ! -f repos/automation-tests/ai/outputs/specs/SPEC-001-smoke.md ]]             || fail "automation should not have SPEC"
-pass "sync-context routes by role correctly"
+[[ ! -f repos/svc-a/ai/outputs/bdd/PRD-001-smoke.feature ]]                      || fail "svc-a should not have BDD"
+pass "sync-context routes by role correctly (incl. BDD)"
 
 # 10. wb.reject round-trip
 cat > product/outputs/prds/PRD-002-reject.md <<'EOF'

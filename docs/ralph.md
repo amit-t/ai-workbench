@@ -1,9 +1,8 @@
 ---
 title: Ralph integration
 layout: default
+eyebrow: RALPH
 ---
-
-# Ralph integration
 
 ## What ai-ralph is
 

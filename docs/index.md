@@ -3,10 +3,6 @@ title: Home
 layout: default
 ---
 
-# AI Workbench
-
-A per-bundle private AI harness for dev + QA collaboration. Clone a template per Jira-epic-bundle, draft PRDs / specs / TDDs / BDDs / test cases inside it, then let ralph plan and execute against your service and automation repos.
-
 ## What it gives you
 
 - **Shared private git repo** per bundle of one or more Jira epics.
