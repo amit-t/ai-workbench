@@ -1,13 +1,9 @@
 ---
 title: /ralph-dispatch
 layout: default
+eyebrow: ORCHESTRATOR
+subtitle: "Launch parallel autonomous ralph loops across workbench-registered repos. Cross-repo parallelism — net-new over ralph's within-repo parallelism."
 ---
-
-[← Back to skills](../skills.html)
-
-# /ralph-dispatch
-
-> Launch parallel autonomous ralph loops across workbench-registered repos. Cross-repo parallelism — net-new over ralph's within-repo parallelism.
 
 | Hat | Stage | Upstream gate | Output |
 |-----|-------|---------------|--------|

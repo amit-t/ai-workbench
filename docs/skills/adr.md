@@ -1,13 +1,9 @@
 ---
 title: /adr
 layout: default
+eyebrow: ENG
+subtitle: "MADR-lite Architecture Decision Record — context, drivers, options, decision, consequences. Cross-links SPEC + TDD."
 ---
-
-[← Back to skills](../skills.html)
-
-# /adr
-
-> MADR-lite Architecture Decision Record — context, drivers, options, decision, consequences. Cross-links SPEC + TDD.
 
 | Hat | Stage | Upstream gate | Output | Cited from |
 |-----|-------|---------------|--------|------------|

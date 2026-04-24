@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+  {% seo %}
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button>
+
+  <nav class="container site-nav" aria-label="Primary">
+    <a class="site-nav-brand" href="{{ '/' | relative_url }}">AI Workbench</a>
+    <a href="{{ '/getting-started.html' | relative_url }}">Getting started</a>
+    <a href="{{ '/architecture.html' | relative_url }}">Architecture</a>
+    <a href="{{ '/lifecycle.html' | relative_url }}">Lifecycle</a>
+    <a href="{{ '/skills.html' | relative_url }}">Skills</a>
+    <a href="{{ '/ralph.html' | relative_url }}">Ralph</a>
+    <a href="{{ '/faq.html' | relative_url }}">FAQ</a>
+    <a href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+
+  {% if page.url == '/' or page.url == '/index.html' %}
+    <header class="container hero">
+      <div>
+        <span class="hero-eyebrow">PER-BUNDLE AI HARNESS</span>
+        <h1>Jira epic to shipped code, in one workbench.</h1>
+        <p class="hero-desc">
+          Private git repo per epic bundle. Five role hats — PO, architect, staff-eng, UX, QA — drafting PRDs, specs, TDDs, BDDs, test cases, then dispatching ralph in parallel across your service and automation repos. Three-stage lifecycle keeps the gate between AI drafts and production.
+        </p>
+        <div class="hero-actions">
+          <a class="neo-btn neo-btn-primary" href="{{ '/getting-started.html' | relative_url }}">Start here</a>
+          <a class="neo-btn neo-btn-accent" href="{{ '/skills.html' | relative_url }}">18 skills</a>
+          <a class="neo-btn" href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub repo</a>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span class="stat-value">18</span>
+          <span class="stat-label">Skills</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">5</span>
+          <span class="stat-label">Role hats</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">3</span>
+          <span class="stat-label">Lifecycle stages</span>
+        </div>
+      </div>
+    </header>
+
+    <hr class="divider container">
+  {% else %}
+    <header class="container doc-hero">
+      <span class="doc-hero-eyebrow">{{ page.eyebrow | default: 'DOCS' }}</span>
+      <h1>{{ page.title | default: 'AI Workbench' }}</h1>
+      {% if page.subtitle %}<p class="doc-hero-desc">{{ page.subtitle }}</p>{% endif %}
+    </header>
+  {% endif %}
+
+  <main class="container section">
+    <article class="markdown-body">
+      {{ content }}
+    </article>
+  </main>
+
+  <footer class="container footer">
+    <p>
+      <code>ai-workbench</code> — template for per-bundle AI harnesses. Pair with
+      <a href="https://github.com/amit-t/ai-devkit">ai-devkit</a> CLI and
+      <a href="https://github.com/amit-t/ai-ralph">ai-ralph</a> autonomous loop.
+      Source on <a href="https://github.com/amit-t/ai-workbench">GitHub</a>.
+    </p>
+  </footer>
+
+  <script src="{{ '/assets/js/site.js' | relative_url }}"></script>
+</body>
+</html>

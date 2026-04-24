@@ -1,13 +1,9 @@
 ---
 title: /figma-pull
 layout: default
+eyebrow: UXD
+subtitle: "Park Figma links for a PRD. If Figma MCP is enabled, pull frame list and export nodes to `design/outputs/screens/{PRD-NNN}/`. Default path is link-parking only — no network call."
 ---
-
-[← Back to skills](../skills.html)
-
-# /figma-pull
-
-> Park Figma links for a PRD. If Figma MCP is enabled, pull frame list and export nodes to `design/outputs/screens/{PRD-NNN}/`. Default path is link-parking only — no network call.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

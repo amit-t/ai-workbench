@@ -1,13 +1,9 @@
 ---
 title: /grill-me
 layout: default
+eyebrow: CROSS-CUTTING
+subtitle: "Relentless interview that stress-tests any draft artifact before approval. Walks the decision tree one branch at a time."
 ---
-
-[← Back to skills](../skills.html)
-
-# /grill-me
-
-> Relentless interview that stress-tests any draft artifact before approval. Walks the decision tree one branch at a time.
 
 | Hat | Stage | Upstream gate | Output |
 |-----|-------|---------------|--------|

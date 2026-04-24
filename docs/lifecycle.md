@@ -1,9 +1,9 @@
 ---
 title: Artifact lifecycle
 layout: default
+eyebrow: LIFECYCLE
+subtitle: draft → published → approved. Three stages, two sources of truth, one ralph gate.
 ---
-
-# Artifact lifecycle
 
 Every artifact in a workbench (PRD, engineering spec, TDD, ERD, ADR, BDD feature, test cases, test spec, test ERD) carries a `status` field in YAML frontmatter and flows through three stages.
 

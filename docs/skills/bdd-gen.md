@@ -1,13 +1,9 @@
 ---
 title: /bdd-gen
 layout: default
+eyebrow: QA
+subtitle: "Generate Gherkin `.feature` files from an approved PRD. Covers happy / edge / error / security paths."
 ---
-
-[← Back to skills](../skills.html)
-
-# /bdd-gen
-
-> Generate Gherkin `.feature` files from an approved PRD. Covers happy / edge / error / security paths.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

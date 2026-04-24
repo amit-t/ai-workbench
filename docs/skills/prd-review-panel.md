@@ -1,13 +1,9 @@
 ---
 title: /prd-review-panel
 layout: default
+eyebrow: PO
+subtitle: "7-perspective parallel review of a draft PRD. Blocks `wb.approve` if any reviewer flags a P0."
 ---
-
-[← Back to skills](../skills.html)
-
-# /prd-review-panel
-
-> 7-perspective parallel review of a draft PRD. Blocks `wb.approve` if any reviewer flags a P0.
 
 | Hat | Stage | Upstream gate | Output | Blocks |
 |-----|-------|---------------|--------|--------|

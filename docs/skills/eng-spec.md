@@ -1,13 +1,9 @@
 ---
 title: /eng-spec
 layout: default
+eyebrow: ENG
+subtitle: "Engineering spec from an approved PRD — architecture, contracts, data, rollout, observability."
 ---
-
-[← Back to skills](../skills.html)
-
-# /eng-spec
-
-> Engineering spec from an approved PRD — architecture, contracts, data, rollout, observability.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

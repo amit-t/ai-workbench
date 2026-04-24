@@ -1,13 +1,9 @@
 ---
 title: /test-spec
 layout: default
+eyebrow: QA
+subtitle: "QA engineering spec + test ERD — coverage matrix, automation entry, test data, envs, parallelism, flaky strategy."
 ---
-
-[← Back to skills](../skills.html)
-
-# /test-spec
-
-> QA engineering spec + test ERD — coverage matrix, automation entry, test data, envs, parallelism, flaky strategy.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
