@@ -13,11 +13,11 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cycle theme: light / dark / cyberpunk">🌙</button>
 
   <nav class="container site-nav" aria-label="Primary">
     <a class="site-nav-brand" href="{{ '/' | relative_url }}">AI Workbench</a>
-    <a href="{{ '/getting-started.html' | relative_url }}">Getting started</a>
+    <a href="{{ '/getting-started.html' | relative_url }}">Getting Started</a>
     <a href="{{ '/architecture.html' | relative_url }}">Architecture</a>
     <a href="{{ '/lifecycle.html' | relative_url }}">Lifecycle</a>
     <a href="{{ '/skills.html' | relative_url }}">Skills</a>
@@ -26,33 +26,46 @@
     <a href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub</a>
   </nav>
 
-  {% if page.url == '/' or page.url == '/index.html' %}
+  {% assign is_home = false %}
+  {% if page.url == '/' or page.url == '/index.html' %}{% assign is_home = true %}{% endif %}
+
+  {% unless is_home %}
+    {% comment %} Breadcrumbs: auto-derived from URL unless overridden in frontmatter {% endcomment %}
+    <nav class="container breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ '/' | relative_url }}">Home</a></li>
+        {% assign segments = page.url | remove_first: '/' | remove: '.html' | split: '/' %}
+        {% assign last = segments | last %}
+        {% for seg in segments %}
+          {% assign in_skills = false %}
+          {% if segments[0] == 'skills' and seg != 'skills' %}{% assign in_skills = true %}{% endif %}
+          {% capture crumb %}{% if seg == 'skills' %}Skills{% elsif seg == 'getting-started' %}Getting Started{% elsif seg == 'lifecycle' %}Artifact Lifecycle{% elsif seg == 'architecture' %}Architecture{% elsif seg == 'ralph' %}Ralph Integration{% elsif seg == 'faq' %}FAQ{% elsif in_skills %}/{{ seg }}{% else %}{{ seg }}{% endif %}{% endcapture %}
+          {% if seg == last %}
+            <li aria-current="page">{{ crumb | strip }}</li>
+          {% else %}
+            {% if seg == 'skills' %}
+              <li><a href="{{ '/skills.html' | relative_url }}">{{ crumb | strip }}</a></li>
+            {% else %}
+              <li>{{ crumb | strip }}</li>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </nav>
+  {% endunless %}
+
+  {% if is_home %}
     <header class="container hero">
       <div>
-        <span class="hero-eyebrow">PER-BUNDLE AI HARNESS</span>
-        <h1>Jira epic to shipped code, in one workbench.</h1>
+        <span class="hero-eyebrow">Per-Bundle AI Harness</span>
+        <h1>Jira Epic to Shipped Code, in One Workbench.</h1>
         <p class="hero-desc">
-          Private git repo per epic bundle. Five role hats — PO, architect, staff-eng, UX, QA — drafting PRDs, specs, TDDs, BDDs, test cases, then dispatching ralph in parallel across your service and automation repos. Three-stage lifecycle keeps the gate between AI drafts and production.
+          Private git repo per epic bundle. Five role hats — PO, Architect, Staff-Eng, UX, QA — drafting PRDs, specs, TDDs, BDDs, test cases, then dispatching ralph in parallel across your service and automation repos.
         </p>
         <div class="hero-actions">
-          <a class="neo-btn neo-btn-primary" href="{{ '/getting-started.html' | relative_url }}">Start here</a>
-          <a class="neo-btn neo-btn-accent" href="{{ '/skills.html' | relative_url }}">18 skills</a>
-          <a class="neo-btn" href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub repo</a>
-        </div>
-      </div>
-
-      <div class="hero-stats">
-        <div class="stat-card">
-          <span class="stat-value">18</span>
-          <span class="stat-label">Skills</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value">5</span>
-          <span class="stat-label">Role hats</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value">3</span>
-          <span class="stat-label">Lifecycle stages</span>
+          <a class="neo-btn neo-btn-primary" href="{{ '/getting-started.html' | relative_url }}">Start Here</a>
+          <a class="neo-btn" href="{{ '/skills.html' | relative_url }}">Browse 18 Skills</a>
+          <a class="neo-btn" href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
     </header>
@@ -60,7 +73,7 @@
     <hr class="divider container">
   {% else %}
     <header class="container doc-hero">
-      <span class="doc-hero-eyebrow">{{ page.eyebrow | default: 'DOCS' }}</span>
+      <span class="doc-hero-eyebrow">{{ page.eyebrow | default: 'Docs' }}</span>
       <h1>{{ page.title | default: 'AI Workbench' }}</h1>
       {% if page.subtitle %}<p class="doc-hero-desc">{{ page.subtitle }}</p>{% endif %}
     </header>

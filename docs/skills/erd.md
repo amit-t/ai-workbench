@@ -9,7 +9,7 @@ subtitle: "Mermaid ER + C4-level-2 component diagram + optional hot-path sequenc
 |-----|-------|---------------|--------|---------------|
 | Eng | Engineering | SPEC exists (may still be `draft`) | `engineering/outputs/erd/ERD-NNN-<slug>.md` | TDD §Data shapes, test spec |
 
-## When to use
+## When to Use
 
 - SPEC §5 "Data model" or §3 "Architecture impact" is material.
 - Cross-service data flow needs a C4-L2 view.
@@ -20,7 +20,7 @@ subtitle: "Mermaid ER + C4-level-2 component diagram + optional hot-path sequenc
 - Related SPEC exists at `engineering/outputs/specs/SPEC-{NNN}-<slug>.md` (may still be `draft`).
 - `project.conf REPOS` populated — every diagram box must map to a repo.
 
-## Diagram set (default: all three)
+## Diagram Set (Default: All Three)
 
 | Diagram | Required when | Type |
 |---------|---------------|------|
@@ -36,7 +36,7 @@ subtitle: "Mermaid ER + C4-level-2 component diagram + optional hot-path sequenc
 4. Back-link SPEC §5 `ERD: see …` → `See ERD-{NNN}` **only if SPEC still `draft`**.
 5. Append row under epic's ERD section in `EPIC-PIPELINE.md`.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: ERD-{NNN}
@@ -48,7 +48,7 @@ epic: {EPIC_ID}
 related_spec: SPEC-{NNN}
 ```
 
-## Do not
+## Do Not
 
 - Embed screenshots — Mermaid only, so diagrams review as text in PRs.
 - Invent services or tables. Every box must map to a repo in `project.conf` or an approved SPEC section.

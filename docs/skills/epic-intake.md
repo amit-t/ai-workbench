@@ -9,7 +9,7 @@ subtitle: "Pull a Jira epic body into `product/context-library/epics/` as a draf
 |-----|-------|---------------|--------|----------|
 | PO | Intake | Jira epic ID listed in `project.conf EPICS` | `product/context-library/epics/<EPIC-ID>.md` | `/prd-draft` |
 
-## When to use
+## When to Use
 
 User references a Jira epic ID (e.g. `EPIC-001`) or pastes a Jira link, intending to start work on it inside this workbench.
 
@@ -26,7 +26,7 @@ User references a Jira epic ID (e.g. `EPIC-001`) or pastes a Jira link, intendin
 4. Update `EPIC-PIPELINE.md` section `## EPIC {EPIC_ID}`.
 5. Never publish or approve — tell user to run `wb.publish` + `wb.approve`.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: epic-{EPIC_ID}
@@ -40,7 +40,7 @@ pulled_at: {today}
 source: {mcp|manual}
 ```
 
-## Do not
+## Do Not
 
 - Set `status: published` or `status: approved` — both are human-driven via aliases.
 - Expose MCP tokens in the written file.

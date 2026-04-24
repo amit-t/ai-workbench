@@ -1,10 +1,10 @@
 ---
-title: Getting started
+title: Getting Started
 layout: default
-eyebrow: START HERE
+eyebrow: Start Here
 ---
 
-## Install the devkit (once per machine)
+## Install the Devkit (Once per Machine)
 
 ```zsh
 git clone https://github.com/amit-t/ai-devkit ~/Projects/Tools-Utilities/ai-devkit
@@ -21,7 +21,7 @@ You now have three global commands: `init.wb`, `join.wb`, `update.wb` (plus `.de
 - `git`, `rsync`, `python3`, `zsh`.
 - `devin` CLI (default). `claude` CLI as fallback.
 
-## Initiate a workbench (first collaborator, e.g. QA)
+## Initiate a Workbench (First Collaborator, E.g. QA)
 
 ```zsh
 mkdir ~/workbenches/wb-example && cd ~/workbenches/wb-example
@@ -32,7 +32,7 @@ Devin asks: workspace label, epics in scope, repos to clone, roles, figma refs, 
 
 Share the resulting URL with your counterpart.
 
-## Join an existing workbench (second collaborator, e.g. dev)
+## Join an Existing Workbench (Second Collaborator, E.g. Dev)
 
 ```zsh
 cd ~/workbenches
@@ -41,7 +41,7 @@ join.wb https://github.com/<your-org>/wb-example
 
 Devin asks what additional repos you want cloned for your part of the work, appends them to `project.conf`, adds you to `.github/CODEOWNERS`, commits, pushes.
 
-## Pull template updates later
+## Pull Template Updates Later
 
 ```zsh
 cd ~/workbenches/wb-example
@@ -50,7 +50,7 @@ update.wb
 
 One-way sync: fetches only template-owned paths (skills, scripts, CLAUDE.md, AGENTS.md, aliases.sh) from the `ai-workbench` upstream. Never touches your PRDs, specs, BDDs, etc.
 
-## First session in a workbench
+## First Session in a Workbench
 
 ```zsh
 cd ~/workbenches/wb-example

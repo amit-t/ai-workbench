@@ -9,7 +9,7 @@ subtitle: "Expand approved BDD scenarios into detailed test cases. Reviewable MD
 |-----|-------|---------------|--------|----------|
 | QA | QA | All relevant BDDs approved | `qa/outputs/test-cases/PRD-NNN-cases.md` | `/test-spec` |
 
-## When to use
+## When to Use
 
 All relevant BDDs for a PRD are approved; user wants detailed test cases.
 
@@ -27,7 +27,7 @@ All relevant BDDs for a PRD are approved; user wants detailed test cases.
 
 4. Append **Automation coverage** summary — totals, P0/P1 automated, P2 manual, `no`-flagged candidates.
 
-## Column rules
+## Column Rules
 
 | Column | Values |
 |--------|--------|
@@ -38,7 +38,7 @@ All relevant BDDs for a PRD are approved; user wants detailed test cases.
 | Steps | numbered, imperative, one action per step |
 | Test data | JSON or k/v; synthetic only |
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: TC-set-{NNN}
@@ -51,7 +51,7 @@ source_features:
   - PRD-{NNN}-{capability-slug}.feature
 ```
 
-## Do not
+## Do Not
 
 - Use production data in `Test data`.
 - Skip the automation-coverage summary.

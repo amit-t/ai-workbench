@@ -9,7 +9,7 @@ subtitle: "MADR-lite Architecture Decision Record — context, drivers, options,
 |-----|-------|---------------|--------|------------|
 | Eng | Engineering | SPEC exists (may be draft) OR standalone | `engineering/outputs/adrs/ADR-NNN-<slug>.md` | SPEC §11 Dependencies → ADRs, TDD §Decisions |
 
-## When to use
+## When to Use
 
 - While drafting / reviewing a SPEC or TDD, a decision emerges that is larger than one spec (tech choice, pattern adoption, cross-cutting contract, irreversible action).
 - `/grill-me` on a SPEC flagged an unsettled architectural branch — promote to ADR.
@@ -29,7 +29,7 @@ subtitle: "MADR-lite Architecture Decision Record — context, drivers, options,
 6. Cross-link SPEC §11 and TDD §Decisions. If upstream `approved`, **print diff only** — do not mutate.
 7. Update `EPIC-PIPELINE.md` under epic's `### ADRs` section.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: ADR-{NNN}
@@ -43,7 +43,7 @@ supersedes: {ADR-NNN or "—"}
 superseded_by: —
 ```
 
-## Do not
+## Do Not
 
 - Write an ADR with one option. Force an alternative or explicitly justify its absence.
 - Claim a decision is reversible without naming the cost of reversal.

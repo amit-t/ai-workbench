@@ -3,7 +3,7 @@ title: Home
 layout: default
 ---
 
-## What it gives you
+## What It Gives You
 
 - **Shared private git repo** per bundle of one or more Jira epics.
 - **Five role hats** in one place: PO, Architect, Staff Eng, UX, QA.
@@ -12,14 +12,14 @@ layout: default
 - **Cross-repo ralph orchestration** — plan and dispatch across multiple service + automation repos.
 - **One-way template updates** — pull skill improvements from the `ai-workbench` template without touching your outputs.
 
-## Two repos, one story
+## Two Repos, One Story
 
 | Repo | Role |
 |------|------|
 | [`ai-workbench`](https://github.com/amit-t/ai-workbench) | Template. `gh repo create --template` stamps an instance per bundle. |
 | [`ai-devkit`](https://github.com/amit-t/ai-devkit) | Global CLI. Provides `init.wb`, `join.wb`, `update.wb`. |
 
-## Quick paths
+## Quick Paths
 
 - **New to this?** Start at [Getting started](./getting-started.html).
 - **Want the architecture?** [Architecture](./architecture.html).
@@ -28,7 +28,7 @@ layout: default
 - **Ralph integration questions?** [Ralph integration](./ralph.html).
 - **Something unclear?** [FAQ](./faq.html).
 
-## Typical flow
+## Typical Flow
 
 ```
 Jira epic → /epic-intake → publish + approve

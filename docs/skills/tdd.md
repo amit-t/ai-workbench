@@ -9,7 +9,7 @@ subtitle: "Technical design doc — file map per repo, interfaces, sequence diag
 |-----|-------|---------------|--------|----------|
 | Eng | Engineering | SPEC approved | `engineering/outputs/tdd/TDD-NNN-<slug>.md` | `/ralph-workspace-plan` |
 
-## When to use
+## When to Use
 
 SPEC is approved; user wants implementation-ready detail for ralph.
 
@@ -24,7 +24,7 @@ SPEC is approved; user wants implementation-ready detail for ralph.
 3. Write `engineering/outputs/tdd/TDD-{NNN}-{slug}.md` with 9 sections: Summary, File map per repo (Action / File / Purpose table), Key interfaces (ts code blocks), Sequence diagrams (Mermaid), Data shapes (ref ERD), Failure handling matrix, Test outline, Observability additions, Open questions.
 4. Update `EPIC-PIPELINE.md` — set TDD column.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: TDD-{NNN}
@@ -37,14 +37,14 @@ prd: PRD-{NNN}
 spec: SPEC-{NNN}
 ```
 
-## File map table shape
+## File Map Table Shape
 
 | Action | File | Purpose |
 |--------|------|---------|
 | Create | `src/adapters/in/http/…ts` | REST entry point |
 | Modify | `src/core/services/….ts:45-120` | new method |
 
-## Do not
+## Do Not
 
 - Leave "TODO" in the file map. Ask the user if uncertain.
 - Copy-paste code from `repos/*` without citing original file and line range.
