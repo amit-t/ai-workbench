@@ -34,6 +34,7 @@ Read the following in parallel before producing output. Do not infer — read.
    - `qa/outputs/bdd/`, `qa/outputs/test-cases/`, `qa/outputs/test-specs/`
    - `design/outputs/screens/`, `design/outputs/handoffs/`
 6. For each repo in `project.conf REPOS`: `repos/{repo}/.ralph/fix_plan.md` and `ralph/{repo}.pid` (if present), plus `ralph/logs/{repo}.log` last line.
+7. `steering.local/` listing: walk the tree for any `*.md` files (adds, supersede overlays, `.removed.md` sidecars). Used for the "Steering overrides" section.
 
 ## Output format
 
@@ -61,6 +62,16 @@ Legend: ✓ approved, ~ published/awaiting-approval, · draft, — none
 
 ## Ralph per repo
 | Repo | fix_plan? | Lines | Dispatch state | Last log line |
+
+## Steering overrides (M1 drift signal)
+Silent when `steering.local/` has zero entries.
+| Overlay file | Type | IDs | Owner | Age |
+|--------------|------|-----|-------|-----|
+
+- Type is one of `add`, `supersede`, `remove` (derived from frontmatter and filename suffix).
+- `IDs` lists the template rule(s) the overlay affects (from `supersedes:` / `removes:` fields). For `add`, lists the overlay rule's own ID.
+- When non-empty, close the section with a one-liner:
+  `Consider promoting to upstream via PR: https://github.com/<org>/ai-workbench/compare/main...steering-promotion`
 
 ## Blockers
 - {artifact id} — {what's blocking} — {owner}

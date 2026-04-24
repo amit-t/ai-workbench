@@ -2,6 +2,7 @@
 name: bdd-gen
 description: Generate Gherkin .feature files (status=draft) from an approved PRD. Scenarios cover happy/edge/error/security paths.
 category: QA
+relevant_topics: [test-data]
 ---
 
 # /bdd-gen
@@ -16,6 +17,8 @@ PRD is approved; user wants executable behavior specs.
 - Optionally `qa/context-library/` for automation-stack hints (Playwright, Cypress, Cucumber, pytest-bdd). Default to stack-agnostic Gherkin.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:bdd` and `wb.steering topic:test-data`. Treat the merged rulesets as hard constraints on tag selection, scenario structure, Examples-table contents, and status-header placement.
 
 1. **Read the approved PRD.** Extract ACs.
 

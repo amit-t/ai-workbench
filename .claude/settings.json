@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings",
+  "_comment": "Template-owned. Controls Claude Code behaviour inside a stamped ai-workbench. Template PRs are the only way to change this file.",
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "_comment": "Freshness reload: after update.wb / git pull / git merge, or any Edit/Write under steering/** or steering.local/**, surface the merged Layer 0 + active role steering so the agent picks up changes mid-session.",
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/scripts/steering-post-tool-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

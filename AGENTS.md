@@ -17,9 +17,12 @@ A private git repo cloned per work-bundle (one or more Jira epics), shared by a 
 ## Session protocol (all agents)
 
 1. `git pull --rebase` — shared repo.
-2. Read `project.conf` and `EPIC-PIPELINE.md`.
-3. Read `.workbench-state/published.json` (awaiting approval) and `.workbench-state/approved.json` (ralph-ingestable).
-4. Report open items and suggest next action.
+2. Load Layer 0 steering: run `python3 scripts/steering-load.py golden` (or `wb.steering golden`). Treat the merged output as hard rules for the session. Re-run whenever `update.wb`, `git pull`, `git merge`, or any edit under `steering/` or `steering.local/` occurs.
+3. Read `project.conf` and `EPIC-PIPELINE.md`.
+4. Read `.workbench-state/published.json` (awaiting approval) and `.workbench-state/approved.json` (ralph-ingestable).
+5. Report open items and suggest next action.
+
+When an agent adopts a role (PO / dev / QA / UXD), it must first run `python3 scripts/steering-load.py role:<role>` and treat that output as hard rules for any work produced in that role. When a skill produces an artifact (prd, eng-spec, tdd, bdd, test-cases, test-spec, ...), the skill's own step 0 loads `artifact:<type>` steering. Skills may additionally declare `relevant_topics:` in their frontmatter; if so, the loader is invoked once per topic.
 
 ## Artifact lifecycle (three stages)
 
@@ -46,7 +49,8 @@ draft  ──(wb.publish)──▶  published  ──(wb.approve)──▶  appr
 ## Template discipline
 
 - `update.wb` rewrites `template_owned` paths from the upstream template. Do not hand-edit those paths.
-- If an agent wants to improve a template-owned path, it must propose a PR to the upstream `ai-workbench` repo, not edit the path in this instance.
+- If an agent wants to improve a template-owned path (including anything under `steering/`), it must propose a PR to the upstream `ai-workbench` repo, not edit the path in this instance.
+- Team-specific steering goes in `steering.local/` (user-owned). See `steering/README.md` for the overlay format (add, supersede, remove).
 
 ## Safety
 

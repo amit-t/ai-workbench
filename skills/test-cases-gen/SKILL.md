@@ -2,6 +2,7 @@
 name: test-cases-gen
 description: Expand approved BDD scenarios into detailed test cases (status=draft). Output is a reviewable MD table with priority, type, automation-candidate flags.
 category: QA
+relevant_topics: [test-data]
 ---
 
 # /test-cases-gen
@@ -15,6 +16,8 @@ All relevant BDDs for a PRD are approved; user wants detailed test cases.
 - For each `.feature` file referenced, there must be an approved entry in `.workbench-state/approved.json` (BDD-{NNN}-{cap}).
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:test-cases` and `wb.steering topic:test-data`. Treat the merged rulesets as hard constraints on priority and automation flags, AC coverage, and test-data handling.
 
 1. **Gather approved BDDs for the PRD.** Cross-reference `approved.json` entries with file paths in `qa/outputs/bdd/`.
 

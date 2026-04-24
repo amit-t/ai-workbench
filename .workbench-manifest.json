@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Source of truth for what update.wb is allowed to overwrite. Do not edit without bumping version.",
   "template_owned": [
     "CLAUDE.md",
@@ -11,21 +11,25 @@
     ".mcp.json.template",
     "project.conf.template",
     "EPIC-PIPELINE.md.template",
+    ".claude/settings.json",
+    ".github/CODEOWNERS",
+    ".github/workflows/**",
     "scripts/**",
     "skills/**",
+    "steering/**",
     "tests/**"
   ],
   "user_owned": [
     "project.conf",
     "EPIC-PIPELINE.md",
     ".mcp.json",
-    ".github/CODEOWNERS",
     "product/**",
     "design/**",
     "engineering/**",
     "qa/**",
     "ralph/**",
     "repos/**",
+    "steering.local/**",
     ".workbench-state/**"
   ]
 }

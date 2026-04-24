@@ -2,6 +2,7 @@
 name: tdd
 description: Technical design document at status=draft from an approved engineering spec. File map per repo, interfaces, sequence diagrams, failure matrix, test outline.
 category: Engineering
+relevant_topics: [api-design]
 ---
 
 # /tdd
@@ -15,6 +16,8 @@ SPEC is approved; user wants implementation-ready detail for ralph.
 - SPEC has `status: approved` AND entry in `.workbench-state/approved.json`.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:tdd` and then `wb.steering topic:api-design`. Treat the merged rulesets as hard constraints for the file map, interface signatures, sequence diagrams, and failure matrix.
 
 1. **Read the SPEC** (frontmatter + all sections).
 

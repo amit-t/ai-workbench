@@ -26,6 +26,7 @@ layout: default
 - **Want to understand state transitions?** [Artifact lifecycle](./lifecycle.html).
 - **Looking for a specific skill?** [Skills reference](./skills.html).
 - **Ralph integration questions?** [Ralph integration](./ralph.html).
+- **How steering works (golden principles, role rules, overlays)?** [Steering workflow](./steering/).
 - **Something unclear?** [FAQ](./faq.html).
 
 ## Typical Flow

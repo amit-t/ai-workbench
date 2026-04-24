@@ -32,6 +32,21 @@ wb.published(){ WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list 
 wb.approved() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list approved; }
 wb.rejected() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list rejected; }
 
+# ── Steering ──────────────────────────────────────────────────────────────────
+# Loads merged steering rules (template + team overlay) for a scope, or all
+# scopes. Agents are expected to invoke this at the invocation points declared
+# in steering/config.yaml.
+#
+#   wb.steering golden            # Layer 0 (always)
+#   wb.steering role:qa           # Layer 1 (when in QA mode)
+#   wb.steering artifact:prd      # Layer 2 (when a skill produces a PRD)
+#   wb.steering topic:api-design  # Layer 2 (on demand)
+#   wb.steering-refresh           # reload every scope (use after steering updates)
+#   wb.steering-lint              # validate steering/ + steering.local/
+wb.steering()         { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" "$@"; }
+wb.steering-refresh() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" all; }
+wb.steering-lint()    { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-lint.py" "$@"; }
+
 # ── Git helpers ───────────────────────────────────────────────────────────────
 wb.pull()   { (cd "$WB_ROOT" && git pull --rebase); }
 wb.status() { (cd "$WB_ROOT" && git status --short); }

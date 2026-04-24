@@ -2,6 +2,7 @@
 name: eng-spec
 description: Engineering spec at status=draft from an approved PRD. Covers architecture, contracts, data, rollout, observability.
 category: Engineering
+relevant_topics: [api-design]
 ---
 
 # /eng-spec
@@ -16,6 +17,8 @@ User has an approved PRD and wants to draft the engineering spec.
 - `project.conf` REPOS is populated.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:eng-spec` and then `wb.steering topic:api-design` (declared in this skill's frontmatter). Treat the merged rulesets as hard constraints on every section written below.
 
 1. **Read the PRD** (frontmatter + all sections). Identify outcomes and constraints.
 
