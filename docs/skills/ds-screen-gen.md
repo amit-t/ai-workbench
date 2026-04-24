@@ -1,13 +1,9 @@
 ---
 title: /ds-screen-gen
 layout: default
+eyebrow: UXD
+subtitle: "Hi-fi HTML or JSX screens for a PRD using the design system referenced in `design/context-library/design-system-ref.md`. Every screen ships default / empty / loading / error states."
 ---
-
-[← Back to skills](../skills.html)
-
-# /ds-screen-gen
-
-> Hi-fi HTML or JSX screens for a PRD using the design system referenced in `design/context-library/design-system-ref.md`. Every screen ships default / empty / loading / error states.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

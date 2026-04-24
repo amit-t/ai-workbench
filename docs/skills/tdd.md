@@ -1,13 +1,9 @@
 ---
 title: /tdd
 layout: default
+eyebrow: ENG
+subtitle: "Technical design doc — file map per repo, interfaces, sequence diagrams, failure matrix, test outline."
 ---
-
-[← Back to skills](../skills.html)
-
-# /tdd
-
-> Technical design doc — file map per repo, interfaces, sequence diagrams, failure matrix, test outline.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

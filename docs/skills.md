@@ -1,9 +1,9 @@
 ---
 title: Skills reference
 layout: default
+eyebrow: SKILLS
+subtitle: 18 skills ship with every workbench. All outputs land at status draft; promotion happens via wb.publish then wb.approve. Click any skill to expand its summary, then follow the deep-dive link for inputs, frontmatter, and examples.
 ---
-
-# Skills reference
 
 18 skills ship with every workbench. All outputs land at `status: draft`; promotion happens via `wb.publish` then `wb.approve`. Click a skill to expand its summary, then follow the deep-dive link for inputs, frontmatter, and examples.
 

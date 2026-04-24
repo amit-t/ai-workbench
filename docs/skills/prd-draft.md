@@ -1,13 +1,9 @@
 ---
 title: /prd-draft
 layout: default
+eyebrow: PO
+subtitle: "Draft a PRD under an approved epic — goals, users, scope, NFRs, acceptance."
 ---
-
-[← Back to skills](../skills.html)
-
-# /prd-draft
-
-> Draft a PRD under an approved epic — goals, users, scope, NFRs, acceptance.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

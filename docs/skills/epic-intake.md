@@ -1,13 +1,9 @@
 ---
 title: /epic-intake
 layout: default
+eyebrow: PO
+subtitle: "Pull a Jira epic body into `product/context-library/epics/` as a draft context artifact."
 ---
-
-[← Back to skills](../skills.html)
-
-# /epic-intake
-
-> Pull a Jira epic body into `product/context-library/epics/` as a draft context artifact.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

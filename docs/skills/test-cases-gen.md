@@ -1,13 +1,9 @@
 ---
 title: /test-cases-gen
 layout: default
+eyebrow: QA
+subtitle: "Expand approved BDD scenarios into detailed test cases. Reviewable MD table with priority, type, automation-candidate flags."
 ---
-
-[← Back to skills](../skills.html)
-
-# /test-cases-gen
-
-> Expand approved BDD scenarios into detailed test cases. Reviewable MD table with priority, type, automation-candidate flags.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

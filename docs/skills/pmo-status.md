@@ -1,13 +1,9 @@
 ---
 title: /pmo-status
 layout: default
+eyebrow: CROSS-CUTTING
+subtitle: "Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDDs, ralph fix_plan coverage per repo, dispatch state. Reads `.workbench-state/` as source of truth; never guesses."
 ---
-
-[← Back to skills](../skills.html)
-
-# /pmo-status
-
-> Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDDs, ralph fix_plan coverage per repo, dispatch state. Reads `.workbench-state/` as source of truth; never guesses.
 
 | Hat | Stage | Upstream gate | Output |
 |-----|-------|---------------|--------|

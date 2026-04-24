@@ -1,13 +1,9 @@
 ---
 title: /design-review
 layout: default
+eyebrow: UXD
+subtitle: "5-perspective review of a generated screen set — UX researcher, accessibility auditor, engineer, brand guardian, end-user voice. Blocks handoff on any P0."
 ---
-
-[← Back to skills](../skills.html)
-
-# /design-review
-
-> 5-perspective review of a generated screen set — UX researcher, accessibility auditor, engineer, brand guardian, end-user voice. Blocks handoff on any P0.
 
 | Hat | Stage | Upstream gate | Output | Blocks |
 |-----|-------|---------------|--------|--------|

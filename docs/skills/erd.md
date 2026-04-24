@@ -1,13 +1,9 @@
 ---
 title: /erd
 layout: default
+eyebrow: ENG
+subtitle: "Mermaid ER + C4-level-2 component diagram + optional hot-path sequence. Renders in GitHub without external tooling."
 ---
-
-[← Back to skills](../skills.html)
-
-# /erd
-
-> Mermaid ER + C4-level-2 component diagram + optional hot-path sequence. Renders in GitHub without external tooling.
 
 | Hat | Stage | Upstream gate | Output | Referenced by |
 |-----|-------|---------------|--------|---------------|

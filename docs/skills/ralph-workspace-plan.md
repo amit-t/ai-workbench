@@ -1,13 +1,9 @@
 ---
 title: /ralph-workspace-plan
 layout: default
+eyebrow: ORCHESTRATOR
+subtitle: "Sync approved context, invoke ralph workspace-mode plan, produce per-repo fix_plans + workbench rollup. Gated on three-stage approvals."
 ---
-
-[← Back to skills](../skills.html)
-
-# /ralph-workspace-plan
-
-> Sync approved context, invoke ralph workspace-mode plan, produce per-repo fix_plans + workbench rollup. Gated on three-stage approvals.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

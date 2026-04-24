@@ -1,13 +1,9 @@
 ---
 title: /design-draft
 layout: default
+eyebrow: UXD
+subtitle: "End-to-end UX workflow for an approved PRD — brief, user flow, wireframes, hi-fi screens, review, handoff. Orchestrates `/figma-pull`, `/ds-screen-gen`, `/design-review`."
 ---
-
-[← Back to skills](../skills.html)
-
-# /design-draft
-
-> End-to-end UX workflow for an approved PRD — brief, user flow, wireframes, hi-fi screens, review, handoff. Orchestrates `/figma-pull`, `/ds-screen-gen`, `/design-review`.
 
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|

@@ -1,9 +1,8 @@
 ---
 title: Getting started
 layout: default
+eyebrow: START HERE
 ---
-
-# Getting started
 
 ## Install the devkit (once per machine)
 

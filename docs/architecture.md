@@ -1,9 +1,8 @@
 ---
 title: Architecture
 layout: default
+eyebrow: ARCHITECTURE
 ---
-
-# Architecture
 
 ## Problem and motivation
 
