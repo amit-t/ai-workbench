@@ -1228,12 +1228,39 @@ body.dark .markdown-body pre {
   box-shadow: var(--shadow-sm) var(--border-dark);
 }
 
-.markdown-body pre code {
+.markdown-body pre code,
+body.dark .markdown-body pre code,
+body.cyberpunk .markdown-body pre code,
+body.solarized .markdown-body pre code {
   padding: 0;
   border: none;
-  background: none;
+  background: transparent;
   color: inherit;
   font-weight: 400;
+}
+
+/* Syntax-highlight spans Kramdown emits inside <pre> must not inherit code bg */
+.markdown-body pre code *,
+body.dark .markdown-body pre code *,
+body.cyberpunk .markdown-body pre code *,
+body.solarized .markdown-body pre code * {
+  background: transparent !important;
+}
+
+/* Flatten nested boxes: tables inside <details> blend into panel surface */
+.markdown-body details td {
+  background: transparent;
+}
+body.dark .markdown-body details td {
+  background: transparent;
+}
+body.solarized .markdown-body details td {
+  background: transparent;
+}
+.markdown-body details th,
+.markdown-body details td {
+  border-width: 1px;
+  padding: 0.45rem 0.7rem;
 }
 
 .markdown-body blockquote {
