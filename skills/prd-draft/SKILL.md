@@ -2,6 +2,7 @@
 name: prd-draft
 description: Draft a PRD at status=draft under an approved epic. Writes product/outputs/prds/PRD-NNN-<slug>.md.
 category: Product Management
+relevant_topics: []
 ---
 
 # /prd-draft
@@ -16,6 +17,8 @@ An epic-context file is approved and the user wants to scope a PRD.
 - `.workbench-state/approved.json` contains `id: epic-{EPIC_ID}`. If not: stop, instruct user to run `wb.publish epic-{EPIC_ID} <path> epic-context` then `wb.approve epic-{EPIC_ID}` after review.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:prd` (or `python3 scripts/steering-load.py artifact:prd`). Treat the merged ruleset as hard constraints on every section written below. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none for PRDs by default).
 
 1. **Compute the next PRD number.** Scan `product/outputs/prds/PRD-*.md` (ignore any under deprecated `approved/` subfolder — it should not exist after Phase 2 migration). Take max numeric part + 1, zero-pad to three digits.
 

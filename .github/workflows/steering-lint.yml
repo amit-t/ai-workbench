@@ -1,0 +1,59 @@
+name: steering lint
+
+# Validates steering/ frontmatter and steering.local/ overlay frontmatter on
+# every PR. Enforces the rule-file schema (required fields, ID regex, overlay-
+# only fields only in overlay, filename-matches-id, removal-sidecar shape).
+# Runs in the template repo on every PR.
+
+on:
+  pull_request:
+    paths:
+      - "steering/**"
+      - "steering.local/**"
+      - "scripts/steering-lint.py"
+      - "scripts/steering-load.py"
+      - ".github/workflows/steering-lint.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "steering/**"
+      - "steering.local/**"
+      - "scripts/steering-lint.py"
+      - "scripts/steering-load.py"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lint steering
+        run: python3 scripts/steering-lint.py
+      - name: Smoke-load every scope
+        run: |
+          set -e
+          for scope in $(python3 -c "
+          import pathlib
+          s = pathlib.Path('steering')
+          scopes = []
+          if (s / 'golden-principles').is_dir():
+              scopes.append('golden')
+          for g in ['roles', 'artifacts', 'topics']:
+              root = s / g
+              if not root.is_dir():
+                  continue
+              for p in sorted(root.iterdir()):
+                  if p.is_dir():
+                      prefix = {'roles': 'role', 'artifacts': 'artifact', 'topics': 'topic'}[g]
+                      scopes.append(f'{prefix}:{p.name}')
+          print(' '.join(scopes))
+          "); do
+            python3 scripts/steering-load.py "$scope" > /dev/null
+          done

@@ -16,26 +16,29 @@ You never write production code from the workbench. Code lives in `repos/*/`, an
 
 Every session, in this order:
 
-0. **Template-dev detection.** If `project.conf` does NOT exist and `SESSION-HANDOFF.md` does exist at repo root, you are in the **ai-workbench template repo itself** (not a stamped workbench instance). Read `SESSION-HANDOFF.md` first and follow steps 1–7 only if they still apply to template-dev work. Otherwise continue:
+0. **Template-dev detection.** If `project.conf` does NOT exist and `SESSION-HANDOFF.md` does exist at repo root, you are in the **ai-workbench template repo itself** (not a stamped workbench instance). Read `SESSION-HANDOFF.md` first and follow steps 1–8 only if they still apply to template-dev work. Otherwise continue:
 1. `git pull --rebase` — workbench is shared with a collaborator; pull first.
-2. Read `project.conf` — workspace label, epics in scope, registered repos and their roles.
-3. Read `EPIC-PIPELINE.md` — current status per epic and PRD.
-4. Read `.workbench-state/published.json` — artifacts awaiting approval.
-5. Read `.workbench-state/approved.json` — what ralph can consume right now.
-6. Scan `product/outputs/prds/` for drafts and approved PRDs.
-7. Suggest the most useful next action based on what is unfinished.
+2. **Load Layer 0 steering.** Run `wb.steering golden` (or `python3 scripts/steering-load.py golden`). Treat the merged output as hard rules for this session. Re-run whenever `update.wb`, `git pull`, `git merge`, or any edit under `steering/` or `steering.local/` occurs.
+3. Read `project.conf` — workspace label, epics in scope, registered repos and their roles.
+4. Read `EPIC-PIPELINE.md` — current status per epic and PRD.
+5. Read `.workbench-state/published.json` — artifacts awaiting approval.
+6. Read `.workbench-state/approved.json` — what ralph can consume right now.
+7. Scan `product/outputs/prds/` for drafts and approved PRDs.
+8. Suggest the most useful next action based on what is unfinished.
 
 ---
 
 ## Role inference (you adapt; don't ask the user to switch modes)
 
-| Signal | Mode |
-|--------|------|
-| Discussing a Jira epic, requirements, acceptance criteria | PO mode — produce PRDs |
-| Discussing layouts, components, Figma | UXD mode — pull refs, draft screens |
-| Discussing architecture, ports, services, data models | Engineering mode — eng spec / TDD / ERD / ADR |
-| Discussing test coverage, BDD, scenarios, test data | QA mode — BDD / test cases / test spec |
-| Discussing ralph, fix_plan, parallel loops | Orchestrator mode — workspace-plan / dispatch |
+Before entering a role mode for the first time in a session, run `wb.steering role:<role>` to load that role's Layer 1 steering. Treat the merged output as hard rules for any work produced in that role.
+
+| Signal | Mode | Steering to load |
+|--------|------|------------------|
+| Discussing a Jira epic, requirements, acceptance criteria | PO mode — produce PRDs | `wb.steering role:po` |
+| Discussing layouts, components, Figma | UXD mode — pull refs, draft screens | `wb.steering role:uxd` |
+| Discussing architecture, ports, services, data models | Engineering mode — eng spec / TDD / ERD / ADR | `wb.steering role:dev` |
+| Discussing test coverage, BDD, scenarios, test data | QA mode — BDD / test cases / test spec | `wb.steering role:qa` |
+| Discussing ralph, fix_plan, parallel loops | Orchestrator mode — workspace-plan / dispatch | (no role-specific steering; rely on Layer 0) |
 
 ## Plan-mode rule
 
@@ -106,12 +109,23 @@ wb.approve <id>                       # published → approved
 wb.reject <id> "<reason>"             # any → draft (with reason)
 wb.published                          # list awaiting approval
 wb.approved                           # list ralph-ingestable
+wb.steering <scope>                   # load steering (golden | role:x | artifact:x | topic:x)
+wb.steering-refresh                   # reload every scope (use after steering updates mid-session)
+wb.steering-lint                      # validate steering/ and steering.local/
 ```
 
 ## Hard rules
 
 - Never generate a fix_plan entry for a repo without an approved PRD and (for service repos) an approved engineering spec.
 - Never write into `repos/*` from a workbench Claude session. That is ralph's job.
-- Never touch files under `skills/`, `scripts/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`, or `.workbench-manifest.json`. Those are template-owned and rewritten by `update.wb`.
+- Never touch files under `skills/`, `scripts/`, `steering/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`, or `.workbench-manifest.json`. Those are template-owned and rewritten by `update.wb`. Team-specific steering goes in `steering.local/` (user-owned).
 - No em dashes in documents. Use commas or parentheses. Exception: code blocks preserve exact content.
 - No hype words. No "leverage", "utilize", "robust", "streamline", "unlock". Plain English.
+
+## Steering (quick reference)
+
+- Layer 0 (golden) is loaded at session start (step 2 above).
+- Layer 1 (role) is loaded on role-inference match (see role table above).
+- Layer 2 (artifact / topic) is loaded as step 0 of each skill that produces that artifact, or on demand for topics.
+- Do not try to merge template and overlay in your head. Always run the loader.
+- See `steering/README.md` for the full system; see `steering/config.yaml` for invocation points and scope mapping.

@@ -2,6 +2,7 @@
 name: test-spec
 description: QA engineering spec at status=draft — coverage matrix, automation entry points, test data, environments, parallelism, flaky-test strategy. Also drafts the test ERD.
 category: QA
+relevant_topics: [test-data]
 ---
 
 # /test-spec
@@ -18,6 +19,8 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
 - `project.conf REPOS` has at least one `role=automation-tests` entry.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:test-spec` and `wb.steering topic:test-data`. Treat the merged rulesets as hard constraints on coverage targets per layer, environment matrix, flaky-test strategy, and test-ERD linkage.
 
 1. **Read inputs.** PRD, all approved `qa/outputs/bdd/PRD-{NNN}-*.feature`, `qa/outputs/test-cases/PRD-{NNN}-cases.md`. Read `qa/context-library/` for existing automation conventions.
 

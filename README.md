@@ -178,6 +178,62 @@ wb.rejected     # what bounced back, with reasons
 
 Agents write `status: draft` only. They never set `published` or `approved`. Those transitions are human-driven via the aliases, because approval is an accountability event and must bind to a human.
 
+## Steering workflow
+
+Golden principles, role-specific rules, and artifact-specific rules that the AI agents inside a workbench must follow. Authored by senior engineers and architects; consumed by every session, every role, every skill. The full system lives under `steering/` in each stamped workbench. Details: [docs/steering](https://amit-t.github.io/ai-workbench/steering/).
+
+The system uses progressive disclosure: only a small "Layer 0" is always loaded, and role / artifact / topic steering is loaded on demand. This keeps context windows lean while letting the agent apply precise, opinionated rules when they are relevant.
+
+```
+Layer 0, Golden principles           always loaded (session start)
+Layer 1, Role (dev/qa/po/uxd)        loaded on role-inference match
+Layer 2, Artifact / Topic            loaded as step 0 of each skill
+```
+
+The template ships canonical steering under `steering/` (template-owned; PR back to `ai-workbench` to change). Teams layer local overrides in `steering.local/` (user-owned). The loader merges both; agents never merge in their heads.
+
+### Responsibilities by role
+
+**Architecture Council, Principal / Staff SWE, Director of Engineering**
+
+- Own golden principles, role rules for dev and PO, and artifact rules for eng-spec, TDD, ERD, ADR. PRD artifact rules are jointly owned with the Director of Engineering.
+- Author new rules via PRs to the `ai-workbench` template repo. `scripts/steering-lint.py` enforces frontmatter schema and ID regex; the CI workflow runs on every PR.
+- Review and merge promotion PRs that port a team's `steering.local/` overlay into the template.
+- Review the weekly drift digest issue in the template repo (`M2` GitHub Action). When a pattern recurs across teams, promote it upstream; when a team is silently drifting from org policy, start the conversation.
+- When a rule is deprecated, keep the original file so historical references resolve; add a `supersedes: [OLD-ID]` replacement rather than deleting outright.
+
+**QA Council**
+
+- Own role rules for QA, and artifact rules for BDD, test-cases, test-spec. Own the `test-data` topic.
+- Same PR-back-to-template flow. CODEOWNERS on `steering/roles/qa/` and `steering/artifacts/{bdd,test-cases,test-spec}/` scope QA Council review to their domain.
+- Coordinate with Architecture Council on cross-cutting rules (for example, negative-path coverage, which touches both eng-spec and BDD).
+
+**UX Council**
+
+- Own role rules for UX. Coordinate with Product on PRD-related UX concerns.
+- Same PR-back-to-template flow. CODEOWNERS on `steering/roles/uxd/`.
+
+**Devs and QAs inside a stamped workbench**
+
+- Read, do not author template steering directly (no forks per org policy; propose changes via PR to `ai-workbench`).
+- Layer team-specific overrides into `steering.local/` when the team genuinely needs to diverge. Three operations: add a team-specific rule, supersede an upstream rule, remove an upstream rule that does not apply to your product. See `steering/README.md` for the file format.
+- Use the `-LOCAL-NN` suffix on overlay rule IDs (the linter enforces this). Overlay frontmatter declares `supersedes: [ID]` or `removes: [ID]` explicitly.
+- When a local override earns its stripes (applied for more than one epic, universally useful), raise a promotion PR on the template repo to move the file from `steering.local/` to `steering/` and drop the `-LOCAL` suffix. CODEOWNERS for the target directory review.
+- Invoke the loader explicitly via each skill's step 0, or via `wb.steering <scope>`. Do not try to merge template and overlay in your head.
+- `pmo-status` will surface any non-empty `steering.local/` in its "Steering overrides" section. Review it at session start; promote or justify.
+
+### Freshness
+
+Steering changes upstream flow through `update.wb` into stamped workbenches. Changes mid-session (via `update.wb` or `git pull`) trigger a PostToolUse hook that re-emits Layer 0 into the agent's context, so the agent picks up fresh rules without a restart. Manual refresh: `wb.steering-refresh`.
+
+### Tooling
+
+```
+wb.steering <scope>     # load merged rules for a scope (golden | role:x | artifact:x | topic:x)
+wb.steering-refresh     # reload every scope
+wb.steering-lint        # validate steering/ and steering.local/
+```
+
 ## Plan-mode rule
 
 Read `CLAUDE.md` for the session-start protocol and plan-mode rule. Summary: always explore and plan before writing code; never commit fix_plan entries without an approved PRD or engineering spec.

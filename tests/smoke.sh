@@ -72,7 +72,8 @@ pipe = pipe.replace("{{EPIC_SECTIONS}}",
     "## EPIC EPIC-TEST-001 — Smoke\nStatus: draft\nJira: https://example.invalid/browse/EPIC-TEST-001\nContext: product/context-library/epics/EPIC-TEST-001.md\n\n### PRDs\n| PRD | Status |\n|-----|--------|\n\n### Notes\n-\n")
 (root / "EPIC-PIPELINE.md").write_text(pipe)
 
-co = (root / ".github" / "CODEOWNERS").read_text().replace("{{INITIATOR_GH_USER}}", "smoke-user")
+co = (root / ".github" / "CODEOWNERS").read_text()
+co = co.replace("{{INITIATOR_GH_USER}}", "smoke-user").replace("{{ORG}}", "smoke-org")
 (root / ".github" / "CODEOWNERS").write_text(co)
 PYEOF
 pass "templates rendered"
@@ -193,6 +194,60 @@ pass "all four approved; published drained"
 [[ ! -f repos/automation-tests/ai/outputs/specs/SPEC-001-smoke.md ]]             || fail "automation should not have SPEC"
 [[ ! -f repos/svc-a/ai/outputs/bdd/PRD-001-smoke.feature ]]                      || fail "svc-a should not have BDD"
 pass "sync-context routes by role correctly (incl. BDD)"
+
+# 9b. sync-context copies steering/ and steering.local/ to every repo
+[[ -f repos/svc-a/ai/steering/golden-principles/GP-001-artifacts-start-draft.md ]]            || fail "svc-a missing steering/"
+[[ -f repos/automation-tests/ai/steering/golden-principles/GP-001-artifacts-start-draft.md ]] || fail "automation missing steering/"
+pass "sync-context copies steering to every repo"
+
+# 9c. Steering loader: golden scope emits non-empty merged output
+golden_out=$(python3 ./scripts/steering-load.py golden)
+[[ -n "$golden_out" ]] || fail "steering-load.py golden emitted nothing"
+echo "$golden_out" | grep -q '^## GP-001' || fail "golden output missing GP-001"
+pass "steering loader golden scope emits merged rules"
+
+# 9d. Steering loader: overlay round-trip (add, supersede, remove)
+mkdir -p steering.local/golden-principles
+cat > steering.local/golden-principles/GP-LOCAL-01-smoke-add.md <<'EOF'
+---
+id: GP-LOCAL-01
+title: Smoke-test local addition
+scope: golden
+owner: smoke-user
+created: 2026-04-23
+---
+**Rule:** Smoke-test local rule body.
+EOF
+cat > steering.local/golden-principles/GP-LOCAL-02-smoke-super.md <<'EOF'
+---
+id: GP-LOCAL-02
+title: Smoke-test supersede of GP-003
+scope: golden
+owner: smoke-user
+created: 2026-04-23
+supersedes: [GP-003]
+---
+**Rule:** Smoke-test supersede body.
+EOF
+cat > steering.local/golden-principles/GP-004.removed.md <<'EOF'
+---
+id: GP-004.removed
+removes: [GP-004]
+owner: smoke-user
+created: 2026-04-23
+---
+Removed for smoke test.
+EOF
+overlay_out=$(python3 ./scripts/steering-load.py golden)
+echo "$overlay_out" | grep -q '^## GP-LOCAL-01'          || fail "overlay add missing"
+echo "$overlay_out" | grep -q '^## GP-LOCAL-02'          || fail "overlay supersede missing"
+echo "$overlay_out" | grep -q '^## GP-003'               && fail "GP-003 should be superseded out"
+echo "$overlay_out" | grep -q '^## GP-004'               && fail "GP-004 should be removed"
+pass "overlay round-trip: add + supersede + remove all apply"
+
+# 9e. Steering linter accepts the stamped tree
+./scripts/steering-lint.py >/dev/null || fail "steering-lint.py failed on stamped tree"
+pass "steering-lint clean on stamped tree"
 
 # 10. wb.reject round-trip
 cat > product/outputs/prds/PRD-002-reject.md <<'EOF'
