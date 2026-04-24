@@ -1,7 +1,7 @@
 ---
-title: Artifact lifecycle
+title: Artifact Lifecycle
 layout: default
-eyebrow: LIFECYCLE
+eyebrow: Lifecycle
 subtitle: draft → published → approved. Three stages, two sources of truth, one ralph gate.
 ---
 
@@ -27,13 +27,13 @@ Rejection is a side path: `wb.reject <id> "<reason>"` returns the artifact to `d
 | `wb.published` | — | Lists artifacts awaiting approval. |
 | `wb.approved` | — | Lists artifacts ralph may consume. |
 
-## Rules for agents
+## Rules for Agents
 
 - Write `draft` only. Never set `published` or `approved` — those are human-driven.
 - Never bypass the lifecycle (no direct `approved` writes).
 - Ralph gate is `.workbench-state/approved.json`. The sync script filters only what is listed there.
 
-## Downstream skill preconditions
+## Downstream Skill Preconditions
 
 Every downstream skill must verify its upstream artifact is at `approved`:
 
@@ -49,10 +49,10 @@ Every downstream skill must verify its upstream artifact is at `approved`:
 | `/test-spec` | PRD + BDDs + test cases |
 | `/ralph-workspace-plan` | PRD + engineering spec + TDD + test spec |
 
-## Concurrency note
+## Concurrency Note
 
 Lifecycle commands are not concurrency-safe today. Pull before a session, push after. A lockfile is tracked in Plan D.
 
-## BDD caveat
+## BDD Caveat
 
 Gherkin `.feature` files carry lifecycle metadata in a `# status:` header comment. `wb.publish` only auto-flips YAML frontmatter — if you work with `.feature` files, edit the header comment manually for now. A generic handler is tracked in Plan D.

@@ -9,7 +9,7 @@ subtitle: "Engineering spec from an approved PRD — architecture, contracts, da
 |-----|-------|---------------|--------|----------|
 | Eng | Engineering | PRD approved | `engineering/outputs/specs/SPEC-NNN-<slug>.md` | `/tdd`, `/erd`, `/adr`, `/ralph-workspace-plan` |
 
-## When to use
+## When to Use
 
 User has an approved PRD and wants to draft the engineering spec.
 
@@ -27,7 +27,7 @@ User has an approved PRD and wants to draft the engineering spec.
 5. Write `engineering/outputs/specs/SPEC-{NNN}-{slug}.md` with 11 sections: Scope, Target repos, Architecture impact, API+contracts, Data model, Rollout, Observability, Failure modes, Rollback, Risks+opens, Dependencies (ADRs / other SPECs / external teams).
 6. Update `EPIC-PIPELINE.md` — set PRD row's Spec column.
 
-## Output frontmatter
+## Output Frontmatter
 
 ```yaml
 id: SPEC-{NNN}
@@ -41,7 +41,7 @@ target_repos:
   - {repo-1}
 ```
 
-## Do not
+## Do Not
 
 - Include class-level pseudocode — that's `/tdd`.
 - Produce a spec without an approved PRD.

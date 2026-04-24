@@ -1,13 +1,11 @@
 ---
-title: Skills reference
+title: Skills Reference
 layout: default
-eyebrow: SKILLS
-subtitle: 18 skills ship with every workbench. All outputs land at status draft; promotion happens via wb.publish then wb.approve. Click any skill to expand its summary, then follow the deep-dive link for inputs, frontmatter, and examples.
+eyebrow: Skills
+subtitle: "18 skills grouped by hat. Click any skill to expand its summary, then follow the deep-dive link."
 ---
 
-18 skills ship with every workbench. All outputs land at `status: draft`; promotion happens via `wb.publish` then `wb.approve`. Click a skill to expand its summary, then follow the deep-dive link for inputs, frontmatter, and examples.
-
-## Lifecycle at a glance
+## Lifecycle at a Glance
 
 ```
 draft ──wb.publish──▶ published ──wb.approve──▶ approved ──▶ ralph consumes
@@ -188,7 +186,7 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 
 ---
 
-## Orchestrator (ralph)
+## Orchestrator (Ralph)
 
 <details>
 <summary><strong><code>/ralph-workspace-plan</code></strong> — Sync context and run workspace-mode plan.</summary>
@@ -214,7 +212,7 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 
 ---
 
-## Cross-cutting
+## Cross-Cutting
 
 <details>
 <summary><strong><code>/grill-me</code></strong> — Relentless decision-tree interview on any draft.</summary>
@@ -240,7 +238,7 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 
 ---
 
-## Hat-by-hat summary
+## Hat-By-Hat Summary
 
 | Hat | Skills |
 |-----|--------|

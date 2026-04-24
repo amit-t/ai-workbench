@@ -9,7 +9,7 @@ subtitle: "7-perspective parallel review of a draft PRD. Blocks `wb.approve` if 
 |-----|-------|---------------|--------|--------|
 | PO | Product review | PRD at `draft` + epic approved | `product/outputs/prds/PRD-NNN-review.md` | `wb.approve PRD-NNN` on any P0 |
 
-## When to use
+## When to Use
 
 - PRD is at `status: draft` and author wants gap-finding before publishing.
 - Author about to `wb.publish PRD-NNN` and wants panel sign-off first.
@@ -19,7 +19,7 @@ subtitle: "7-perspective parallel review of a draft PRD. Blocks `wb.approve` if 
 - PRD file at `product/outputs/prds/PRD-{NNN}-*.md` with `status: draft`.
 - Epic-context approved in `.workbench-state/approved.json` (unapproved epic → waste; refuse).
 
-## Reviewers (dispatched in parallel)
+## Reviewers (Dispatched in Parallel)
 
 | # | Reviewer | Lens |
 |---|----------|------|
@@ -46,7 +46,7 @@ Every reviewer outputs: `✅ What works / ⚠️ Concerns (P0/P1/P2) / ❌ Block
 - `--perspectives "eng,design,skeptic"` — subset mode.
 - `--stage {name}` — override frontmatter stage.
 
-## Do not
+## Do Not
 
 - Collapse verbatim reviewer output — verbatim goes into the synthesis.
 - Auto-approve, even with zero P0s. User calls `wb.approve`.

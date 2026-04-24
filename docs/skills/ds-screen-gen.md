@@ -9,7 +9,7 @@ subtitle: "Hi-fi HTML or JSX screens for a PRD using the design system reference
 |-----|-------|---------------|--------|----------|
 | UXD | Design gen | PRD + design-system-ref block | `design/outputs/screens/PRD-NNN/{screen}.{ext}` + `index.md` | `/design-review` |
 
-## When to use
+## When to Use
 
 - No Figma file (or `/figma-pull` returned nothing) and team needs a working preview.
 - Engineer wants a prototype screen to plug into frontend stack before final design lands.
@@ -35,7 +35,7 @@ subtitle: "Hi-fi HTML or JSX screens for a PRD using the design system reference
     - Semantic HTML — `<main>`, `<nav>`, `<form>` with labels. A11y is not a follow-up.
 6. Write `index.md` with `status: draft` — table of screens + states.
 
-## Output frontmatter (index.md)
+## Output Frontmatter (`index.md`)
 
 ```yaml
 id: DESIGN-PRD-{NNN}
@@ -47,7 +47,7 @@ framework: {framework target}
 generated: {today}
 ```
 
-## Do not
+## Do Not
 
 - Invent DS tokens or component names. Missing components → flag in `index.md` under `## Missing components` and stop depending on them.
 - Inline brand colours as hex — use DS tokens.

@@ -1,7 +1,7 @@
 ---
 title: /ralph-dispatch
 layout: default
-eyebrow: ORCHESTRATOR
+eyebrow: Orchestrator
 subtitle: "Launch parallel autonomous ralph loops across workbench-registered repos. Cross-repo parallelism — net-new over ralph's within-repo parallelism."
 ---
 
@@ -9,11 +9,11 @@ subtitle: "Launch parallel autonomous ralph loops across workbench-registered re
 |-----|-------|---------------|--------|
 | Orchestrator | Execution | `/ralph-workspace-plan` ran; fix_plans present | `ralph/logs/{repo}.log`, `ralph/{repo}.pid`, `ralph/dispatch.log` |
 
-## When to use
+## When to Use
 
 Per-repo fix_plans exist and user wants ralph to execute, ideally in parallel across multiple repos.
 
-## What this skill adds over `ralph` alone
+## What This Skill Adds Over `ralph` Alone
 
 | Scope | Source |
 |-------|--------|
@@ -46,7 +46,7 @@ Per-repo fix_plans exist and user wants ralph to execute, ideally in parallel ac
 6. On status requests, read pidfiles + logs: `| Repo | PID | State | Last line |`.
 7. On completion (all PIDs gone) — read last 30 lines, extract exit code + any PR URL, update `EPIC-PIPELINE.md` `Exec` column (`~` → `✓` or `✗`), remove stale pidfiles.
 
-## Do not
+## Do Not
 
 - Launch if workbench or any target repo is dirty.
 - Silently ignore non-zero exits. Surface last 30 lines in status summary.

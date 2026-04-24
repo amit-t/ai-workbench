@@ -1,7 +1,7 @@
 ---
 title: /ralph-workspace-plan
 layout: default
-eyebrow: ORCHESTRATOR
+eyebrow: Orchestrator
 subtitle: "Sync approved context, invoke ralph workspace-mode plan, produce per-repo fix_plans + workbench rollup. Gated on three-stage approvals."
 ---
 
@@ -9,11 +9,11 @@ subtitle: "Sync approved context, invoke ralph workspace-mode plan, produce per-
 |-----|-------|---------------|--------|----------|
 | Orchestrator | Execution plan | PRD + SPEC + TDD + TSD all approved | `repos/*/ai/fix_plan.md` per repo + `ralph/workspace-plan.md` rollup | `/ralph-dispatch` |
 
-## When to use
+## When to Use
 
 All upstream artifacts are approved and user wants per-repo fix_plans so ralph can execute.
 
-## Hard gate — refuses unless all true
+## Hard Gate — Refuses Unless All True
 
 For every PRD being planned:
 
@@ -23,7 +23,7 @@ For every PRD being planned:
 
 Any failure → print `Gate failure. Missing approvals: {list}. Run wb.publish then wb.approve after review.` and stop.
 
-## What this skill adds over `ralph-plan` alone
+## What This Skill Adds Over `ralph-plan` Alone
 
 | Feature | Source |
 |---------|--------|
@@ -40,7 +40,7 @@ Any failure → print `Gate failure. Missing approvals: {list}. Run wb.publish t
 4. Update `EPIC-PIPELINE.md` — populate `fix_plan repos`, set `Exec` to `~`.
 5. Suggest next: `/ralph-dispatch`.
 
-## Do not
+## Do Not
 
 - Bypass approval gate. "Urgent" is not a reason.
 - Switch engines mid-run. Pick one; rerun if needed.

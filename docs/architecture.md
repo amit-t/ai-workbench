@@ -1,14 +1,14 @@
 ---
 title: Architecture
 layout: default
-eyebrow: ARCHITECTURE
+eyebrow: Architecture
 ---
 
-## Problem and motivation
+## Problem and Motivation
 
 Individual-contributor engineers and QAs currently split work across Jira, Confluence, service repos, automation repos, and ad-hoc prompts. They want a single harness to take one or more Jira epics, generate a PRD, engineering spec, TDD, ERD, ADRs, BDDs, test cases, and a test spec; wear PM / architect / staff-engineer / UX hats without switching tools; share generated drafts with the counterpart (dev ↔ QA) via git for review and approval; plan code changes across multiple service repos in a single ralph workspace-mode session; dispatch parallel autonomous ralph loops; and keep the workbench private, per-bundle, and disposable — not a long-running OS.
 
-## Two-repo shape
+## Two-Repo Shape
 
 The harness is two GitHub repos, independent, published under `<your-org>` (defaults to your GitHub login).
 
@@ -19,88 +19,92 @@ The harness is two GitHub repos, independent, published under `<your-org>` (defa
 
 You never clone `ai-workbench` directly — `init.wb` stamps private instances from it via `gh repo create --template`.
 
-## Workbench directory tree
+## Workbench Directory Tree
 
 A stamped workbench (`wb-<label>`) looks like this:
 
 ```
 wb-<label>/
-  CLAUDE.md                       # session start, plan-mode, role inference
-  AGENTS.md                       # shared agent constitution (Claude + Devin + Codex)
-  README.md                       # what this template does + how to use init.wb
-  .gitignore
-  .workbench-manifest.json        # which paths are template-owned vs user-owned
-  .mcp.json.template              # optional MCPs (Jira, Figma) — env-ref style
-  project.conf                    # filled in by init.wb (identity, epics, repos)
-  EPIC-PIPELINE.md                # pipeline rollup — one H2 per epic
-  aliases.sh                      # wb.* commands sourced per workbench
-  .github/
-    CODEOWNERS                    # initiator + joiners appended
-  product/
-    context-library/
-      epics/                      # pulled Jira epic bodies (one MD per epic)
-    outputs/
-      prds/                       # PRDs (lifecycle tracked in .workbench-state/)
-  design/
-    context-library/
-      figma-links.md
-      design-system-ref.md
-    outputs/
-      wireframes/
-      screens/
-      handoffs/
-  engineering/
-    context-library/
-    outputs/
-      specs/                      # engineering spec
-      tdd/                        # technical design docs
-      erd/                        # entity/component diagrams
-      adrs/                       # architecture decision records
-  qa/
-    context-library/
-    outputs/
-      bdd/                        # Gherkin .feature files
-      test-cases/                 # structured test cases (MD or CSV)
-      test-spec/                  # QA equivalent of engineering spec
-      test-erd/                   # test coverage model
-  ralph/
-    workspace-plan.md             # human-readable rollup of per-repo fix_plans
-    dispatch.log                  # parallel loop launch log (gitignored)
-  repos/                          # gitignored — code repos cloned here
-    .gitkeep
-  .workbench-state/               # lifecycle state (shared via git)
-    published.json                # draft → published transitions
-    approved.json                 # published → approved transitions (ralph gate)
-    rejected.json                 # reason-tracked rejections
-  scripts/
-    sync-context.sh               # workbench → repos/{x}/ai/
-    ralph-context.sh              # identical target, used by ralph-plan
-    ralph-plan.sh                 # wraps ralph-plan --workspace
-    ralph-loop.sh                 # cd repos/{x} && rpc.int | rpd.int | rpx.int
-    ralph-dispatch.sh             # parallel launch across repos
-    register-repo.sh              # append a repo entry to project.conf
-  skills/                         # symlinked into .claude/.agents/.devin at init
-    epic-intake/SKILL.md
-    prd-draft/SKILL.md
-    prd-review-panel/SKILL.md
-    bdd-gen/SKILL.md
-    test-cases-gen/SKILL.md
-    test-spec/SKILL.md
-    eng-spec/SKILL.md
-    tdd/SKILL.md
-    erd/SKILL.md
-    adr/SKILL.md
-    figma-pull/SKILL.md
-    ds-screen-gen/SKILL.md
-    design-draft/SKILL.md
-    design-review/SKILL.md
-    ralph-workspace-plan/SKILL.md
-    ralph-dispatch/SKILL.md
-    grill-me/SKILL.md
-    pmo-status/SKILL.md
+├── CLAUDE.md                         # session start, plan-mode, role inference
+├── AGENTS.md                         # shared agent constitution (Claude + Devin + Codex)
+├── README.md                         # what this template does + how to use init.wb
+├── .gitignore
+├── .workbench-manifest.json          # which paths are template-owned vs user-owned
+├── .mcp.json.template                # optional MCPs (Jira, Figma) — env-ref style
+├── project.conf                      # filled in by init.wb (identity, epics, repos)
+├── EPIC-PIPELINE.md                  # pipeline rollup — one H2 per epic
+├── aliases.sh                        # wb.* commands sourced per workbench
+├── .github/
+│   └── CODEOWNERS                    # initiator + joiners appended
+├── product/
+│   ├── context-library/
+│   │   └── epics/                    # pulled Jira epic bodies (one MD per epic)
+│   └── outputs/
+│       └── prds/                     # PRDs (lifecycle tracked in .workbench-state/)
+├── design/
+│   ├── context-library/
+│   │   ├── figma-links.md
+│   │   └── design-system-ref.md
+│   └── outputs/
+│       ├── wireframes/
+│       ├── screens/
+│       └── handoffs/
+├── engineering/
+│   ├── context-library/
+│   └── outputs/
+│       ├── specs/                    # engineering spec
+│       ├── tdd/                      # technical design docs
+│       ├── erd/                      # entity/component diagrams
+│       └── adrs/                     # architecture decision records
+├── qa/
+│   ├── context-library/
+│   └── outputs/
+│       ├── bdd/                      # Gherkin .feature files
+│       ├── test-cases/               # structured test cases (MD or CSV)
+│       ├── test-spec/                # QA equivalent of engineering spec
+│       └── test-erd/                 # test coverage model
+├── ralph/
+│   ├── workspace-plan.md             # human-readable rollup of per-repo fix_plans
+│   └── dispatch.log                  # parallel loop launch log (gitignored)
+├── repos/                            # gitignored — code repos cloned here
+│   └── .gitkeep
+├── .workbench-state/                 # lifecycle state (shared via git)
+│   ├── published.json                # draft → published transitions
+│   ├── approved.json                 # published → approved transitions (ralph gate)
+│   └── rejected.json                 # reason-tracked rejections
+├── scripts/
+│   ├── lifecycle.py                  # unified publish/approve/reject CLI with flock
+│   ├── sync-context.sh               # workbench → repos/{x}/ai/
+│   ├── ralph-context.sh              # identical target, used by ralph-plan
+│   ├── ralph-plan.sh                 # wraps ralph-plan --workspace
+│   ├── ralph-loop.sh                 # cd repos/{x} && rpc.int | rpd.int | rpx.int
+│   ├── ralph-dispatch.sh             # parallel launch across repos
+│   └── register-repo.sh              # append a repo entry to project.conf
+├── tests/                            # template smoke tests
+│   ├── README.md
+│   └── smoke.sh
+└── skills/                           # symlinked into .claude/.agents/.devin at init
+    ├── epic-intake/SKILL.md
+    ├── prd-draft/SKILL.md
+    ├── prd-review-panel/SKILL.md
+    ├── bdd-gen/SKILL.md
+    ├── test-cases-gen/SKILL.md
+    ├── test-spec/SKILL.md
+    ├── eng-spec/SKILL.md
+    ├── tdd/SKILL.md
+    ├── erd/SKILL.md
+    ├── adr/SKILL.md
+    ├── figma-pull/SKILL.md
+    ├── ds-screen-gen/SKILL.md
+    ├── design-draft/SKILL.md
+    ├── design-review/SKILL.md
+    ├── ralph-workspace-plan/SKILL.md
+    ├── ralph-dispatch/SKILL.md
+    ├── grill-me/SKILL.md
+    └── pmo-status/SKILL.md
 ```
 
-## `project.conf` — the per-workbench manifest
+## `project.conf` — The Per-Workbench Manifest
 
 `project.conf` is a committed shell file written by `init.wb` and extended by `join.wb`. Aliases and scripts source it.
 
@@ -126,7 +130,7 @@ REPOS=(
 )
 ```
 
-## `.workbench-manifest.json` — template-owned vs user-owned
+## `.workbench-manifest.json` — Template-Owned vs User-Owned
 
 Only paths in `template_owned` are touched by `update.wb`. Everything else (your PRDs, specs, BDDs, test cases, code repos, lifecycle state) is `user_owned` and never overwritten.
 
@@ -169,7 +173,7 @@ Rules:
 
 Every generated artifact (PRD, spec, TDD, ERD, ADR, BDD, test cases, test spec) flows through `draft → published → approved`. See [Artifact lifecycle](./lifecycle.html) for the full state machine, downstream preconditions, and lifecycle commands.
 
-## Security model
+## Security Model
 
 - Workbench repos are **private**. Only CODEOWNERS-listed accounts have push access.
 - MCP tokens stay in env vars per collaborator; never committed.
@@ -177,7 +181,7 @@ Every generated artifact (PRD, spec, TDD, ERD, ADR, BDD, test cases, test spec) 
 - `gh auth status` is inspected before every command that touches GitHub. HTTPS or SSH (with custom hostname alias) is respected.
 - No force-push anywhere. No bypass of hooks or branch protections.
 
-## Naming rules
+## Naming Rules
 
 - Workbench repo name must match `^wb-[a-z0-9][a-z0-9-]*$`.
 - Max length 60 chars.

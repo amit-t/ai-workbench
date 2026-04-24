@@ -9,7 +9,7 @@ subtitle: "5-perspective review of a generated screen set — UX researcher, acc
 |-----|-------|---------------|--------|--------|
 | UXD | Design review | `design/outputs/screens/PRD-NNN/index.md` exists | `design/outputs/handoffs/PRD-NNN-review.md` | design handoff on any P0 |
 
-## When to use
+## When to Use
 
 - `/design-draft` reached Step E, or
 - Screens exist under `design/outputs/screens/PRD-{NNN}/` and user wants pre-handoff audit.
@@ -19,7 +19,7 @@ subtitle: "5-perspective review of a generated screen set — UX researcher, acc
 - Screen `index.md` exists with ≥ 1 screen referenced.
 - Related PRD readable at `product/outputs/prds/PRD-{NNN}-*.md`.
 
-## Reviewers (dispatched in parallel)
+## Reviewers (Dispatched in Parallel)
 
 | # | Reviewer | Lens | Output shape |
 |---|----------|------|--------------|
@@ -41,7 +41,7 @@ subtitle: "5-perspective review of a generated screen set — UX researcher, acc
 - `--quick` — UX + A11y only (fastest; iteration).
 - `--full` — all 5 (default; required before handoff).
 
-## Do not
+## Do Not
 
 - Collapse reviewer output. Verbatim agent responses in synthesis — trust accrues.
 - Call handoff "clean" with open P0s, even if user presses. Gate is on artifact, not conversation.
