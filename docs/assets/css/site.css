@@ -93,38 +93,78 @@ h4 { font-size: 1rem; }
 
 p { margin: 0; }
 
-/* ===== THEME TOGGLE ===== */
-.theme-toggle {
+/* ===== THEME SWITCHER (neo-brutalist <select>) ===== */
+.theme-switcher {
   position: fixed;
   top: 1rem;
   right: 1rem;
   z-index: 100;
-  width: 44px;
-  height: 44px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: var(--border-w) solid var(--border-light);
+}
+
+.theme-switcher select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.5rem 2.1rem 0.5rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-light);
   background: var(--surface-light);
+  border: var(--border-w) solid var(--border-light);
+  border-radius: 0;
   box-shadow: var(--shadow-sm) var(--border-light);
   cursor: pointer;
-  font-size: 1.2rem;
+  outline: none;
+  min-width: 150px;
   transition: transform 0.14s, box-shadow 0.14s;
 }
 
-body.dark .theme-toggle {
-  border-color: var(--border-dark);
-  background: var(--surface-dark);
-  box-shadow: var(--shadow-sm) var(--border-dark);
-}
-
-.theme-toggle:hover {
+.theme-switcher select:hover {
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-md) var(--border-light);
 }
 
-body.dark .theme-toggle:hover {
+.theme-switcher select:focus-visible {
+  box-shadow: var(--shadow-md) var(--electric-blue);
+}
+
+.theme-switcher-chevron {
+  position: absolute;
+  right: 0.8rem;
+  pointer-events: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+body.dark .theme-switcher select {
+  color: var(--text-dark);
+  background: var(--surface-dark);
+  border-color: var(--border-dark);
+  box-shadow: var(--shadow-sm) var(--border-dark);
+}
+
+body.dark .theme-switcher select:hover {
   box-shadow: var(--shadow-md) var(--border-dark);
+}
+
+body.dark .theme-switcher-chevron {
+  color: var(--text-dark);
+}
+
+.theme-switcher select option {
+  font-family: inherit;
+  background: var(--surface-light);
+  color: var(--text-light);
+}
+
+body.dark .theme-switcher select option {
+  background: var(--surface-dark);
+  color: var(--text-dark);
 }
 
 /* ===== HERO ===== */
@@ -1534,7 +1574,7 @@ body.cyberpunk {
   background-size: 40px 40px, 40px 40px;
 }
 
-body.cyberpunk .theme-toggle,
+body.cyberpunk .theme-switcher select,
 body.cyberpunk .site-nav-brand,
 body.cyberpunk .stat-card,
 body.cyberpunk .neo-btn,
@@ -1673,10 +1713,206 @@ body.cyberpunk .copy-btn.copied {
   border-color: #ff36c0;
 }
 
-body.cyberpunk .theme-toggle {
+body.cyberpunk .theme-switcher select {
   background: #14002a;
   color: #faff00;
   border-color: #00f7ff;
   box-shadow: 3px 3px 0 #ff36c0;
+}
+
+body.cyberpunk .theme-switcher-chevron {
+  color: #faff00;
+}
+
+body.cyberpunk .theme-switcher select option {
+  background: #14002a;
+  color: #faff00;
+}
+
+/* ===== SOLARIZED THEME (IDE-feel, Solarized Light palette) ===== */
+body.solarized {
+  --bg-light: #fdf6e3;          /* base3 */
+  --surface-light: #eee8d5;     /* base2 */
+  --text-light: #073642;        /* base02 */
+  --border-light: #586e75;      /* base01 */
+  --muted-light: #93a1a1;       /* base1 */
+
+  background-color: #fdf6e3;
+  color: #073642;
+}
+
+body.solarized .site-nav,
+body.solarized .divider,
+body.solarized .footer,
+body.solarized .breadcrumbs a,
+body.solarized .breadcrumbs [aria-current="page"],
+body.solarized .stat-card,
+body.solarized .neo-btn,
+body.solarized .markdown-body,
+body.solarized .markdown-body details,
+body.solarized .filter-btn,
+body.solarized .search-input,
+body.solarized .skill-card,
+body.solarized .readme-card,
+body.solarized .change-card,
+body.solarized .theme-switcher select {
+  border-color: #586e75;
+  background: #eee8d5;
+  color: #073642;
+  box-shadow: 3px 3px 0 #586e75;
+}
+
+body.solarized .site-nav,
+body.solarized .divider {
+  background: transparent;
+  box-shadow: none;
+  border-top-color: #586e75;
+  border-bottom-color: #586e75;
+}
+
+body.solarized .footer {
+  background: transparent;
+  box-shadow: none;
+  color: #586e75;
+  border-color: #586e75;
+}
+
+body.solarized .site-nav-brand {
+  background: #268bd2;         /* solarized blue */
+  color: #fdf6e3;
+  border-color: #073642;
+  box-shadow: 3px 3px 0 #073642;
+}
+
+body.solarized .hero-eyebrow,
+body.solarized .doc-hero-eyebrow {
+  background: #859900;         /* solarized green */
+  color: #fdf6e3;
+  border-color: #073642;
+  box-shadow: 3px 3px 0 #073642;
+}
+
+body.solarized .neo-btn-primary {
+  background: #cb4b16;         /* solarized orange */
+  color: #fdf6e3;
+}
+
+body.solarized .neo-btn-accent {
+  background: #268bd2;
+  color: #fdf6e3;
+}
+
+body.solarized .breadcrumbs [aria-current="page"] {
+  background: #b58900;         /* solarized yellow */
+  color: #073642;
+}
+
+body.solarized .site-nav a:not(.site-nav-brand):hover {
+  background: #b58900;
+  color: #073642;
+  border-color: #073642;
+}
+
+body.solarized h1,
+body.solarized h2,
+body.solarized h3,
+body.solarized h4 {
+  color: #073642;
+  text-shadow: none;
+}
+
+body.solarized .markdown-body h1 {
+  border-bottom-color: #586e75;
+}
+
+body.solarized .markdown-body h2 {
+  border-bottom-color: #268bd2;
+  color: #073642;
+}
+
+body.solarized .markdown-body h3 {
+  color: #cb4b16;              /* syntax accent */
+}
+
+body.solarized .markdown-body a {
+  color: #268bd2;
+  text-decoration-color: #268bd2;
+}
+
+body.solarized .markdown-body a:hover {
+  background: #b58900;
+  color: #073642;
+}
+
+body.solarized .markdown-body code {
+  background: #fdf6e3;
+  color: #d33682;              /* solarized magenta */
+  border-color: #93a1a1;
+}
+
+body.solarized .markdown-body pre {
+  background: #002b36;         /* base03 (dark) — mimics IDE editor pane */
+  color: #eee8d5;
+  border-color: #073642;
+  box-shadow: 3px 3px 0 #586e75;
+}
+
+body.solarized .markdown-body pre code {
+  color: #eee8d5;
+}
+
+body.solarized .markdown-body thead tr {
+  background: #268bd2;
+  color: #fdf6e3;
+}
+
+body.solarized .markdown-body th,
+body.solarized .markdown-body td {
+  border-color: #586e75;
+}
+
+body.solarized .markdown-body td {
+  background: #fdf6e3;
+}
+
+body.solarized .markdown-body blockquote {
+  border-left-color: #6c71c4;  /* solarized violet */
+  background: #eee8d5;
+  color: #586e75;
+}
+
+body.solarized .markdown-body details {
+  box-shadow: 2px 2px 0 #586e75;
+}
+
+body.solarized .copy-btn {
+  background: #073642;
+  color: #eee8d5;
+  border-color: #586e75;
+  box-shadow: 2px 2px 0 #586e75;
+}
+
+body.solarized .copy-btn.copied {
+  background: #859900;
+  color: #fdf6e3;
+}
+
+body.solarized .theme-switcher select {
+  background: #eee8d5;
+  color: #073642;
+  border-color: #586e75;
+}
+
+body.solarized .theme-switcher-chevron {
+  color: #073642;
+}
+
+body.solarized .theme-switcher select option {
+  background: #eee8d5;
+  color: #073642;
+}
+
+body.solarized .hero h1 {
+  color: #073642;
 }
 

@@ -1,36 +1,32 @@
 (function () {
   'use strict';
 
-  // ===== THEME CYCLE: light → dark → cyberpunk =====
+  // ===== THEME SELECTOR: light / dark / cyberpunk / solarized =====
   const THEME_KEY = 'wb-theme';
-  const CYCLE = ['light', 'dark', 'cyberpunk'];
-  const ICON = { light: '🌙', dark: '🌃', cyberpunk: '⚡' };
+  const THEMES = ['light', 'dark', 'cyberpunk', 'solarized'];
   const body = document.body;
-  const toggle = document.getElementById('theme-toggle');
+  const select = document.getElementById('theme-select');
 
   function apply(theme) {
-    body.classList.remove('dark', 'cyberpunk');
+    body.classList.remove('dark', 'cyberpunk', 'solarized');
     if (theme === 'dark') body.classList.add('dark');
     else if (theme === 'cyberpunk') body.classList.add('cyberpunk');
-    if (toggle) {
-      toggle.textContent = ICON[theme] || ICON.light;
-      toggle.dataset.theme = theme;
-      toggle.setAttribute('aria-label', 'Theme: ' + theme + '. Click to cycle.');
-    }
+    else if (theme === 'solarized') body.classList.add('solarized');
+    if (select && select.value !== theme) select.value = theme;
   }
 
   function readStored() {
     const s = localStorage.getItem(THEME_KEY);
-    if (CYCLE.indexOf(s) !== -1) return s;
+    if (THEMES.indexOf(s) !== -1) return s;
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
   apply(readStored());
 
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      const current = toggle.dataset.theme || 'light';
-      const next = CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length];
+  if (select) {
+    select.addEventListener('change', function () {
+      const next = select.value;
+      if (THEMES.indexOf(next) === -1) return;
       localStorage.setItem(THEME_KEY, next);
       apply(next);
     });
