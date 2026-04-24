@@ -107,17 +107,62 @@ sync_one() {
     fi
   fi
 
-  WB_ROOT="$WB_ROOT" REPO_DIR="$repo_dir" ROLE="$role" DRY_RUN="$DRY_RUN" \
+  WB_ROOT="$WB_ROOT" REPO_DIR="$repo_dir" REPO_NAME="$name" ROLE="$role" DRY_RUN="$DRY_RUN" \
   python3 - <<'PYEOF'
-import json, os, shutil, pathlib
+import json, os, re, shutil, pathlib
+
 root = pathlib.Path(os.environ['WB_ROOT'])
 repo = pathlib.Path(os.environ['REPO_DIR'])
+repo_name = os.environ['REPO_NAME']
 role = os.environ['ROLE']
 dry  = os.environ.get('DRY_RUN', 'false') == 'true'
 
 approved = json.loads((root / '.workbench-state' / 'approved.json').read_text()).get('items', [])
 role_types = json.loads(os.environ['ROLE_MATRIX']).get(role, [])
 type_dir   = json.loads(os.environ['TYPE_TO_SUBDIR'])
+
+FM = re.compile(r'(?s)^---\n(.*?)\n---')
+GHERKIN_KV = re.compile(r'^\s*#\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$')
+
+
+def _extract_target_repos(src: pathlib.Path):
+    try:
+        text = src.read_text()
+    except OSError:
+        return None
+    raw = None
+    if src.suffix == '.feature':
+        for line in text.splitlines():
+            s = line.strip()
+            if not s:
+                if raw is not None:
+                    break
+                continue
+            if not s.startswith('#'):
+                break
+            m = GHERKIN_KV.match(line)
+            if m and m.group(1).strip() == 'target_repos':
+                raw = m.group(2).strip()
+                break
+    else:
+        m = FM.match(text)
+        if m:
+            for line in m.group(1).splitlines():
+                if ':' not in line:
+                    continue
+                k, _, v = line.partition(':')
+                if k.strip() == 'target_repos':
+                    raw = v.strip()
+                    break
+    if raw is None:
+        return None
+    if raw.startswith('[') and raw.endswith(']'):
+        inner = raw[1:-1].strip()
+        if not inner:
+            return []
+        return [p.strip().strip('"').strip("'") for p in inner.split(',') if p.strip()]
+    return [raw.strip().strip('"').strip("'")]
+
 
 ai_base = repo / 'ai' / 'outputs'
 if not dry:
@@ -139,6 +184,18 @@ for item in approved:
     if not src.is_file():
         print(f"  warn: missing source file {src}")
         continue
+
+    tr = _extract_target_repos(src)
+    if tr is None or tr == []:
+        # Broadcast: no target_repos on the artifact. Validator blocks routed
+        # types (prd, eng-spec, tdd, erd, bdd, test-cases, test-spec, test-erd)
+        # from reaching approved without the field, so this branch only fires
+        # for non-routed types (adr, epic-context) or legacy artifacts approved
+        # before the schema existed.
+        pass
+    elif repo_name not in tr:
+        continue
+
     dst_dir = ai_base / subdir
     dst = dst_dir / src.name
     if dry:
@@ -154,6 +211,35 @@ if copied == 0:
 PYEOF
 }
 
+
+_write_pr_footer() {
+  local repos_root="$WB_ROOT/repos"
+  # Only write when ralph workspace has been enabled here.
+  [[ -d "$repos_root/.ralph" ]] || return 0
+
+  local footer_path="$repos_root/.ralph/pr_footer.md"
+  local content
+  if ! content="$(WB_ROOT="$WB_ROOT" python3 "$SCRIPT_DIR/steering-overlays.py" --footer 2>/dev/null)"; then
+    return 0
+  fi
+
+  if [[ "$DRY_RUN" == "true" ]]; then
+    if [[ -n "$content" ]]; then
+      echo "[dry-run] would write steering-drift footer to $footer_path"
+    else
+      echo "[dry-run] no overrides — would remove $footer_path if present"
+    fi
+    return 0
+  fi
+
+  if [[ -z "$content" ]]; then
+    rm -f "$footer_path"
+    return 0
+  fi
+  printf '%s' "$content" > "$footer_path"
+  echo "  steering-drift footer -> $footer_path"
+}
+
 if [[ ${#REPOS[@]} -eq 0 ]]; then
   echo "No repos registered in project.conf." >&2
   exit 1
@@ -162,6 +248,8 @@ fi
 for entry in "${REPOS[@]}"; do
   sync_one "$entry"
 done
+
+_write_pr_footer
 
 echo ""
 echo "sync-context complete."

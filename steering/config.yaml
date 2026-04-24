@@ -46,6 +46,10 @@ scopes:
     layer: 2
     path: steering/artifacts/tdd
     id_prefix: TDD
+  - name: artifact:erd
+    layer: 2
+    path: steering/artifacts/erd
+    id_prefix: ERD
   - name: artifact:bdd
     layer: 2
     path: steering/artifacts/bdd

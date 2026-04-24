@@ -28,6 +28,7 @@ An epic-context file is approved and the user wants to scope a PRD.
    - What problem slice does this PRD cover? (one sentence)
    - Non-goals?
    - Scope: service change, automation change, or both?
+   - **Which code repos does this PRD route to?** Offer the `project.conf REPOS` list. Pick one or more. Used as `target_repos:` frontmatter; validated at `wb.publish` and `wb.approve` — missing or unknown repo names block the transition.
 
 4. **Write `product/outputs/prds/PRD-{NNN}-{slug}.md`:**
 
@@ -40,6 +41,7 @@ An epic-context file is approved and the user wants to scope a PRD.
    owner: {gh-user from `git config user.email` or `gh api user -q .login`}
    epic: {EPIC_ID}
    scope: {service | automation | both}
+   target_repos: [{repo-1}, {repo-2}]
    ---
 
    # PRD-{NNN}: {title}

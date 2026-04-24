@@ -19,7 +19,7 @@ category: Engineering
 
 ## Steps
 
-1. **Pick ERD number.** Scan `engineering/outputs/erd/ERD-*.md`, max + 1, zero-pad to three digits. Use the same slug as the SPEC when possible (e.g. `ERD-003-audit-log`).
+1. **Pick ERD number.** Scan `engineering/outputs/erd/ERD-*.md`, max + 1, zero-pad to three digits. Use the same slug as the SPEC when possible (e.g. `ERD-003-audit-log`). Copy `target_repos:` from the SPEC into the ERD frontmatter (validated at `wb.publish` / `wb.approve`).
 
 2. **Choose diagram set.** Ask the user; default to all three:
    - **DB-ERD** — tables/collections, keys, cardinality. Required if SPEC §5 introduces schema changes.
@@ -37,6 +37,7 @@ category: Engineering
    owner: {gh-user}
    epic: {EPIC_ID}
    related_spec: SPEC-{NNN}
+   target_repos: [{repo-1}, {repo-2}]
    ---
 
    # ERD-{NNN}: {title}

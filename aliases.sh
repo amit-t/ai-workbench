@@ -9,9 +9,20 @@ WB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 wb.sync-context() { "$WB_ROOT/scripts/sync-context.sh" "$@"; }
 
 # ── Ralph ─────────────────────────────────────────────────────────────────────
-wb.ralph-plan()     { "$WB_ROOT/scripts/ralph-plan.sh" "$@"; }
-wb.ralph-loop()     { "$WB_ROOT/scripts/ralph-loop.sh" "$@"; }
-wb.ralph-dispatch() { "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"; }
+# Workbench wraps ai-ralph; ralph owns the core loop + parallelism + PR creation.
+# Single-repo debugging is a one-liner:
+#   (cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)
+#
+#   wb.ralph-enable-check           # preflight that `ralph enable --workspace` ran
+#   wb.ralph-plan [flags]           # sync context + ralph-plan (workspace by default)
+#   wb.ralph-dispatch [flags]       # cd repos/ && ralph --workspace --parallel N
+#   wb.ralph-dispatch --status      # show open ralph PRs + tail of worker logs
+#   wb.ralph-annotate [--since 30m] # M4 drift footer (post-hoc, retires when
+#                                   #   ralph-side .ralph/pr_footer.md support lands)
+wb.ralph-enable-check() { "$WB_ROOT/scripts/ralph-enable-check.sh" "$@"; }
+wb.ralph-plan()         { "$WB_ROOT/scripts/ralph-plan.sh" "$@"; }
+wb.ralph-dispatch()     { "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"; }
+wb.ralph-annotate()     { "$WB_ROOT/scripts/ralph-annotate-prs.sh" "$@"; }
 
 # ── Repo management ───────────────────────────────────────────────────────────
 wb.register-repo()  { "$WB_ROOT/scripts/register-repo.sh" "$@"; }
