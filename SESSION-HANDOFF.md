@@ -4,10 +4,11 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` and `docs/superpowers/plans/PARKED-plan-D-remaining-skills.md` for details.
 
-**Last session:** 2026-04-23 (commit `178434a`).
+**Last session:** 2026-04-24 (main at `fd4e794`, lifecycle polish merged on `origin`; `inv` PR #1 still open, awaiting batch merge by user).
 **Branch:** `main`. **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
-**Commit identity for pushes here:** `user.email=amit.tiwari@invenco.com`, `user.name=amit-tiwari_vnt` (local config; already set).
+**Commit identity in use this session:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Earlier handoff referenced the Invenco identity; local config currently resolves to the personal one. Set local `user.email=amit.tiwari@invenco.com` if you want Invenco attribution on template-dev commits.
 **Main branch protection:** PR required, admin bypass enabled, no force-push, no deletion.
+**gh accounts:** two logged in (`amit-t` active by default, `amit-tiwari_vnt` for Invenco). Use `gh auth switch -u amit-tiwari_vnt` before any PR create/merge on `Invenco-Cloud-Systems-ICS/ai-workbench`, and switch back after.
 
 ---
 
@@ -25,21 +26,27 @@
 - Smoke test: `tests/smoke.sh` (9 assertions, full three-stage flow).
 - Hardenings: path-traversal guards, type validation, reject-from-approved, frontmatter-missing errors.
 
-### Phase 2 — Plan D (this session, 2026-04-23)
+### Phase 2 — Plan D (session 2026-04-23)
 - Remaining 9 skill bodies: `grill-me`, `prd-review-panel`, `pmo-status`, `adr`, `erd`, `figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`.
 - All skills: three-stage lifecycle aware; house structure (When to use / Prerequisites / Steps / Output contract / Do not); concrete example in at least one step.
 - `wb.rejected` lister added for symmetry.
-- Smoke test still 9/9.
+
+### Lifecycle polish (session 2026-04-24)
+- Extracted `scripts/lifecycle.py`: single CLI with subcommands `publish | approve | reject | list`. Replaces the three Python heredocs in `aliases.sh`. `aliases.sh` collapsed to 6 one-line shell wrappers.
+- BDD `.feature` lifecycle support: CLI detects `.feature` and rewrites the `# status:` header comment (instead of YAML frontmatter). BDD smoke round-trip re-enabled in `tests/smoke.sh`.
+- Advisory `flock` on `.workbench-state/.lock` around every read-modify-write, removing the last-writer-wins race.
+- Audited `grep -r "prds/approved"` across `skills/`, `scripts/`, `docs/`: clean.
+- Artifact lifecycle section added to `README.md` (diagram, stage semantics, upstream gates, dev + QA flows, inspection aliases).
+- Smoke still 9/9, now exercising the BDD path.
+- Merged to `origin/main` as PR #1 (head commit `fd4e794`). `inv` PR #1 is open, awaiting batch merge.
 
 ---
 
 ## What's open (do next)
 
-### Lifecycle polish (highest leverage, small)
-- [ ] **Extract `scripts/lifecycle.py`.** Collapse the three Python heredocs in `aliases.sh` into a single `scripts/lifecycle.py publish|approve|reject|list` CLI. Gives one file to unit-test and one place to add BDD support.
-- [ ] **BDD `.feature` lifecycle support.** `wb.publish` only handles YAML frontmatter. Gherkin files use `# status: draft` header comments. Add a handler to `lifecycle.py`; then re-enable the BDD case that was swapped out of `tests/smoke.sh`.
-- [ ] **Lockfile for concurrency.** `.workbench-state/*.json` is currently last-writer-wins. Add an advisory flock on `.workbench-state/.lock` around the read-modify-write cycle.
-- [ ] **Approved-folder audit.** `grep -r "prds/approved" skills/ scripts/ docs/` — confirm no stragglers from Phase 1.
+### Batch merge on `inv`
+- [ ] Merge all pending PRs on `Invenco-Cloud-Systems-ICS/ai-workbench` together. Currently open: `inv` PR #1 (lifecycle polish, branch `lifecycle-polish`). Requires `gh auth switch -u amit-tiwari_vnt` first.
+- [ ] After merge: `git fetch inv && git log inv/main..origin/main` to confirm the two remotes are in sync. They should be byte-identical on `main`.
 
 ### Plan B — ralph adapter (still parked)
 - Finalize `scripts/ralph-plan.sh` workspace-mode flag once `ai-ralph` PR #3 merges.
