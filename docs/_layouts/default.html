@@ -13,7 +13,16 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cycle theme: light / dark / cyberpunk">🌙</button>
+  <div class="theme-switcher">
+    <label class="sr-only" for="theme-select">Theme</label>
+    <select id="theme-select" aria-label="Select theme">
+      <option value="light">☀ Light</option>
+      <option value="dark">☾ Dark</option>
+      <option value="cyberpunk">⚡ Cyberpunk</option>
+      <option value="solarized">◐ Solarized</option>
+    </select>
+    <span class="theme-switcher-chevron" aria-hidden="true">▾</span>
+  </div>
 
   <nav class="container site-nav" aria-label="Primary">
     <a class="site-nav-brand" href="{{ '/' | relative_url }}">AI Workbench</a>
