@@ -90,7 +90,7 @@ PRD is approved; user wants executable behavior specs.
 
 ## Lifecycle note for state file
 
-When `wb.publish` flips a `.feature` file, it must update the header comment's `# status:` line. The provided `wb.publish` uses a generic frontmatter regex that only matches YAML `status:` lines — **if you are a QA using feature files**, edit the header comment manually OR keep a companion MD sidecar if strict automation is required. The Phase 2 aliases handle YAML frontmatter; feature-file header support is tracked in Plan D.
+`wb.publish`, `wb.approve`, and `wb.reject` all detect `.feature` files and rewrite the `# status:` header comment (instead of YAML frontmatter). The header line must exist in the file when the first `wb.publish` runs; if it does not, the CLI fails with a clear error. Keep the `# status: draft` line at the top as shown in step 3.
 
 ## Do not
 
