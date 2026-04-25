@@ -24,7 +24,7 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
 
 1. **Read inputs.** PRD, all approved `qa/outputs/bdd/PRD-{NNN}-*.feature`, `qa/outputs/test-cases/PRD-{NNN}-cases.md`. Read `qa/context-library/` for existing automation conventions.
 
-2. **Identify the automation repo.** Pull from `project.conf REPOS`. Capture name + stack hint.
+2. **Identify the automation repo.** Pull from `project.conf REPOS` (role=automation-tests). Capture name + stack hint. Set `target_repos: [automation-repo]` in frontmatter (validated at `wb.publish` / `wb.approve`).
 
 3. **Write `qa/outputs/test-spec/TSD-{NNN}-{slug}.md`:**
 
@@ -37,6 +37,7 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
    owner: {gh-user}
    epic: {EPIC_ID}
    prd: PRD-{NNN}
+   target_repos: [{automation-tests-repo}]
    bdd_sources:
      - PRD-{NNN}-{cap-1}.feature
    test_case_sources:
@@ -106,6 +107,7 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
    id: TERD-{NNN}
    parent_spec: TSD-{NNN}
    status: draft
+   target_repos: [{automation-tests-repo}]
    ---
 
    # Test ERD for TSD-{NNN}

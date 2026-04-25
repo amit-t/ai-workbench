@@ -100,12 +100,14 @@ Every artifact you write starts at `status: draft`. State transitions happen onl
 
 ```
 wb.sync-context                       # push workbench outputs into repos/*/ai/
-wb.ralph-plan                         # ralph workspace-mode plan
-wb.ralph-loop <repo> [--agent ...]    # one-repo loop
-wb.ralph-dispatch [--repos r1,r2]     # parallel loops
+wb.ralph-enable-check                 # preflight that `ralph enable --workspace` ran
+wb.ralph-plan [--mode ...] [--engine] # sync context + ralph-plan (workspace by default)
+wb.ralph-dispatch [--parallel N]      # ralph --workspace --parallel N (ralph owns the loop)
+wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
+wb.ralph-annotate [--since 30m]       # M4 drift footer on open ralph PRs (post-hoc fallback)
 wb.register-repo <name> <url> <role>  # add code repo
-wb.publish <id> <path> <type>         # draft → published
-wb.approve <id>                       # published → approved
+wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
+wb.approve <id>                       # published → approved (validates target_repos)
 wb.reject <id> "<reason>"             # any → draft (with reason)
 wb.published                          # list awaiting approval
 wb.approved                           # list ralph-ingestable
@@ -114,10 +116,22 @@ wb.steering-refresh                   # reload every scope (use after steering u
 wb.steering-lint                      # validate steering/ and steering.local/
 ```
 
+## Ralph adapter (quick reference)
+
+- Workbench wraps ai-ralph. Workbench never re-implements ralph internals — enable, loop, parallelism, and PR creation all live in ralph.
+- `ralph enable --workspace` is run once at `$WB_ROOT/repos/` by `init.wb` / `join.wb`. `wb.ralph-enable-check` is the preflight.
+- `wb.ralph-plan` defaults to **workspace mode** (single `ralph-plan --workspace` at `$WB_ROOT/repos/`). Falls back to per-repo looping when the installed ralph-plan does not support `--workspace`. Override with `--mode`, env `WB_RALPH_PLAN_MODE`, or `project.conf RALPH_PLAN_MODE`.
+- `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
+- Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
+- **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.
+- **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): once the ralph-side `.ralph/pr_footer.md` support lands, `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph picks it up automatically. Until then, `wb.ralph-annotate` edits open PR bodies as a post-hoc fallback.
+
 ## Hard rules
 
 - Never generate a fix_plan entry for a repo without an approved PRD and (for service repos) an approved engineering spec.
 - Never write into `repos/*` from a workbench Claude session. That is ralph's job.
+- Never re-implement ralph internals inside workbench scripts. `repos/.ralph/` is ralph-owned; workbench only reads it (for pr_footer staging, status output) and delegates execution.
+- Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd must declare `target_repos:` naming registered repos before publish. The validator blocks transitions without it.
 - Never touch files under `skills/`, `scripts/`, `steering/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`, or `.workbench-manifest.json`. Those are template-owned and rewritten by `update.wb`. Team-specific steering goes in `steering.local/` (user-owned).
 - No em dashes in documents. Use commas or parentheses. Exception: code blocks preserve exact content.
 - No hype words. No "leverage", "utilize", "robust", "streamline", "unlock". Plain English.

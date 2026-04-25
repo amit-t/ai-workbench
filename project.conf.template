@@ -22,3 +22,20 @@ REPOS=(
 # --- Optional: agent defaults for this workbench ---
 # Set DEVIN_DEFAULT=true to prefer Devin whenever ralph/init/join is invoked without --agent.
 DEVIN_DEFAULT="true"
+
+# --- Ralph adapter defaults ---
+# Plan mode: auto | workspace | per-repo
+#   auto      picks `workspace` if `ralph-plan --help` reports --workspace, else `per-repo`.
+#   workspace runs a single `ralph-plan --workspace` from repos/ (ai-ralph feat/workspace-plan-mode).
+#   per-repo  loops project.conf REPOS and calls `ralph-plan` once per repo (fallback).
+# CLI --mode and env WB_RALPH_PLAN_MODE override this.
+RALPH_PLAN_MODE="auto"
+
+# Engine + thinking depth passed to ralph-plan (single-repo and workspace).
+# CLI --engine / --thinking and env WB_RALPH_ENGINE override these.
+RALPH_PLAN_ENGINE="devin"
+RALPH_PLAN_THINKING="ultra"
+
+# wb.ralph-dispatch parallelism. Leave empty to default to min(len(REPOS), 4).
+# CLI --parallel and env WB_RALPH_PARALLEL override this.
+WB_RALPH_PARALLEL=""

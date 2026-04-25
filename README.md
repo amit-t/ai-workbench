@@ -234,6 +234,63 @@ wb.steering-refresh     # reload every scope
 wb.steering-lint        # validate steering/ and steering.local/
 ```
 
+## Multi-repo execution with ralph
+
+The workbench wraps [ai-ralph](https://github.com/Invenco-Cloud-Systems-ICS/ai-ralph). Ralph owns the planner, the workspace loop, parallelism, and PR creation. Workbench only wraps, routes approved artifacts, and ships team steering.
+
+### One-time bootstrap
+
+`init.wb` and `join.wb` (in ai-devkit) both run:
+
+```bash
+(cd "$WB_ROOT/repos" && ralph enable --workspace)
+```
+
+This materializes `$WB_ROOT/repos/.ralph/{PROMPT.md,fix_plan.md,AGENT.md}` and `.ralphrc` with `WORKSPACE_MODE=true`. If you bootstrapped manually, run the command above yourself, then `wb.ralph-enable-check` to confirm.
+
+### Daily flow
+
+```bash
+# 1. Approve the chain for the epic you are working.
+#    (Each skill checks target_repos on publish/approve.)
+wb.publish PRD-042 product/outputs/prds/PRD-042-refund.md prd
+wb.approve PRD-042
+# ... spec, tdd, bdd, test-cases, test-spec...
+
+# 2. Plan.
+wb.ralph-plan
+#   = sync-context → populate repos/<name>/ai/ + repos/.ralph/pr_footer.md
+#   = (cd repos && ralph-plan --workspace --engine devin --thinking ultra)
+#   → writes repos/.ralph/fix_plan.md with ## <repo-name> sections
+
+# 3. Review the plan, then dispatch.
+wb.ralph-dispatch
+#   = (cd repos && ralph --workspace --parallel N)   # N defaults to min(len(REPOS),4)
+#   → per-task worktree, commit, push, PR via ralph's own pr_manager
+
+# 4. Watch.
+wb.ralph-dispatch --status    # open PRs per repo + recent worker logs
+```
+
+### Configuration
+
+Set in `project.conf` (team default) or override via CLI flag / env var:
+
+| Name | Values | Default | Notes |
+|---|---|---|---|
+| `RALPH_PLAN_MODE` / `--mode` / `WB_RALPH_PLAN_MODE` | auto \| workspace \| per-repo | auto | auto = use workspace if ralph-plan reports `--workspace`, else per-repo |
+| `RALPH_PLAN_ENGINE` / `--engine` / `WB_RALPH_ENGINE` | devin \| claude \| codex | devin | passed to `ralph-plan` and (when recognised) `ralph` |
+| `RALPH_PLAN_THINKING` / `--thinking` | default \| hard \| ultra | ultra | passed to `ralph-plan` |
+| `WB_RALPH_PARALLEL` / `--parallel` | N | min(len(REPOS),4) | passed to `ralph --workspace` |
+
+### `target_repos:` is required
+
+Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd carries `target_repos: [...]` naming repos from `project.conf REPOS`. `wb.publish` and `wb.approve` both call `scripts/validate-artifact.py`, which rejects missing, empty, or unregistered target_repos. The list flows into `sync-context.sh` (only listed repos receive the artifact) and into `ralph-plan`'s `## <repo-name>` section routing.
+
+### Steering drift footer on ralph PRs (M4)
+
+When the team has local steering overrides under `steering.local/`, `sync-context.sh` writes a markdown footer to `$WB_ROOT/repos/.ralph/pr_footer.md`. Once the ralph-side `.ralph/pr_footer.md` append support merges, ralph picks up the footer automatically at PR creation. Until then, `wb.ralph-annotate [--since 30m]` edits open PR bodies via `gh pr edit` as a post-hoc fallback.
+
 ## Plan-mode rule
 
 Read `CLAUDE.md` for the session-start protocol and plan-mode rule. Summary: always explore and plan before writing code; never commit fix_plan entries without an approved PRD or engineering spec.

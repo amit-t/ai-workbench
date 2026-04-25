@@ -21,7 +21,7 @@ SPEC is approved; user wants implementation-ready detail for ralph.
 
 1. **Read the SPEC** (frontmatter + all sections).
 
-2. **For each target repo in SPEC `target_repos`**, identify concrete files to create or modify. Use `engineering/context-library/` and, if needed, read `repos/{name}/` (read-only) to learn the existing layout.
+2. **For each target repo in SPEC `target_repos`**, identify concrete files to create or modify. Use `engineering/context-library/` and, if needed, read `repos/{name}/` (read-only) to learn the existing layout. Mirror the SPEC's `target_repos:` into the TDD frontmatter (validated at `wb.publish` / `wb.approve`).
 
 3. **Write `engineering/outputs/tdd/TDD-{NNN}-{slug}.md`:**
 
@@ -35,6 +35,7 @@ SPEC is approved; user wants implementation-ready detail for ralph.
    epic: {EPIC_ID}
    prd: PRD-{NNN}
    spec: SPEC-{NNN}
+   target_repos: [{repo-1}, {repo-2}]
    ---
 
    # TDD-{NNN}: {title}

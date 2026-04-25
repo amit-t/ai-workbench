@@ -26,7 +26,7 @@ User has an approved PRD and wants to draft the engineering spec.
 
 3. **Pick SPEC number** (scan `engineering/outputs/specs/SPEC-*.md`, max + 1, zero-padded three digits). Slug matches the PRD slug.
 
-4. **Identify target repos.** For each entry in `project.conf REPOS`, decide modified? y/n with a one-liner.
+4. **Identify target repos.** For each entry in `project.conf REPOS`, decide modified? y/n with a one-liner. Capture the yes-entries as `target_repos:` in frontmatter (validated at `wb.publish` / `wb.approve` — missing or unknown names block the transition).
 
 5. **Write `engineering/outputs/specs/SPEC-{NNN}-{slug}.md`:**
 
@@ -39,9 +39,7 @@ User has an approved PRD and wants to draft the engineering spec.
    owner: {gh-user}
    epic: {EPIC_ID}
    prd: PRD-{NNN}
-   target_repos:
-     - {repo-1}
-     - {repo-2}
+   target_repos: [{repo-1}, {repo-2}]
    ---
 
    # SPEC-{NNN}: {title}
