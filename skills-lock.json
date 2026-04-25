@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "docs-from-prs": {
+      "source": "amit-t/skills",
+      "sourceType": "github",
+      "computedHash": "7a1b2156d6a0a7619c7e85a9f4c2c9ad6e4a41eb43ffaa1b71e9f25a9b7cdc08"
+    }
+  }
+}
