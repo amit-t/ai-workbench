@@ -22,7 +22,7 @@ PRD is approved; user wants executable behavior specs.
 
 1. **Read the approved PRD.** Extract ACs.
 
-2. **Group into feature files.** One feature file per cohesive capability. Name: `PRD-{NNN}-{capability-slug}.feature`.
+2. **Group into feature files.** One feature file per cohesive capability. Name: `PRD-{NNN}-{capability-slug}.feature`. Identify the target automation repo(s) from `project.conf REPOS` (role=automation-tests); the Gherkin header gets `# target_repos: [...]` (validated at `wb.publish` / `wb.approve`).
 
 3. **Write each file** with a header comment containing lifecycle metadata:
 
@@ -31,6 +31,7 @@ PRD is approved; user wants executable behavior specs.
    # status: draft
    # epic: {EPIC_ID}
    # prd: PRD-{NNN}
+   # target_repos: [{automation-tests-repo}]
    # created: {today}
    # owner: {gh-user}
    # language: en

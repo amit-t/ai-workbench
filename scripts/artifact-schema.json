@@ -1,0 +1,16 @@
+{
+  "_comment": "Artifact frontmatter schema for ai-workbench. Read by scripts/validate-artifact.py at publish + approve.",
+  "_allowed_targets_semantics": "from_project_conf -> target_repos must be a non-empty subset of project.conf REPOS[].name. none -> target_repos field must be absent.",
+  "types": {
+    "prd":          { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "eng-spec":     { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "tdd":          { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "erd":          { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "bdd":          { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "gherkin" },
+    "test-cases":   { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "test-spec":    { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "test-erd":     { "required": ["id", "status", "target_repos"], "allowed_targets": "from_project_conf", "header": "yaml" },
+    "adr":          { "required": ["id", "status"],                 "allowed_targets": "none",              "header": "yaml" },
+    "epic-context": { "required": ["id", "status"],                 "allowed_targets": "none",              "header": "yaml" }
+  }
+}

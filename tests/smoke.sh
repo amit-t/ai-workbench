@@ -90,13 +90,14 @@ out=$(./scripts/register-repo.sh svc-a https://example.invalid/org/svc-a service
 echo "$out" | grep -q "Already registered" || fail "register-repo not idempotent (got: $out)"
 pass "register-repo idempotent"
 
-# 5. Seed drafts
+# 5. Seed drafts (with target_repos — validator requires it at publish/approve)
 mkdir -p product/outputs/prds engineering/outputs/specs
 
 cat > product/outputs/prds/PRD-001-smoke.md <<'EOF'
 ---
 id: PRD-001
 status: draft
+target_repos: [svc-a, automation-tests]
 ---
 # PRD-001 Smoke
 EOF
@@ -105,6 +106,7 @@ cat > engineering/outputs/specs/SPEC-001-smoke.md <<'EOF'
 ---
 id: SPEC-001
 status: draft
+target_repos: [svc-a]
 ---
 # SPEC-001 Smoke
 EOF
@@ -114,6 +116,7 @@ cat > qa/outputs/test-cases/PRD-001-smoke-cases.md <<'EOF'
 ---
 id: TC-set-001
 status: draft
+target_repos: [automation-tests]
 ---
 # Test cases for PRD-001 (smoke)
 
@@ -127,6 +130,7 @@ cat > qa/outputs/bdd/PRD-001-smoke.feature <<'EOF'
 # status: draft
 # epic: EPIC-TEST-001
 # prd: PRD-001
+# target_repos: [automation-tests]
 
 @epic-EPIC-TEST-001 @prd-PRD-001
 Feature: Smoke
@@ -249,11 +253,115 @@ pass "overlay round-trip: add + supersede + remove all apply"
 ./scripts/steering-lint.py >/dev/null || fail "steering-lint.py failed on stamped tree"
 pass "steering-lint clean on stamped tree"
 
+# 9f. validate-artifact blocks missing target_repos on a routed type
+cat > product/outputs/prds/PRD-missing-tr.md <<'EOF'
+---
+id: PRD-MISSING
+status: draft
+---
+# PRD missing target_repos
+EOF
+if wb.publish PRD-MISSING product/outputs/prds/PRD-missing-tr.md prd 2>/dev/null; then
+  fail "validator should block publish of PRD with no target_repos"
+fi
+pass "validator blocks missing target_repos at publish"
+
+# 9g. validate-artifact blocks unregistered repo name
+cat > product/outputs/prds/PRD-bad-tr.md <<'EOF'
+---
+id: PRD-BADTR
+status: draft
+target_repos: [does-not-exist]
+---
+# PRD with unregistered target_repo
+EOF
+if wb.publish PRD-BADTR product/outputs/prds/PRD-bad-tr.md prd 2>/dev/null; then
+  fail "validator should block publish of PRD with unknown target_repos"
+fi
+pass "validator blocks unknown target_repos at publish"
+
+# 9h. target_repos filter: sync-context routes PRD-001 only to its listed repos
+# (PRD-001 targets both svc-a and automation-tests — already verified in 9).
+# SPEC-001 targets only svc-a: must NOT land in shared-lib/infra if ever added.
+# TC-set-001 + BDD-001 target only automation-tests — must NOT land in svc-a.
+[[ ! -f repos/svc-a/ai/outputs/test-cases/PRD-001-smoke-cases.md ]]  || fail "svc-a got automation-only test-cases (target_repos filter broken)"
+[[ ! -f repos/svc-a/ai/outputs/bdd/PRD-001-smoke.feature ]]          || fail "svc-a got automation-only BDD (target_repos filter broken)"
+pass "target_repos filter drops artifacts from non-target repos"
+
+# 9i. steering-overlays footer generator emits markdown when overlays present
+footer_out=$(python3 ./scripts/steering-overlays.py --footer)
+[[ -n "$footer_out" ]]                                       || fail "steering-overlays --footer emitted nothing"
+echo "$footer_out" | grep -q "### Steering drift"            || fail "footer missing drift header"
+echo "$footer_out" | grep -q "GP-LOCAL-01"                   || fail "footer missing GP-LOCAL-01 ADD entry"
+echo "$footer_out" | grep -q "GP-003.*GP-LOCAL-02"           || fail "footer missing supersede entry"
+echo "$footer_out" | grep -q "GP-004.*REMOVE"                || fail "footer missing remove entry"
+pass "steering-overlays --footer renders add/supersede/remove"
+
+# 9j. sync-context writes pr_footer.md when ralph workspace exists
+mkdir -p repos/.ralph
+./scripts/sync-context.sh >/dev/null
+[[ -s repos/.ralph/pr_footer.md ]]                           || fail "pr_footer.md not written by sync-context"
+grep -q "### Steering drift" repos/.ralph/pr_footer.md       || fail "pr_footer.md missing drift header"
+pass "sync-context writes pr_footer.md when repos/.ralph/ exists"
+
+# 9k. wb.ralph-plan --dry-run with workspace mode reports the workspace command
+# Mock ralph-plan so --help reports --workspace support. Also mock ralph itself.
+MOCK_BIN="$TMP/mockbin"
+mkdir -p "$MOCK_BIN"
+cat > "$MOCK_BIN/ralph-plan" <<'EOF'
+#!/usr/bin/env bash
+if [[ "$1" == "--help" ]]; then
+  echo "usage: ralph-plan [--workspace] [--engine ENG] [--thinking T]"
+  exit 0
+fi
+echo "mock ralph-plan called with: $*"
+exit 0
+EOF
+cat > "$MOCK_BIN/ralph" <<'EOF'
+#!/usr/bin/env bash
+if [[ "$1" == "--help" ]]; then
+  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG]"
+  exit 0
+fi
+echo "mock ralph called with: $*"
+exit 0
+EOF
+chmod +x "$MOCK_BIN/ralph-plan" "$MOCK_BIN/ralph"
+export PATH="$MOCK_BIN:$PATH"
+
+mkdir -p repos/.ralph
+touch repos/.ralphrc
+echo "WORKSPACE_MODE=true" > repos/.ralphrc
+
+plan_out=$(./scripts/ralph-plan.sh --dry-run 2>&1)
+echo "$plan_out" | grep -q 'mode=workspace'                                   || fail "ralph-plan did not default to workspace: $plan_out"
+echo "$plan_out" | grep -q 'ralph-plan --workspace --engine devin'            || fail "ralph-plan dry-run missing expected command: $plan_out"
+pass "wb.ralph-plan --dry-run picks workspace mode by default"
+
+# 9l. --mode per-repo override respected
+plan_out=$(./scripts/ralph-plan.sh --dry-run --mode per-repo 2>&1)
+echo "$plan_out" | grep -q 'mode=per-repo'                                    || fail "ralph-plan --mode per-repo not honored"
+pass "wb.ralph-plan --mode per-repo override works"
+
+# 9m. wb.ralph-dispatch --dry-run invokes ralph --workspace --parallel N
+dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'ralph --workspace --parallel'                 || fail "dispatch dry-run missing --workspace --parallel: $dispatch_out"
+echo "$dispatch_out" | grep -q "WORKSPACE_ROOT=$(pwd)/repos"                  || fail "dispatch dry-run missing WORKSPACE_ROOT export: $dispatch_out"
+pass "wb.ralph-dispatch --dry-run invokes workspace with parallel and WORKSPACE_ROOT"
+
+# 9n. ralph-enable-check preflight refuses when .ralph missing
+rm -rf repos/.ralph repos/.ralphrc
+if ./scripts/ralph-plan.sh --dry-run 2>/dev/null; then
+  fail "ralph-plan should refuse when ralph workspace is not enabled"
+fi
+pass "ralph-enable-check blocks ralph-plan when workspace not enabled"
+
 # 10. wb.reject round-trip
 cat > product/outputs/prds/PRD-002-reject.md <<'EOF'
 ---
 id: PRD-002
 status: draft
+target_repos: [svc-a]
 ---
 # PRD-002 to be rejected
 EOF

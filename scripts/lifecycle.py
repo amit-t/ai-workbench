@@ -29,6 +29,7 @@ import json
 import os
 import pathlib
 import re
+import subprocess
 import sys
 from contextlib import contextmanager
 
@@ -126,6 +127,22 @@ def _safe_resolve(root: pathlib.Path, rel: str) -> pathlib.Path:
     return full
 
 
+def _validate_artifact(root: pathlib.Path, rel_path: str, atype: str) -> None:
+    """Run scripts/validate-artifact.py against the artifact; raise SystemExit on failure."""
+    validator = root / 'scripts' / 'validate-artifact.py'
+    if not validator.is_file():
+        return  # validator not installed; skip silently to preserve older workbenches
+    env = dict(os.environ)
+    env['WB_ROOT'] = str(root)
+    try:
+        subprocess.run(
+            [sys.executable, str(validator), rel_path, atype],
+            check=True, env=env,
+        )
+    except subprocess.CalledProcessError as e:
+        raise SystemExit(e.returncode or 1)
+
+
 # ── Commands ──────────────────────────────────────────────────────────────────
 
 def cmd_publish(root: pathlib.Path, aid: str, apath: str, atype: str) -> None:
@@ -152,6 +169,7 @@ def cmd_publish(root: pathlib.Path, aid: str, apath: str, atype: str) -> None:
                 f"Pass <path> on first publish."
             )
 
+        _validate_artifact(root, apath, atype)
         _flip_status(full, 'published')
 
         if existing:
@@ -186,6 +204,7 @@ def cmd_approve(root: pathlib.Path, aid: str) -> None:
             )
 
         full = pathlib.Path(root, entry['path'])
+        _validate_artifact(root, entry['path'], entry['type'])
         try:
             _flip_status(full, 'approved')
         except SystemExit as e:
