@@ -5,7 +5,6 @@
   "hooks": {
     "PostToolUse": [
       {
-        "_comment": "Freshness reload: after update.wb / git pull / git merge, or any Edit/Write under steering/** or steering.local/**, surface the merged Layer 0 + active role steering so the agent picks up changes mid-session.",
         "matcher": "Bash|Edit|Write|MultiEdit",
         "hooks": [
           {
