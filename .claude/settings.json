@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings",
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "_comment": "Template-owned. Controls Claude Code behaviour inside a stamped ai-workbench. Template PRs are the only way to change this file.",
 
   "hooks": {
