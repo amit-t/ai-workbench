@@ -104,7 +104,6 @@ wb.ralph-enable-check                 # preflight that `ralph enable --workspace
 wb.ralph-plan [--mode ...] [--engine] # sync context + ralph-plan (workspace by default)
 wb.ralph-dispatch [--parallel N]      # ralph --workspace --parallel N (ralph owns the loop)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
-wb.ralph-annotate [--since 30m]       # M4 drift footer on open ralph PRs (post-hoc fallback)
 wb.register-repo <name> <url> <role>  # add code repo
 wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
 wb.approve <id>                       # published → approved (validates target_repos)
@@ -124,7 +123,7 @@ wb.steering-lint                      # validate steering/ and steering.local/
 - `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
 - Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
 - **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.
-- **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): once the ralph-side `.ralph/pr_footer.md` support lands, `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph picks it up automatically. Until then, `wb.ralph-annotate` edits open PR bodies as a post-hoc fallback.
+- **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph appends it to every PR body via the upstream `pr-footer-append` support.
 
 ## Hard rules
 

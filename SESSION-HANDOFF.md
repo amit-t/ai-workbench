@@ -78,11 +78,10 @@ Parked items from the V1 ship, ordered by leverage:
 ### E. Ralph adapter V2 polish (new)
 Follow-ups to the V1 ship that deserve their own PRs:
 
-1. Retire `wb.ralph-annotate` once every developer's installed `ralph` binary carries the `pr-footer-append` change. Simplify `sync-context.sh` accordingly and drop the alias.
-2. Parallel planning in `ralph-plan --workspace` (upstream ralph). V1 plan is sequential per repo; for 4+ repos this is the bottleneck.
-3. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`, so `wb.ralph-dispatch --repos a,b` becomes meaningful without pre-editing `fix_plan.md`.
-4. `wb.ralph-plan --replan <repo>` — regenerate one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state.
-5. Wire `ralph-workspace-plan` and `ralph-dispatch` skills to the rewritten aliases; their SKILL.md bodies still reference pre-adapter flags.
+1. Parallel planning in `ralph-plan --workspace` (upstream ralph). V1 plan is sequential per repo; for 4+ repos this is the bottleneck.
+2. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`, so `wb.ralph-dispatch --repos a,b` becomes meaningful without pre-editing `fix_plan.md`.
+3. `wb.ralph-plan --replan <repo>` — regenerate one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state.
+4. Wire `ralph-workspace-plan` and `ralph-dispatch` skills to the rewritten aliases; their SKILL.md bodies still reference pre-adapter flags.
 
 ### B. Plan B ralph adapter — **DONE** (this session)
 

@@ -30,7 +30,7 @@ Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd carries 
 
 ## Steering Drift Footer (M4)
 
-When the team has overlays under `steering.local/`, `sync-context.sh` writes a markdown footer (classifying every entry as ADD / SUPERSEDE / REMOVE) to `$WB_ROOT/repos/.ralph/pr_footer.md`. Once the ralph-side `.ralph/pr_footer.md` append support is in the deployed ralph binary, ralph picks it up automatically at PR creation. Until then, `wb.ralph-annotate [--since 30m]` edits open PR bodies via `gh pr edit` as a post-hoc fallback. The footer file is removed when the overlay set empties.
+When the team has overlays under `steering.local/`, `sync-context.sh` writes a markdown footer (classifying every entry as ADD / SUPERSEDE / REMOVE) to `$WB_ROOT/repos/.ralph/pr_footer.md`. Ralph appends that file to every PR body via the upstream `pr-footer-append` support in `pr_manager.sh`. The footer file is removed when the overlay set empties.
 
 ## Adapter Scripts
 
@@ -56,10 +56,6 @@ scripts/ralph-dispatch.sh [--parallel N] [--engine ...] [--status] [--dry-run]
 scripts/ralph-enable-check.sh
   # Preflights that `ralph enable --workspace` ran at $WB_ROOT/repos/.
   # Called by wb.ralph-plan and wb.ralph-dispatch.
-
-scripts/ralph-annotate-prs.sh [--since 30m]
-  # Post-hoc M4 drift footer fallback. Edits open PR bodies via `gh pr edit`.
-  # Retires once the ralph-side .ralph/pr_footer.md append support is deployed.
 
 scripts/validate-artifact.py
   # Validates target_repos: against project.conf REPOS. Hooked into lifecycle.py
