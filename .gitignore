@@ -16,3 +16,42 @@ ralph/*.pid
 # Editor junk
 .idea/
 .vscode/
+
+# Ralph — ignore everything except key files
+.ralph/*
+!.ralph/fix_plan.md
+!.ralph/PROMPT.md
+!.ralph/PROMPT_PLAN.md
+!.ralph/constitution.md
+
+# General logs
+*.log
+
+# OS files
+Thumbs.db
+
+# Temporary files
+*.tmp
+.temp/
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+/out/
+*.tsbuildinfo
+
+# Vite
+*.local
+
+# IDE files
+*.swo
+
+# Ralph backup directories (created by migration)
+.ralph_backup_*
