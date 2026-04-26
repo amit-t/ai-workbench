@@ -31,6 +31,8 @@
 #   ./scripts/ralph-plan.sh <repo>                  # only meaningful in per-repo mode
 #   ./scripts/ralph-plan.sh --engine claude --thinking hard
 #   ./scripts/ralph-plan.sh --dry-run               # echo the ralph command, do not run
+#   ./scripts/ralph-plan.sh --replan <repo>         # regen one repo's plan section
+#                                                   # and splice into repos/.ralph/fix_plan.md
 
 set -euo pipefail
 
@@ -45,18 +47,29 @@ CLI_MODE=""
 CLI_ENGINE=""
 CLI_THINKING=""
 CLI_REPO=""
+CLI_REPLAN=""
 DRY_RUN=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mode)      CLI_MODE="${2:-}"; shift 2 ;;
     --engine)    CLI_ENGINE="${2:-}"; shift 2 ;;
     --thinking)  CLI_THINKING="${2:-}"; shift 2 ;;
+    --replan)    CLI_REPLAN="${2:-}"; shift 2 ;;
     --dry-run)   DRY_RUN=true; shift ;;
-    --help|-h)   sed -n '2,32p' "$0"; exit 0 ;;
+    --help|-h)   sed -n '2,34p' "$0"; exit 0 ;;
     -*)          echo "Unknown flag: $1" >&2; exit 2 ;;
     *)           CLI_REPO="$1"; shift ;;
   esac
 done
+
+if [[ -n "$CLI_REPLAN" && -n "$CLI_MODE" ]]; then
+  echo "[wb.ralph-plan] --replan and --mode are mutually exclusive (replan is always per-repo)." >&2
+  exit 2
+fi
+if [[ -n "$CLI_REPLAN" && -n "$CLI_REPO" ]]; then
+  echo "[wb.ralph-plan] --replan and a positional repo are mutually exclusive." >&2
+  exit 2
+fi
 
 # Preflight: workspace enabled, ralph on PATH.
 "$SCRIPT_DIR/ralph-enable-check.sh"
@@ -87,13 +100,34 @@ _resolve_mode() {
 
 ENGINE="${CLI_ENGINE:-${RALPH_PLAN_ENGINE:-devin}}"
 THINKING="${CLI_THINKING:-${RALPH_PLAN_THINKING:-ultra}}"
-MODE="$(_resolve_mode)"
+
+_repo_registered() {
+  local target="$1"
+  local entry name
+  for entry in "${REPOS[@]}"; do
+    name="$(echo "$entry" | awk -F';' '{for(i=1;i<=NF;i++) if ($i ~ /^name=/) print substr($i,6)}')"
+    [[ "$name" == "$target" ]] && return 0
+  done
+  return 1
+}
+
+if [[ -n "$CLI_REPLAN" ]]; then
+  if ! _repo_registered "$CLI_REPLAN"; then
+    echo "[wb.ralph-plan] --replan: repo '$CLI_REPLAN' is not registered in project.conf REPOS." >&2
+    exit 2
+  fi
+  MODE="replan"
+else
+  MODE="$(_resolve_mode)"
+fi
 
 echo "[wb.ralph-plan] mode=$MODE engine=$ENGINE thinking=$THINKING"
 
 # Step 1: sync approved workbench context into repos/<name>/ai/.
 echo "[1/2] Syncing approved context..."
-if [[ -n "$CLI_REPO" && "$MODE" == "per-repo" ]]; then
+if [[ -n "$CLI_REPLAN" ]]; then
+  "$SCRIPT_DIR/sync-context.sh" "$CLI_REPLAN"
+elif [[ -n "$CLI_REPO" && "$MODE" == "per-repo" ]]; then
   "$SCRIPT_DIR/sync-context.sh" "$CLI_REPO"
 else
   "$SCRIPT_DIR/sync-context.sh"
@@ -136,7 +170,91 @@ _per_repo_call() {
   done
 }
 
-if [[ "$MODE" == "workspace" ]]; then
+_replan_call() {
+  local target="$1"
+  local repo_dir="$WB_ROOT/repos/$target"
+  if [[ ! -d "$repo_dir" ]]; then
+    echo "[wb.ralph-plan] --replan: repo dir not cloned at $repo_dir" >&2
+    exit 1
+  fi
+
+  local cmd=(ralph-plan --engine "$ENGINE" --thinking "$THINKING")
+  echo "  ── $target (replan) ──"
+  echo "    > (cd $repo_dir && ${cmd[*]})"
+
+  local workspace_plan="$WB_ROOT/repos/.ralph/fix_plan.md"
+  if [[ "$DRY_RUN" == "true" ]]; then
+    echo "    [dry-run] would splice into $workspace_plan under flock on .workbench-state/.lock"
+    return 0
+  fi
+
+  (cd "$repo_dir" && "${cmd[@]}") || {
+    echo "[wb.ralph-plan] --replan: ralph-plan failed for $target" >&2
+    exit 1
+  }
+
+  local per_repo_plan="$repo_dir/.ralph/fix_plan.md"
+  if [[ ! -f "$per_repo_plan" ]]; then
+    echo "[wb.ralph-plan] --replan: ralph-plan did not produce $per_repo_plan" >&2
+    exit 1
+  fi
+
+  local tmp_plan
+  tmp_plan="$(mktemp -t fix_plan.repo.XXXXXX)"
+  trap 'rm -f "$tmp_plan"' EXIT
+  cp "$per_repo_plan" "$tmp_plan"
+
+  local lock_file="$WB_ROOT/.workbench-state/.lock"
+  mkdir -p "$WB_ROOT/.workbench-state" "$WB_ROOT/repos/.ralph"
+  [[ -e "$lock_file" ]] || : > "$lock_file"
+
+  WB_REPLAN_REPO="$target" \
+  WB_REPLAN_SECTION="$tmp_plan" \
+  WB_REPLAN_WORKSPACE="$workspace_plan" \
+  WB_REPLAN_LOCK="$lock_file" \
+  python3 - <<'PYEOF'
+import fcntl, os, re, sys
+from pathlib import Path
+
+repo = os.environ["WB_REPLAN_REPO"]
+section_path = Path(os.environ["WB_REPLAN_SECTION"])
+workspace = Path(os.environ["WB_REPLAN_WORKSPACE"])
+lock_path = os.environ["WB_REPLAN_LOCK"]
+
+raw = section_path.read_text().strip("\n")
+header_re = re.compile(rf"^## +{re.escape(repo)}\b", re.MULTILINE)
+if not header_re.match(raw):
+    raw = f"## {repo}\n\n{raw}"
+section = raw.rstrip() + "\n"
+
+with open(lock_path, "a+") as fh:
+    fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+    try:
+        current = workspace.read_text() if workspace.exists() else ""
+        repo_section = re.compile(
+            rf"(?ms)^## +{re.escape(repo)}\b.*?(?=^## +\S|\Z)"
+        )
+        if repo_section.search(current):
+            new = repo_section.sub(section + "\n", current, count=1)
+        else:
+            sep = "" if (not current or current.endswith("\n\n")) else (
+                "\n" if current.endswith("\n") else "\n\n"
+            )
+            new = current + sep + section
+        workspace.parent.mkdir(parents=True, exist_ok=True)
+        workspace.write_text(new)
+    finally:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+PYEOF
+
+  rm -f "$tmp_plan"
+  trap - EXIT
+  echo "[wb.ralph-plan] --replan: spliced '$target' into $workspace_plan"
+}
+
+if [[ "$MODE" == "replan" ]]; then
+  _replan_call "$CLI_REPLAN"
+elif [[ "$MODE" == "workspace" ]]; then
   _workspace_call
 else
   _per_repo_call
