@@ -10,46 +10,66 @@ eyebrow: Ralph
 
 ## What the Workbench Adds
 
-ai-ralph natively operates on a single repo. The workbench layers two things on top:
+ai-ralph natively operates on a single repo. The workbench layers three things on top:
 
-1. **Context routing** (`scripts/sync-context.sh`) — reads `.workbench-state/approved.json` and copies each approved artifact into `repos/{name}/ai/` filtered by the target repo's role. Service repos get PRDs + specs + TDDs + ADRs. Automation repos get PRDs + BDDs + test cases + test spec. Shared-lib repos get specs + TDDs + ADRs. Infra repos get ADRs only.
-2. **Cross-repo parallel dispatch** (`scripts/ralph-dispatch.sh`) — launches a ralph loop per repo in parallel (background processes or tmux panes), logs PIDs + streams to `ralph/dispatch.log`, exposes a `--status` command that reports per-repo state by reading the log plus each worktree's git status.
+1. **Context routing** (`scripts/sync-context.sh`) reads `.workbench-state/approved.json`, honors each artifact's `target_repos:` frontmatter, and copies the artifact only into the listed `repos/{name}/ai/` directories. The repo's role still filters by type (service repos see PRDs + specs + TDDs + ERD + ADRs; automation repos see PRDs + BDDs + test cases + test spec; shared-lib repos see specs + TDDs + ADRs; infra repos see ADRs only).
+2. **Workspace-mode planning** (`scripts/ralph-plan.sh`) wraps `ralph-plan --workspace` invoked at `repos/`, which writes per-repo `.ralph/fix_plan.md` sections from a single workbench-aware planning pass. Per-repo mode is kept as a fallback for older ralph installs.
+3. **Cross-repo parallel dispatch** (`scripts/ralph-dispatch.sh`) wraps `ralph --workspace --parallel N` invoked at `repos/` (default `N = min(len(REPOS), 4)`). Ralph itself owns the loop, worktrees, commits, pushes, and PRs. `--status` shells out to `gh pr list` plus a tail of each repo's worker log.
 
-This gives you "one plan, multiple repos, dispatch them in parallel" — which ai-ralph native parallelism (within a single repo) does not cover.
+This gives you "one plan, multiple repos, dispatch them in parallel" without re-implementing any ralph internals.
 
 ## Workspace-Mode Planning
 
-`wb.ralph-plan` is assumed to invoke ai-ralph's **workspace mode** — a planning command that, when run from a workbench root, aggregates all approved workbench context, scans `repos/*`, writes per-repo `.ralph/fix_plan.md` files, and emits a rollup at `ralph/workspace-plan.md`.
+`wb.ralph-plan` defaults to workspace mode: a single `ralph-plan --workspace` call at `$WB_ROOT/repos/` aggregates all approved workbench context, scans `repos/*`, and writes per-repo `## <repo-name>` sections into `repos/.ralph/fix_plan.md`. The mode resolver is `CLI flag > env (WB_RALPH_PLAN_MODE) > project.conf RALPH_PLAN_MODE > auto`. Auto picks workspace when the installed `ralph-plan` advertises `--workspace`, otherwise it loops `project.conf REPOS` per-repo.
 
-If workspace mode is not yet merged in the ai-ralph fork you point at, the workbench falls back to per-repo planning: it iterates `repos/*`, runs `ralph-plan` inside each with repo-specific context prepared by `ralph-context.sh`, and stitches the results.
+Override with `wb.ralph-plan --mode per-repo`, `WB_RALPH_PLAN_MODE=per-repo`, or `RALPH_PLAN_MODE=per-repo` in `project.conf`.
 
-> **Plan B** tracks finalising the workspace-mode flag (`--workspace` vs `--workbench`) once the upstream PR merges. Only `scripts/ralph-plan.sh` changes when that happens.
+## `target_repos:` Routing
+
+Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd carries a `target_repos: [...]` field naming repos from `project.conf REPOS`. `wb.publish` and `wb.approve` both call `scripts/validate-artifact.py`, which rejects missing, empty, or unregistered values. The list flows into `sync-context.sh` (only listed repos receive the artifact) and into `ralph-plan`'s `## <repo-name>` section routing. ADRs and epic-context files are exempt and pass through.
+
+## Steering Drift Footer (M4)
+
+When the team has overlays under `steering.local/`, `sync-context.sh` writes a markdown footer (classifying every entry as ADD / SUPERSEDE / REMOVE) to `$WB_ROOT/repos/.ralph/pr_footer.md`. Once the ralph-side `.ralph/pr_footer.md` append support is in the deployed ralph binary, ralph picks it up automatically at PR creation. Until then, `wb.ralph-annotate [--since 30m]` edits open PR bodies via `gh pr edit` as a post-hoc fallback. The footer file is removed when the overlay set empties.
 
 ## Adapter Scripts
 
 ```
+scripts/sync-context.sh
+  # Push approved workbench artifacts into each repos/{x}/ai/ dir.
+  # Honors target_repos: per artifact and the repo's role filter.
+  # Writes/removes repos/.ralph/pr_footer.md based on steering.local/ state.
+
 scripts/ralph-context.sh
-  # Push workbench artifacts into each repos/{x}/ai/ dir per role:
-  #   role=service           → PRDs (approved) + specs + TDD + ERD + ADRs
-  #   role=automation-tests  → PRDs (approved) + BDDs + test cases + test spec
-  #   role=shared-lib        → specs + TDD + ADRs
-  #   role=infra             → ADRs only
-  # Filter via project.conf REPOS array
+  # Internal alias for sync-context.sh used by ralph-plan.sh.
 
-scripts/ralph-plan.sh
-  # Wraps ai-ralph workspace command
-  # Likely: ralph-plan --workspace (or --workbench) invoked from workbench root
-  # Single-repo fallback: iterate repos/* and run
-  #   (cd repos/{x} && ralph-plan) with repo-specific context from ralph-context.sh
+scripts/ralph-plan.sh [--mode workspace|per-repo|auto] [--engine ...] [--thinking ...] [--dry-run]
+  # Resolver order: CLI flag > env WB_RALPH_PLAN_MODE > project.conf RALPH_PLAN_MODE > auto.
+  # Workspace mode: (cd repos && ralph-plan --workspace --engine $E --thinking $T)
+  # Per-repo fallback: loops project.conf REPOS, runs ralph-plan inside each.
 
-scripts/ralph-loop.sh <repo> [--agent claude|devin|codex]
-  # cd repos/{repo} && {rpc.int|rpd.int|rpx.int}
-  # Pass through --live --monitor by default
+scripts/ralph-dispatch.sh [--parallel N] [--engine ...] [--status] [--dry-run]
+  # (cd repos && ralph --workspace --parallel N)
+  # Default N = min(len(REPOS), 4). Engine flag passed through when ralph supports it.
+  # --status: gh pr list per repo + tail of repos/.ralph/logs/.
 
-scripts/ralph-dispatch.sh [--repos r1,r2,...] [--agent ...]
-  # For each repo, launch ralph-loop in a background process (nohup) or tmux pane
-  # Log PIDs + streams to ralph/dispatch.log
-  # Status: ralph-dispatch.sh --status reads the log and git status of each worktree
+scripts/ralph-enable-check.sh
+  # Preflights that `ralph enable --workspace` ran at $WB_ROOT/repos/.
+  # Called by wb.ralph-plan and wb.ralph-dispatch.
+
+scripts/ralph-annotate-prs.sh [--since 30m]
+  # Post-hoc M4 drift footer fallback. Edits open PR bodies via `gh pr edit`.
+  # Retires once the ralph-side .ralph/pr_footer.md append support is deployed.
+
+scripts/validate-artifact.py
+  # Validates target_repos: against project.conf REPOS. Hooked into lifecycle.py
+  # at both publish and approve. Pass-through for adr and epic-context types.
+```
+
+Single-repo debugging is a one-liner; the workbench does not wrap it:
+
+```bash
+(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)
 ```
 
 ## Hard Rules

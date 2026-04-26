@@ -72,13 +72,24 @@ wb-<label>/
 │   ├── published.json                # draft → published transitions
 │   ├── approved.json                 # published → approved transitions (ralph gate)
 │   └── rejected.json                 # reason-tracked rejections
+├── steering/                         # template-owned rule files (golden, role, artifact, topic)
+├── steering.local/                   # team-owned overlays (add / supersede / remove)
+├── .claude/
+│   └── settings.json                 # PostToolUse hook re-emits Layer 0 steering on update
 ├── scripts/
 │   ├── lifecycle.py                  # unified publish/approve/reject CLI with flock
-│   ├── sync-context.sh               # workbench → repos/{x}/ai/
-│   ├── ralph-context.sh              # identical target, used by ralph-plan
-│   ├── ralph-plan.sh                 # wraps ralph-plan --workspace
-│   ├── ralph-loop.sh                 # cd repos/{x} && rpc.int | rpd.int | rpx.int
-│   ├── ralph-dispatch.sh             # parallel launch across repos
+│   ├── sync-context.sh               # workbench → repos/{x}/ai/, writes pr_footer.md
+│   ├── ralph-context.sh              # internal alias for sync-context.sh, used by ralph-plan
+│   ├── ralph-plan.sh                 # wraps `ralph-plan --workspace` with per-repo fallback
+│   ├── ralph-dispatch.sh             # wraps `ralph --workspace --parallel N`
+│   ├── ralph-enable-check.sh         # preflight that `ralph enable --workspace` ran
+│   ├── ralph-annotate-prs.sh         # M4 drift footer post-hoc fallback (`gh pr edit`)
+│   ├── validate-artifact.py          # blocks publish/approve when target_repos is missing
+│   ├── artifact-schema.json          # JSON schema used by validate-artifact.py
+│   ├── steering-load.py              # merge template + overlay rules for a scope
+│   ├── steering-overlays.py          # render add/supersede/remove footer for ralph PRs
+│   ├── steering-lint.py              # validate steering/ and steering.local/
+│   ├── steering-post-tool-hook.sh    # Claude Code PostToolUse hook for steering freshness
 │   └── register-repo.sh              # append a repo entry to project.conf
 ├── tests/                            # template smoke tests
 │   ├── README.md
@@ -136,7 +147,7 @@ Only paths in `template_owned` are touched by `update.wb`. Everything else (your
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "template_owned": [
     "CLAUDE.md",
     "AGENTS.md",
@@ -144,20 +155,28 @@ Only paths in `template_owned` are touched by `update.wb`. Everything else (your
     "aliases.sh",
     ".gitignore",
     ".workbench-manifest.json",
+    ".mcp.json.template",
+    "project.conf.template",
+    "EPIC-PIPELINE.md.template",
+    ".claude/settings.json",
+    ".github/CODEOWNERS",
+    ".github/workflows/**",
     "scripts/**",
-    "skills/**"
+    "skills/**",
+    "steering/**",
+    "tests/**"
   ],
   "user_owned": [
     "project.conf",
     "EPIC-PIPELINE.md",
     ".mcp.json",
-    ".github/CODEOWNERS",
     "product/**",
     "design/**",
     "engineering/**",
     "qa/**",
     "ralph/**",
     "repos/**",
+    "steering.local/**",
     ".workbench-state/**"
   ]
 }
