@@ -31,7 +31,7 @@ Plan C is human-driven grilling, not autonomous implementation. Skip in unattend
 ## Done
 
 - [x] Plan B. Ralph adapter V1 (shipped 2026-04-25, see `CHANGELOG.md`).
-- [x] Plan E1. Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to the rewritten aliases (shipped 2026-04-27, see `CHANGELOG.md`). PR URLs appended on merge.
+- [x] Plan E1. Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to the rewritten aliases (shipped 2026-04-27, see `CHANGELOG.md`). PRs: amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13.
 
 ## Notes
 
