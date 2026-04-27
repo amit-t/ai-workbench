@@ -14,7 +14,7 @@ Hard rules for every task:
 
 ## Tasks
 
-- [~] **E1** Retire `wb.ralph-annotate` post-hoc fallback path.
+- [x] **E1** Retire `wb.ralph-annotate` post-hoc fallback path.
   Context: `pr-footer-append` shipped in upstream ralph (`feat/pr-footer-append`); ralph itself appends `.ralph/pr_footer.md` to PR bodies. The post-hoc annotator is now redundant.
   Do:
   - Delete `scripts/ralph-annotate-prs.sh`.
