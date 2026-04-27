@@ -254,3 +254,11 @@ RECOMMENDATION: E4 done; wb.ralph-plan --replan <repo> regenerates one repo's pl
 [2026-04-27 12:47:09] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
 [2026-04-27 12:47:09] [INFO] Worktree: true | Merge: squash | Gates: auto
 [2026-04-27 12:47:09] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
+[2026-04-27 12:48:56] [INFO] Claude CLI version 2.1.112 (>= 2.0.76) - modern features enabled
+[2026-04-27 12:48:56] [INFO] Claude CLI update available: 2.1.112 → 2.1.119. Attempting auto-update...
+[2026-04-27 12:48:57] [SUCCESS] Claude CLI updated: 2.1.112 → 2.1.112
+[2026-04-27 12:48:57] [SUCCESS] 🚀 Ralph loop starting with Claude Code
+[2026-04-27 12:48:57] [INFO] Max calls per hour: 100
+[2026-04-27 12:48:57] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/status.json
+[2026-04-27 12:48:57] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-27 12:48:57] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
