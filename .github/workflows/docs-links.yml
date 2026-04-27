@@ -1,0 +1,109 @@
+name: docs links
+
+# Two jobs:
+#   1) audit  — fails on any hardcoded amit-t/* or Invenco-Cloud-Systems-ICS/* owner URL
+#               that escaped the owner-aware Liquid resolver (docs/_data/orgs.yml +
+#               docs/_includes/links.html).
+#   2) build  — builds the Jekyll site twice and asserts owner-correct rendering:
+#               (a) default build → URLs resolve to amit-t (the local-build fallback).
+#               (b) PAGES_REPO_NWO=Invenco-Cloud-Systems-ICS/ai-workbench → URLs
+#                   resolve to Invenco-Cloud-Systems-ICS, with no amit-t leak.
+#
+# This guards against future edits silently breaking the inv fork's Pages output.
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "scripts/check-docs-links.sh"
+      - ".github/workflows/docs-links.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "scripts/check-docs-links.sh"
+      - ".github/workflows/docs-links.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run hardcoded-owner-URL guard
+        run: bash scripts/check-docs-links.sh
+
+  build:
+    runs-on: ubuntu-latest
+    needs: audit
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: docs
+
+      # Default build — github-metadata reads `repository:` from _config.yml
+      # (amit-t/ai-workbench), so site.github.owner_name = "amit-t".
+      - name: Build (default owner = amit-t)
+        run: bundle exec jekyll build --destination _site_default
+
+      - name: Assert default build resolves to amit-t
+        run: |
+          set -euo pipefail
+          html="_site_default/index.html"
+          test -f "$html"
+          if ! grep -q "github.com/amit-t/ai-workbench" "$html"; then
+            echo "FAIL: default build missing amit-t/ai-workbench in $html" >&2
+            exit 1
+          fi
+          # No unresolved Liquid / placeholders in any rendered page.
+          if grep -REn '\{\{[^}]+\}\}|\{%[^%]+%\}' _site_default --include='*.html'; then
+            echo "FAIL: unresolved Liquid in default build" >&2
+            exit 1
+          fi
+          # Cross-owner leak guard.
+          if grep -REn 'Invenco-Cloud-Systems-ICS' _site_default --include='*.html'; then
+            echo "FAIL: default build contains Invenco-Cloud-Systems-ICS references" >&2
+            exit 1
+          fi
+          echo "default build OK"
+
+      # Inv build — jekyll-github-metadata reads PAGES_REPO_NWO at build time and
+      # overrides site.github.owner_name to "Invenco-Cloud-Systems-ICS".
+      - name: Build (PAGES_REPO_NWO = Invenco-Cloud-Systems-ICS/ai-workbench)
+        env:
+          PAGES_REPO_NWO: Invenco-Cloud-Systems-ICS/ai-workbench
+        run: bundle exec jekyll build --destination _site_inv
+
+      - name: Assert inv build resolves to Invenco-Cloud-Systems-ICS
+        run: |
+          set -euo pipefail
+          html="_site_inv/index.html"
+          test -f "$html"
+          if ! grep -q "github.com/Invenco-Cloud-Systems-ICS/ai-workbench" "$html"; then
+            echo "FAIL: inv build missing Invenco-Cloud-Systems-ICS/ai-workbench in $html" >&2
+            exit 1
+          fi
+          if grep -REn 'github\.com/amit-t/' _site_inv --include='*.html'; then
+            echo "FAIL: inv build leaks github.com/amit-t/ URLs" >&2
+            exit 1
+          fi
+          if grep -REn 'amit-t\.github\.io' _site_inv --include='*.html'; then
+            echo "FAIL: inv build leaks amit-t.github.io URLs" >&2
+            exit 1
+          fi
+          if grep -REn '\{\{[^}]+\}\}|\{%[^%]+%\}' _site_inv --include='*.html'; then
+            echo "FAIL: unresolved Liquid in inv build" >&2
+            exit 1
+          fi
+          echo "inv build OK"

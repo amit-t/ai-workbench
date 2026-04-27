@@ -4,6 +4,8 @@ layout: default
 eyebrow: Architecture
 ---
 
+{% include links.html %}
+
 ## Problem and Motivation
 
 Individual-contributor engineers and QAs currently split work across Jira, Confluence, service repos, automation repos, and ad-hoc prompts. They want a single harness to take one or more Jira epics, generate a PRD, engineering spec, TDD, ERD, ADRs, BDDs, test cases, and a test spec; wear PM / architect / staff-engineer / UX hats without switching tools; share generated drafts with the counterpart (dev ↔ QA) via git for review and approval; plan code changes across multiple service repos in a single ralph workspace-mode session; dispatch parallel autonomous ralph loops; and keep the workbench private, per-bundle, and disposable — not a long-running OS.
@@ -14,8 +16,8 @@ The harness is two GitHub repos, independent, published under `<your-org>` (defa
 
 | Repo | Role | Lives at |
 |------|------|----------|
-| `ai-workbench` | Template. Cloned per work-bundle. Ships skills, scripts, lifecycle aliases, config templates. | `https://github.com/amit-t/ai-workbench` |
-| `ai-devkit` | Global CLI. Installs `init.wb`, `join.wb`, `update.wb`. | `https://github.com/amit-t/ai-devkit` |
+| `ai-workbench` | Template. Cloned per work-bundle. Ships skills, scripts, lifecycle aliases, config templates. | `{{ links.ai_workbench_repo }}` |
+| `ai-devkit` | Global CLI. Installs `init.wb`, `join.wb`, `update.wb`. | `{{ links.ai_devkit_repo }}` |
 
 You never clone `ai-workbench` directly — `init.wb` stamps private instances from it via `gh repo create --template`.
 

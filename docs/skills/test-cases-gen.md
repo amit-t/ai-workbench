@@ -5,6 +5,8 @@ eyebrow: QA
 subtitle: "Expand approved BDD scenarios into detailed test cases. Reviewable MD table with priority, type, automation-candidate flags."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | QA | QA | All relevant BDDs approved | `qa/outputs/test-cases/PRD-NNN-cases.md` | `/test-spec` |
@@ -59,4 +61,4 @@ source_features:
 
 ## Source
 
-[`skills/test-cases-gen/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/test-cases-gen/SKILL.md)
+[`skills/test-cases-gen/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/test-cases-gen/SKILL.md)

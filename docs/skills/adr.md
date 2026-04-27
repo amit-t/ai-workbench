@@ -5,6 +5,8 @@ eyebrow: ENG
 subtitle: "MADR-lite Architecture Decision Record — context, drivers, options, decision, consequences. Cross-links SPEC + TDD."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Cited from |
 |-----|-------|---------------|--------|------------|
 | Eng | Engineering | SPEC exists (may be draft) OR standalone | `engineering/outputs/adrs/ADR-NNN-<slug>.md` | SPEC §11 Dependencies → ADRs, TDD §Decisions |
@@ -51,4 +53,4 @@ superseded_by: —
 
 ## Source
 
-[`skills/adr/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/adr/SKILL.md)
+[`skills/adr/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/adr/SKILL.md)

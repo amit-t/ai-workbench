@@ -5,6 +5,8 @@ eyebrow: ENG
 subtitle: "Technical design doc — file map per repo, interfaces, sequence diagrams, failure matrix, test outline."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | Eng | Engineering | SPEC approved | `engineering/outputs/tdd/TDD-NNN-<slug>.md` | `/ralph-workspace-plan` |
@@ -51,4 +53,4 @@ spec: SPEC-{NNN}
 
 ## Source
 
-[`skills/tdd/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/tdd/SKILL.md)
+[`skills/tdd/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/tdd/SKILL.md)

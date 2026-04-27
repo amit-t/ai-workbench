@@ -5,6 +5,8 @@ eyebrow: QA
 subtitle: "QA engineering spec + test ERD — coverage matrix, automation entry, test data, envs, parallelism, flaky strategy."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | QA | QA | PRD + BDDs + test cases approved | `qa/outputs/test-spec/TSD-NNN-<slug>.md` + `qa/outputs/test-erd/TERD-NNN-<slug>.md` | `/ralph-workspace-plan` |
@@ -51,4 +53,4 @@ automation_stack: {stack hint}
 
 ## Source
 
-[`skills/test-spec/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/test-spec/SKILL.md)
+[`skills/test-spec/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/test-spec/SKILL.md)

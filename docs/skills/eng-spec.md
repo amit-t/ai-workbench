@@ -5,6 +5,8 @@ eyebrow: ENG
 subtitle: "Engineering spec from an approved PRD — architecture, contracts, data, rollout, observability."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | Eng | Engineering | PRD approved | `engineering/outputs/specs/SPEC-NNN-<slug>.md` | `/tdd`, `/erd`, `/adr`, `/ralph-workspace-plan` |
@@ -48,4 +50,4 @@ target_repos:
 
 ## Source
 
-[`skills/eng-spec/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/eng-spec/SKILL.md)
+[`skills/eng-spec/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/eng-spec/SKILL.md)

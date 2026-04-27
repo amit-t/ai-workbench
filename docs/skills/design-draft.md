@@ -5,6 +5,8 @@ eyebrow: UXD
 subtitle: "End-to-end UX workflow for an approved PRD — brief, user flow, wireframes, hi-fi screens, review, handoff. Orchestrates `/figma-pull`, `/ds-screen-gen`, `/design-review`."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | UXD | Design | PRD approved | `design/outputs/{briefs,user-flows,wireframes,screens,handoffs}/PRD-NNN-*` | Engineering handoff |
@@ -51,4 +53,4 @@ wb.approve DESIGN-HANDOFF-PRD-{NNN}
 
 ## Source
 
-[`skills/design-draft/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/design-draft/SKILL.md)
+[`skills/design-draft/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/design-draft/SKILL.md)
