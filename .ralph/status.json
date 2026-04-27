@@ -1,0 +1,14 @@
+{
+    "timestamp": "2026-04-26T13:55:29+00:00",
+    "engine": "claude",
+    "loop_count": 1,
+    "calls_made_this_hour": 4,
+    "max_calls_per_hour": 100,
+    "last_action": "executing",
+    "status": "running",
+    "exit_reason": "",
+    "worktree_enabled": true,
+    "worktree_branch": "ralph-claude/e4-add-wb-ralph-plan-replan-repo-for-single-repo-p",
+    "worktree_path": "/Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e4-add-wb-ralph-plan-replan-repo-for-single-repo-p",
+    "next_reset": "20:25:29"
+}

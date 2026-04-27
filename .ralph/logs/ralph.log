@@ -1,0 +1,216 @@
+[2026-04-26 19:25:13] [INFO] Loaded configuration from .ralphrc
+[2026-04-26 19:25:13] [INFO] Claude CLI version 2.1.112 (>= 2.0.76) - modern features enabled
+[2026-04-26 19:25:14] [INFO] Loaded configuration from .ralphrc
+[2026-04-26 19:25:14] [INFO] Claude CLI version 2.1.112 (>= 2.0.76) - modern features enabled
+[2026-04-26 19:25:14] [INFO] Claude CLI update available: 2.1.112 → 2.1.119. Attempting auto-update...
+[2026-04-26 19:25:14] [INFO] Claude CLI update available: 2.1.112 → 2.1.119. Attempting auto-update...
+[2026-04-26 19:25:14] [INFO] Loaded configuration from .ralphrc
+[2026-04-26 19:25:14] [INFO] Claude CLI version 2.1.112 (>= 2.0.76) - modern features enabled
+[2026-04-26 19:25:15] [INFO] Claude CLI update available: 2.1.112 → 2.1.119. Attempting auto-update...
+[2026-04-26 19:25:15] [INFO] Loaded configuration from .ralphrc
+[2026-04-26 19:25:15] [INFO] Claude CLI version 2.1.112 (>= 2.0.76) - modern features enabled
+[2026-04-26 19:25:16] [INFO] Claude CLI update available: 2.1.112 → 2.1.119. Attempting auto-update...
+[2026-04-26 19:25:16] [INFO] Loaded configuration from .ralphrc
+[2026-04-26 19:25:16] [INFO] Claude CLI version 2.1.112 (>= 2.0.76) - modern features enabled
+[2026-04-26 19:25:16] [INFO] Claude CLI update available: 2.1.112 → 2.1.119. Attempting auto-update...
+[2026-04-26 19:25:23] [SUCCESS] Claude CLI updated: 2.1.112 → 2.1.112
+[2026-04-26 19:25:23] [SUCCESS] Claude CLI updated: 2.1.112 → 2.1.112
+[2026-04-26 19:25:23] [SUCCESS] 🚀 Ralph loop starting with Claude Code
+[2026-04-26 19:25:23] [SUCCESS] Claude CLI updated: 2.1.112 → 2.1.112
+[2026-04-26 19:25:23] [SUCCESS] 🚀 Ralph loop starting with Claude Code
+[2026-04-26 19:25:23] [SUCCESS] 🚀 Ralph loop starting with Claude Code
+[2026-04-26 19:25:23] [INFO] Max calls per hour: 100
+[2026-04-26 19:25:23] [SUCCESS] Claude CLI updated: 2.1.112 → 2.1.112
+[2026-04-26 19:25:23] [INFO] Max calls per hour: 100
+[2026-04-26 19:25:23] [INFO] Max calls per hour: 100
+[2026-04-26 19:25:23] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/status.json
+[2026-04-26 19:25:23] [SUCCESS] 🚀 Ralph loop starting with Claude Code
+[2026-04-26 19:25:23] [SUCCESS] Claude CLI updated: 2.1.112 → 2.1.112
+[2026-04-26 19:25:23] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/status.json
+[2026-04-26 19:25:23] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/status.json
+[2026-04-26 19:25:23] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-26 19:25:23] [SUCCESS] 🚀 Ralph loop starting with Claude Code
+[2026-04-26 19:25:23] [INFO] Max calls per hour: 100
+[2026-04-26 19:25:23] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-26 19:25:23] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-26 19:25:23] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/status.json
+[2026-04-26 19:25:23] [INFO] Max calls per hour: 100
+[2026-04-26 19:25:23] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-26 19:25:23] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/status.json
+[2026-04-26 19:25:23] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-26 19:25:23] [INFO] Initialized session tracking (session: ralph-1777211723-8354)
+[2026-04-26 19:25:23] [INFO] Initialized session tracking (session: ralph-1777211723-10019)
+[2026-04-26 19:25:23] [INFO] Initialized session tracking (session: ralph-1777211723-20769)
+[2026-04-26 19:25:23] [SUCCESS] Worktree mode enabled (base: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees)
+[2026-04-26 19:25:23] [SUCCESS] Worktree mode enabled (base: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees)
+[2026-04-26 19:25:23] [SUCCESS] Worktree mode enabled (base: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees)
+[2026-04-26 19:25:23] [SUCCESS] Worktree mode enabled (base: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees)
+[2026-04-26 19:25:23] [SUCCESS] Worktree mode enabled (base: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees)
+[2026-04-26 19:25:27] [INFO] PR preflight: all checks passed (push=true, gh=true)
+[2026-04-26 19:25:27] [INFO] PR preflight: all checks passed (push=true, gh=true)
+[2026-04-26 19:25:27] [INFO] PR preflight: all checks passed (push=true, gh=true)
+[2026-04-26 19:25:27] [INFO] PR preflight: all checks passed (push=true, gh=true)
+[2026-04-26 19:25:27] [INFO] Reset exit signals for fresh start
+[2026-04-26 19:25:27] [INFO] Reset exit signals for fresh start
+[2026-04-26 19:25:27] [INFO] Reset exit signals for fresh start
+[2026-04-26 19:25:27] [INFO] Reset exit signals for fresh start
+[2026-04-26 19:25:27] [INFO] Starting task execution...
+[2026-04-26 19:25:27] [INFO] Starting task execution...
+[2026-04-26 19:25:27] [INFO] Starting task execution...
+[2026-04-26 19:25:27] [INFO] Starting task execution...
+[2026-04-26 19:25:27] [INFO] Call counter reset for new hour: 2026042619
+[2026-04-26 19:25:28] [SUCCESS] Picked task: e1-retire-wb-ralph-annotate-post-hoc-fallback-path (line 17)
+[2026-04-26 19:25:28] [INFO] PR preflight: all checks passed (push=true, gh=true)
+[2026-04-26 19:25:28] [INFO] Reset exit signals for fresh start
+[2026-04-26 19:25:28] [INFO] Starting task execution...
+[2026-04-26 19:25:28] [SUCCESS] Worktree: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e1-retire-wb-ralph-annotate-post-hoc-fallback-path (branch: ralph-claude/e1-retire-wb-ralph-annotate-post-hoc-fallback-path)
+[2026-04-26 19:25:28] [LOOP] Executing Claude Code (Call 1/100)
+[2026-04-26 19:25:28] [INFO] ⏳ Starting Claude Code execution... (timeout: 15m)
+[2026-04-26 19:25:28] [INFO] Working directory: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e1-retire-wb-ralph-annotate-post-hoc-fallback-path
+[2026-04-26 19:25:28] [SUCCESS] Picked task: e2-draft-upstream-ralph-design-doc-parallel-planni (line 29)
+[2026-04-26 19:25:28] [INFO] Using modern CLI mode (json output)
+[2026-04-26 19:25:28] [SUCCESS] Worktree: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e2-draft-upstream-ralph-design-doc-parallel-planni (branch: ralph-claude/e2-draft-upstream-ralph-design-doc-parallel-planni)
+[2026-04-26 19:25:28] [SUCCESS] Picked task: e3-draft-upstream-ralph-design-doc-repos-subset-fi (line 37)
+[2026-04-26 19:25:28] [SUCCESS] Picked task: e3-draft-upstream-ralph-design-doc-repos-subset-fi (line 37)
+[2026-04-26 19:25:28] [WARN] Worktree creation failed, using main directory
+[2026-04-26 19:25:28] [LOOP] Executing Claude Code (Call 2/100)
+[2026-04-26 19:25:28] [INFO] ⏳ Starting Claude Code execution... (timeout: 15m)
+[2026-04-26 19:25:28] [INFO] Working directory: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e2-draft-upstream-ralph-design-doc-parallel-planni
+[2026-04-26 19:25:28] [LOOP] Executing Claude Code (Call 3/100)
+[2026-04-26 19:25:28] [INFO] ⏳ Starting Claude Code execution... (timeout: 15m)
+[2026-04-26 19:25:28] [INFO] Starting new Claude session
+[2026-04-26 19:25:28] [SUCCESS] Worktree: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e3-draft-upstream-ralph-design-doc-repos-subset-fi (branch: ralph-claude/e3-draft-upstream-ralph-design-doc-repos-subset-fi)
+[2026-04-26 19:25:28] [LOOP] Executing Claude Code (Call 4/100)
+[2026-04-26 19:25:28] [INFO] ⏳ Starting Claude Code execution... (timeout: 15m)
+[2026-04-26 19:25:28] [INFO] Using modern CLI mode (json output)
+[2026-04-26 19:25:28] [INFO] Working directory: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e3-draft-upstream-ralph-design-doc-repos-subset-fi
+[2026-04-26 19:25:28] [INFO] Using modern CLI mode (json output)
+[2026-04-26 19:25:28] [SUCCESS] Picked task: e4-add-wb-ralph-plan-replan-repo-for-single-repo-p (line 44)
+[2026-04-26 19:25:28] [INFO] Using modern CLI mode (json output)
+[2026-04-26 19:25:29] [SUCCESS] Worktree: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e4-add-wb-ralph-plan-replan-repo-for-single-repo-p (branch: ralph-claude/e4-add-wb-ralph-plan-replan-repo-for-single-repo-p)
+[2026-04-26 19:25:29] [LOOP] Executing Claude Code (Call 5/100)
+[2026-04-26 19:25:29] [INFO] ⏳ Starting Claude Code execution... (timeout: 15m)
+[2026-04-26 19:25:29] [INFO] Working directory: /Users/amittiwari/Projects/Tools-Utilities/ai-workbench-worktrees/e4-add-wb-ralph-plan-replan-repo-for-single-repo-p
+[2026-04-26 19:25:29] [INFO] Using modern CLI mode (json output)
+[2026-04-26 19:28:20] [ERROR] Claude API error: E3 done: design doc drafted at `notes/upstream-ralph-v2/repos-subset-filter.md` (150 lines), covers all required sections (problem, flag spec, fix_plan section semantics with skip/hide/assert tradeoff, parallelism cap, edge cases, back-compat, workbench-side wiring, test coverage, rollout). Smoke 22/22 passing. No em-dashes, no hype words. Single-file scope respected.
+
+```
+---RALPH_STATUS---
+STATUS: COMPLETE
+TASKS_COMPLETED_THIS_LOOP: 1
+FILES_MODIFIED: 1
+TESTS_STATUS: PASSING
+WORK_TYPE: DOCUMENTATION
+EXIT_SIGNAL: true
+RECOMMENDATION: E3 design doc drafted; ready for upstream ai-ralph PR review.
+---END_RALPH_STATUS---
+```
+[2026-04-26 19:28:20] [INFO] Session reset: api_error_is_error_true
+[2026-04-26 19:28:20] [WARN] Session reset due to API error (is_error:true). Re-run ralph to start a fresh session.
+[2026-04-26 19:28:20] [ERROR] Claude API error: E3 done: design doc drafted at `notes/upstream-ralph-v2/repos-subset-filter.md` (150 lines), covers all required sections (problem, flag spec, fix_plan section semantics with skip/hide/assert tradeoff, parallelism cap, edge cases, back-compat, workbench-side wiring, test coverage, rollout). Smoke 22/22 passing. No em-dashes, no hype words. Single-file scope respected.
+
+```
+---RALPH_STATUS---
+STATUS: COMPLETE
+TASKS_COMPLETED_THIS_LOOP: 1
+FILES_MODIFIED: 1
+TESTS_STATUS: PASSING
+WORK_TYPE: DOCUMENTATION
+EXIT_SIGNAL: true
+RECOMMENDATION: E3 design doc drafted; ready for upstream ai-ralph PR review.
+---END_RALPH_STATUS---
+```
+[2026-04-26 19:28:20] [INFO] Session reset: api_error_is_error_true
+[2026-04-26 19:28:20] [WARN] Session reset due to API error (is_error:true). Re-run ralph to start a fresh session.
+[2026-04-26 19:28:50] [ERROR] Claude API error: Task E2 complete. Drafted `notes/upstream-ralph-v2/parallel-planning.md` (209 lines) covering all required sections: problem, why-sequential, flag spec, engine interaction, file-locking via buffer-then-merge with `flock` on `repos/.ralph/.plan.lock`, defaults, env override (`RALPH_PLAN_PARALLEL`), back-compat, three-phase rollout, test matrix, and a "what workbench changes" tail. No em dashes, no hype words. Smoke 22/22 still passing. Single commit, scope respected.
+
+```
+---RALPH_STATUS---
+STATUS: COMPLETE
+TASKS_COMPLETED_THIS_LOOP: 1
+FILES_MODIFIED: 1
+TESTS_STATUS: PASSING
+WORK_TYPE: DOCUMENTATION
+EXIT_SIGNAL: true
+RECOMMENDATION: E2 design doc drafted and committed; ready for PR. Move to E3 (repos-subset filter) next loop.
+---END_RALPH_STATUS---
+```
+[2026-04-26 19:28:50] [INFO] Session reset: api_error_is_error_true
+[2026-04-26 19:28:50] [WARN] Session reset due to API error (is_error:true). Re-run ralph to start a fresh session.
+[2026-04-26 19:29:40] [ERROR] Claude API error: Task complete. Smoke 22/22 still passes, working tree clean.
+
+**Summary of changes:**
+- Deleted `scripts/ralph-annotate-prs.sh`
+- Removed `wb.ralph-annotate` alias and comment from `aliases.sh`
+- Removed `wb.ralph-annotate` line from CLAUDE.md key-commands block; rewrote the M4 drift footer bullet to drop the post-hoc fallback sentence
+- Rewrote the "Steering drift footer on ralph PRs (M4)" paragraph in README.md
+- Renumbered SESSION-HANDOFF.md "E. Ralph adapter V2 polish" (struck item 1, V2 items now 1–4)
+- Updated docs/ralph.md (drift-footer paragraph + adapter scripts block) and docs/architecture.md (directory tree)
+- `scripts/sync-context.sh` had no annotator references — left untouched
+- No smoke assertion checked the annotator script — nothing to drop
+
+```
+---RALPH_STATUS---
+STATUS: COMPLETE
+TASKS_COMPLETED_THIS_LOOP: 1
+FILES_MODIFIED: 7
+TESTS_STATUS: PASSING
+WORK_TYPE: REFACTORING
+EXIT_SIGNAL: true
+RECOMMENDATION: E1 done; pr-footer-append is now the only path. Ready for PR.
+---END_RALPH_STATUS---
+```
+[2026-04-26 19:29:40] [INFO] Session reset: api_error_is_error_true
+[2026-04-26 19:29:40] [WARN] Session reset due to API error (is_error:true). Re-run ralph to start a fresh session.
+[2026-04-26 19:30:30] [ERROR] Claude API error: E4 done. Summary of changes:
+
+- `scripts/ralph-plan.sh`: added `--replan <repo>` arg, `_repo_registered` validator, `_replan_call` that runs `ralph-plan` in `repos/<repo>/`, copies output to a temp `fix_plan.repo.*` file, and splices it into `repos/.ralph/fix_plan.md` under `fcntl.flock(.workbench-state/.lock)` via inline Python. Mutex against `--mode` and positional repo. Existing modes untouched.
+- `CLAUDE.md`: new `wb.ralph-plan --replan <repo>` line in key commands, and a bullet under "Ralph adapter (quick reference)" describing semantics + flock.
+- `README.md`: new "Replanning one repo" subsection in "Multi-repo execution with ralph".
+- `tests/smoke.sh`: assertions 9m1 (`--replan unknown-repo` exits non-zero) and 9m2 (`--replan svc-a --dry-run` reports the per-repo command and `mode=replan`).
+
+Smoke test passes (24/24 assertions). `bash -n` and `steering-lint.py` clean. Committed as `fa8dafb`.
+
+```
+---RALPH_STATUS---
+STATUS: COMPLETE
+TASKS_COMPLETED_THIS_LOOP: 1
+FILES_MODIFIED: 4
+TESTS_STATUS: PASSING
+WORK_TYPE: IMPLEMENTATION
+EXIT_SIGNAL: true
+RECOMMENDATION: E4 done; wb.ralph-plan --replan <repo> regenerates one repo's plan and splices under flock. Smoke green.
+---END_RALPH_STATUS---
+```
+[2026-04-26 19:30:31] [INFO] Session reset: api_error_is_error_true
+[2026-04-26 19:30:31] [WARN] Session reset due to API error (is_error:true). Re-run ralph to start a fresh session.
+[2026-04-27 12:45:36] [SUCCESS] Ralph loop starting with Devin CLI
+[2026-04-27 12:45:36] [INFO] Max calls per hour: 100
+[2026-04-27 12:45:36] [INFO] Timeout per session: 30m
+[2026-04-27 12:45:36] [INFO] Logs: .ralph/logs/ | Status: .ralph/status.json
+[2026-04-27 12:45:36] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-27 12:45:36] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
+[2026-04-27 12:45:37] [SUCCESS] Ralph loop starting with Devin CLI
+[2026-04-27 12:45:37] [INFO] Max calls per hour: 100
+[2026-04-27 12:45:37] [INFO] Timeout per session: 30m
+[2026-04-27 12:45:37] [INFO] Logs: .ralph/logs/ | Status: .ralph/status.json
+[2026-04-27 12:45:37] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-27 12:45:37] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
+[2026-04-27 12:45:37] [SUCCESS] Ralph loop starting with Devin CLI
+[2026-04-27 12:45:37] [INFO] Max calls per hour: 100
+[2026-04-27 12:45:37] [INFO] Timeout per session: 30m
+[2026-04-27 12:45:37] [INFO] Logs: .ralph/logs/ | Status: .ralph/status.json
+[2026-04-27 12:45:37] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-27 12:45:37] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
+[2026-04-27 12:45:38] [SUCCESS] Ralph loop starting with Devin CLI
+[2026-04-27 12:45:38] [INFO] Max calls per hour: 100
+[2026-04-27 12:45:38] [INFO] Timeout per session: 30m
+[2026-04-27 12:45:38] [INFO] Logs: .ralph/logs/ | Status: .ralph/status.json
+[2026-04-27 12:45:38] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-27 12:45:38] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
+[2026-04-27 12:45:39] [SUCCESS] Ralph loop starting with Devin CLI
+[2026-04-27 12:45:39] [INFO] Max calls per hour: 100
+[2026-04-27 12:45:39] [INFO] Timeout per session: 30m
+[2026-04-27 12:45:39] [INFO] Logs: .ralph/logs/ | Status: .ralph/status.json
+[2026-04-27 12:45:39] [INFO] Worktree: true | Merge: squash | Gates: auto
+[2026-04-27 12:45:39] [ERROR] Prompt file '.ralph/PROMPT.md' not found!
