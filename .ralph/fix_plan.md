@@ -14,7 +14,7 @@ Hard rules for every task:
 
 ## Tasks
 
-- [ ] **E1** Retire `wb.ralph-annotate` post-hoc fallback path.
+- [~] **E1** Retire `wb.ralph-annotate` post-hoc fallback path.
   Context: `pr-footer-append` shipped in upstream ralph (`feat/pr-footer-append`); ralph itself appends `.ralph/pr_footer.md` to PR bodies. The post-hoc annotator is now redundant.
   Do:
   - Delete `scripts/ralph-annotate-prs.sh`.
@@ -26,7 +26,7 @@ Hard rules for every task:
   - Drop any smoke assertion that checks for the annotator script's existence.
   Do NOT touch: `scripts/ralph-plan.sh`, `skills/ralph-workspace-plan/`, `skills/ralph-dispatch/` (those belong to E4/E5).
 
-- [ ] **E2** Draft upstream-ralph design doc: parallel planning in `ralph-plan --workspace`.
+- [~] **E2** Draft upstream-ralph design doc: parallel planning in `ralph-plan --workspace`.
   Context: V1 plans repos sequentially. With 4+ repos, planning is the bottleneck.
   Do:
   - Create `notes/upstream-ralph-v2/parallel-planning.md`.
@@ -34,14 +34,14 @@ Hard rules for every task:
   - End with a short "What workbench changes when this lands" section: which `scripts/ralph-plan.sh` arg surface to add later.
   Touch ONLY this new file. Create the parent directory if missing.
 
-- [ ] **E3** Draft upstream-ralph design doc: `--repos <subset>` filter for `ralph --workspace`.
+- [~] **E3** Draft upstream-ralph design doc: `--repos <subset>` filter for `ralph --workspace`.
   Context: Today, narrowing the parallel run to a subset of repos requires hand-editing `repos/.ralph/fix_plan.md`. A `--repos` filter on `ralph --workspace` makes `wb.ralph-dispatch --repos a,b` meaningful.
   Do:
   - Create `notes/upstream-ralph-v2/repos-subset-filter.md`.
   - Cover: problem statement, flag spec (comma-separated list, exact-name match, error on unknown), semantics for `fix_plan.md` sections (skip vs hide vs assert), interaction with parallelism (N capped at len(subset)), behavior when subset is empty / equals full list, back-compat, what `wb.ralph-dispatch --repos a,b` should look like once upstream support exists, test coverage.
   Touch ONLY this new file.
 
-- [ ] **E4** Add `wb.ralph-plan --replan <repo>` for single-repo plan regeneration.
+- [~] **E4** Add `wb.ralph-plan --replan <repo>` for single-repo plan regeneration.
   Context: V1 has no way to redo planning for one repo without blowing away the rest of `repos/.ralph/fix_plan.md`. Editors often want to refine one repo's plan after a stakeholder change.
   Do:
   - Edit `scripts/ralph-plan.sh` to accept `--replan <repo-name>`. When set:
