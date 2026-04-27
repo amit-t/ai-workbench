@@ -100,11 +100,13 @@ Follow-ups to the V1 ship that deserve their own PRs (E1 done 2026-04-27, see PR
 4. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`, so `wb.ralph-dispatch --repos a,b` becomes meaningful without pre-editing `fix_plan.md`.
 5. `wb.ralph-plan --replan <repo>` — regenerate one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state.
 
-### F. Stamped-wb ralph bootstrap (new, F1 done 2026-04-27)
+### F. Stamped-wb ralph bootstrap — **DONE** (2026-04-27)
 
-1. ~~ai-devkit `init.wb` + `join.wb` install ralph globally during preflight, ensure `repos/` exists, purge `template_dev_only` artifacts, and run `ralph enable --workspace` at `repos/`.~~ **DONE** 2026-04-27 on `dev` branch. Smoke 25/25.
-2. Refresh `README.md` "Multi-repo execution with ralph" section to mention init.wb's bootstrap step explicitly.
-3. Add an `update.wb` migration that detects an old stamped wb missing `repos/.ralph/` and runs `ralph enable --workspace` once. Idempotent.
+1. ~~ai-devkit `init.wb` + `join.wb` install ralph globally during preflight, ensure `repos/` exists, purge `template_dev_only` artifacts, and run `ralph enable --workspace` at `repos/`.~~ **DONE** 2026-04-27.
+2. ~~Refresh `README.md` "Multi-repo execution with ralph" section to mention init.wb's bootstrap step explicitly.~~ **DONE** 2026-04-27.
+3. ~~Add an `update.wb` migration that detects an old stamped wb missing `repos/.ralph/` and runs `ralph enable --workspace` once. Idempotent.~~ **DONE** 2026-04-27 (devkit `update.zsh` post-sync block).
+
+Smoke 22/22 → 27/27.
 
 ### B. Plan B ralph adapter — **DONE** (2026-04-25)
 

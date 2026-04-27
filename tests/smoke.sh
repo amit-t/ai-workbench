@@ -378,6 +378,24 @@ else
   echo "  ~ skipping join.prompt.md asserts (ai-devkit not on disk)"
 fi
 
+# 9o2. README documents the bootstrap (F2)
+README_FILE="$TEMPLATE_ROOT/README.md"
+grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$README_FILE" || fail "README.md missing F2 bootstrap command"
+grep -q 'template_dev_only'                                       "$README_FILE" || fail "README.md missing template_dev_only mention"
+grep -q -E '(update\.wb.*migrat|migrat.*update\.wb)'              "$README_FILE" || fail "README.md missing update.wb migration note"
+pass "README.md documents F1 bootstrap + F3 migration"
+
+# 9o3. update.zsh has ralph workspace migration (F3)
+UPDATE_ZSH="${HOME}/Projects/Tools-Utilities/ai-devkit/update-workbench/update.zsh"
+if [[ -f "$UPDATE_ZSH" ]]; then
+  grep -q 'Ralph workspace migration'                              "$UPDATE_ZSH" || fail "update.zsh missing F3 migration block"
+  grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$UPDATE_ZSH" || fail "update.zsh missing ralph enable command"
+  grep -q 'WORKSPACE_MODE=true'                                     "$UPDATE_ZSH" || fail "update.zsh missing WORKSPACE_MODE check"
+  pass "update.zsh has F3 ralph workspace migration"
+else
+  echo "  ~ skipping update.zsh asserts (ai-devkit not on disk)"
+fi
+
 # 9p. .workbench-manifest.json declares template_dev_only and includes .ralph/** in user_owned
 python3 - <<'PYEOF' || exit 1
 import json, pathlib, sys

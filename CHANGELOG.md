@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Plan F2 + F3 — README + update.wb migration (2026-04-27)
+- `README.md` "Multi-repo execution with ralph" → "One-time bootstrap" section rewritten to document the six-step preflight that `init.wb` Step 3.4b and `join.wb` Step 4b run, including the `template_dev_only` purge and the `ralph-enable-check.sh` sanity check. Added a closing note that older stamped wbs can be migrated via `update.wb`.
+- `ai-devkit/update-workbench/update.zsh`: post-sync block detects an old stamped wb missing `repos/.ralph/` (or whose `.ralphrc` lacks `WORKSPACE_MODE=true`) and runs `ralph enable --workspace --non-interactive --skip-tasks` at `${WB_DIR}/repos/`. Idempotent: skipped when workspace already enabled, when ralph is missing from PATH, or when ralph lacks `--workspace` support. After enable, calls `scripts/ralph-enable-check.sh` for a final verify.
+- `tests/smoke.sh`: two new asserts (9o2 README mentions bootstrap command + template_dev_only + update.wb migration; 9o3 update.zsh has the migration block, ralph enable command, and WORKSPACE_MODE check). Smoke 25/25 → 27/27.
+
 ### Stamped-wb ralph bootstrap (2026-04-27, Plan F1)
 - `ai-devkit/init-workbench/init.prompt.md`: Step 3.1 preflight installs `ralph` from the local `ai-ralph` clone (or upstream) when missing and verifies `--workspace` support; Step 3.4 always creates `repos/` (even when no repos register at init); new Step 3.4a purges every entry in `.workbench-manifest.json` `template_dev_only` so stamped wbs never inherit template-dev's `.ralph/PROMPT.md`, `.ralph/fix_plan.md`, `SESSION-HANDOFF.md`, or `CHANGELOG.md`; new Step 3.4b runs `ralph enable --workspace --non-interactive --skip-tasks` at `repos/` and calls `scripts/ralph-enable-check.sh` to verify.
 - `ai-devkit/join-workbench/join.prompt.md`: new Step 0 preflight installs `ralph` and verifies `--workspace`; new Step 4b runs `ralph-enable-check.sh`, with idempotent `ralph enable --workspace` fallback for joiners pulling older workbenches that predate Step 3.4b.
