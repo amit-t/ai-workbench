@@ -289,7 +289,7 @@ Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd carries 
 
 ### Steering drift footer on ralph PRs (M4)
 
-When the team has local steering overrides under `steering.local/`, `sync-context.sh` writes a markdown footer to `$WB_ROOT/repos/.ralph/pr_footer.md`. Once the ralph-side `.ralph/pr_footer.md` append support merges, ralph picks up the footer automatically at PR creation. Until then, `wb.ralph-annotate [--since 30m]` edits open PR bodies via `gh pr edit` as a post-hoc fallback.
+When the team has local steering overrides under `steering.local/`, `sync-context.sh` writes a markdown footer to `$WB_ROOT/repos/.ralph/pr_footer.md`. Ralph reads that file at PR creation (via the upstream `pr-footer-append` support in `pr_manager.sh`) and appends it to every PR body. The footer file is removed when the overlay set empties.
 
 ## Plan-mode rule
 

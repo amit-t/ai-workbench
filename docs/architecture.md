@@ -83,7 +83,6 @@ wb-<label>/
 │   ├── ralph-plan.sh                 # wraps `ralph-plan --workspace` with per-repo fallback
 │   ├── ralph-dispatch.sh             # wraps `ralph --workspace --parallel N`
 │   ├── ralph-enable-check.sh         # preflight that `ralph enable --workspace` ran
-│   ├── ralph-annotate-prs.sh         # M4 drift footer post-hoc fallback (`gh pr edit`)
 │   ├── validate-artifact.py          # blocks publish/approve when target_repos is missing
 │   ├── artifact-schema.json          # JSON schema used by validate-artifact.py
 │   ├── steering-load.py              # merge template + overlay rules for a scope
