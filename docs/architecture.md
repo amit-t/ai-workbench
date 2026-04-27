@@ -4,6 +4,8 @@ layout: default
 eyebrow: Architecture
 ---
 
+{% include links.html %}
+
 ## Problem and Motivation
 
 Individual-contributor engineers and QAs currently split work across Jira, Confluence, service repos, automation repos, and ad-hoc prompts. They want a single harness to take one or more Jira epics, generate a PRD, engineering spec, TDD, ERD, ADRs, BDDs, test cases, and a test spec; wear PM / architect / staff-engineer / UX hats without switching tools; share generated drafts with the counterpart (dev ↔ QA) via git for review and approval; plan code changes across multiple service repos in a single ralph workspace-mode session; dispatch parallel autonomous ralph loops; and keep the workbench private, per-bundle, and disposable — not a long-running OS.
@@ -14,8 +16,8 @@ The harness is two GitHub repos, independent, published under `<your-org>` (defa
 
 | Repo | Role | Lives at |
 |------|------|----------|
-| `ai-workbench` | Template. Cloned per work-bundle. Ships skills, scripts, lifecycle aliases, config templates. | `https://github.com/amit-t/ai-workbench` |
-| `ai-devkit` | Global CLI. Installs `init.wb`, `join.wb`, `update.wb`. | `https://github.com/amit-t/ai-devkit` |
+| `ai-workbench` | Template. Cloned per work-bundle. Ships skills, scripts, lifecycle aliases, config templates. | `{{ links.ai_workbench_repo }}` |
+| `ai-devkit` | Global CLI. Installs `init.wb`, `join.wb`, `update.wb`. | `{{ links.ai_devkit_repo }}` |
 
 You never clone `ai-workbench` directly — `init.wb` stamps private instances from it via `gh repo create --template`.
 
@@ -72,13 +74,23 @@ wb-<label>/
 │   ├── published.json                # draft → published transitions
 │   ├── approved.json                 # published → approved transitions (ralph gate)
 │   └── rejected.json                 # reason-tracked rejections
+├── steering/                         # template-owned rule files (golden, role, artifact, topic)
+├── steering.local/                   # team-owned overlays (add / supersede / remove)
+├── .claude/
+│   └── settings.json                 # PostToolUse hook re-emits Layer 0 steering on update
 ├── scripts/
 │   ├── lifecycle.py                  # unified publish/approve/reject CLI with flock
-│   ├── sync-context.sh               # workbench → repos/{x}/ai/
-│   ├── ralph-context.sh              # identical target, used by ralph-plan
-│   ├── ralph-plan.sh                 # wraps ralph-plan --workspace
-│   ├── ralph-loop.sh                 # cd repos/{x} && rpc.int | rpd.int | rpx.int
-│   ├── ralph-dispatch.sh             # parallel launch across repos
+│   ├── sync-context.sh               # workbench → repos/{x}/ai/, writes pr_footer.md
+│   ├── ralph-context.sh              # internal alias for sync-context.sh, used by ralph-plan
+│   ├── ralph-plan.sh                 # wraps `ralph-plan --workspace` with per-repo fallback
+│   ├── ralph-dispatch.sh             # wraps `ralph --workspace --parallel N`
+│   ├── ralph-enable-check.sh         # preflight that `ralph enable --workspace` ran
+│   ├── validate-artifact.py          # blocks publish/approve when target_repos is missing
+│   ├── artifact-schema.json          # JSON schema used by validate-artifact.py
+│   ├── steering-load.py              # merge template + overlay rules for a scope
+│   ├── steering-overlays.py          # render add/supersede/remove footer for ralph PRs
+│   ├── steering-lint.py              # validate steering/ and steering.local/
+│   ├── steering-post-tool-hook.sh    # Claude Code PostToolUse hook for steering freshness
 │   └── register-repo.sh              # append a repo entry to project.conf
 ├── tests/                            # template smoke tests
 │   ├── README.md
@@ -136,7 +148,7 @@ Only paths in `template_owned` are touched by `update.wb`. Everything else (your
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "template_owned": [
     "CLAUDE.md",
     "AGENTS.md",
@@ -144,20 +156,28 @@ Only paths in `template_owned` are touched by `update.wb`. Everything else (your
     "aliases.sh",
     ".gitignore",
     ".workbench-manifest.json",
+    ".mcp.json.template",
+    "project.conf.template",
+    "EPIC-PIPELINE.md.template",
+    ".claude/settings.json",
+    ".github/CODEOWNERS",
+    ".github/workflows/**",
     "scripts/**",
-    "skills/**"
+    "skills/**",
+    "steering/**",
+    "tests/**"
   ],
   "user_owned": [
     "project.conf",
     "EPIC-PIPELINE.md",
     ".mcp.json",
-    ".github/CODEOWNERS",
     "product/**",
     "design/**",
     "engineering/**",
     "qa/**",
     "ralph/**",
     "repos/**",
+    "steering.local/**",
     ".workbench-state/**"
   ]
 }

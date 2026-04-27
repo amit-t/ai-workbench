@@ -5,6 +5,8 @@ eyebrow: UXD
 subtitle: "Park Figma links for a PRD. If Figma MCP is enabled, pull frame list and export nodes to `design/outputs/screens/{PRD-NNN}/`. Default path is link-parking only — no network call."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | UXD | Design input | PRD ID + Figma URL | `design/context-library/figma-links.md`; optional `design/outputs/screens/PRD-NNN/` | `/ds-screen-gen`, `/design-review` |
@@ -61,4 +63,4 @@ exported: {today}
 
 ## Source
 
-[`skills/figma-pull/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/figma-pull/SKILL.md)
+[`skills/figma-pull/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/figma-pull/SKILL.md)

@@ -5,6 +5,8 @@ eyebrow: UXD
 subtitle: "Hi-fi HTML or JSX screens for a PRD using the design system referenced in `design/context-library/design-system-ref.md`. Every screen ships default / empty / loading / error states."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | UXD | Design gen | PRD + design-system-ref block | `design/outputs/screens/PRD-NNN/{screen}.{ext}` + `index.md` | `/design-review` |
@@ -55,4 +57,4 @@ generated: {today}
 
 ## Source
 
-[`skills/ds-screen-gen/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/ds-screen-gen/SKILL.md)
+[`skills/ds-screen-gen/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/ds-screen-gen/SKILL.md)

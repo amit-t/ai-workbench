@@ -5,6 +5,8 @@ eyebrow: Cross-Cutting
 subtitle: "Cross-cutting workbench status view — epics, PRDs, specs, TDDs, BDDs, ralph fix_plan coverage per repo, dispatch state. Reads `.workbench-state/` as source of truth; never guesses."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output |
 |-----|-------|---------------|--------|
 | Cross-cutting | Status | None (read-only) | Terminal report (no file writes) |
@@ -79,4 +81,4 @@ Legend: ✓ approved, ~ published/awaiting-approval, · draft, — none
 
 ## Source
 
-[`skills/pmo-status/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/pmo-status/SKILL.md)
+[`skills/pmo-status/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/pmo-status/SKILL.md)

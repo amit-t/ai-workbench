@@ -5,6 +5,8 @@ eyebrow: Cross-Cutting
 subtitle: "Relentless interview that stress-tests any draft artifact before approval. Walks the decision tree one branch at a time."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output |
 |-----|-------|---------------|--------|
 | Cross-cutting | Review helper | Any draft artifact | Inline `<!-- grill-me … -->` scratch block on target |
@@ -57,4 +59,4 @@ subtitle: "Relentless interview that stress-tests any draft artifact before appr
 
 ## Source
 
-[`skills/grill-me/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/grill-me/SKILL.md)
+[`skills/grill-me/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/grill-me/SKILL.md)

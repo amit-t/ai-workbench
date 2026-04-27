@@ -12,14 +12,35 @@ ralph/*.pid
 # OS junk
 .DS_Store
 *.swp
+Thumbs.db
 
 # Editor junk
 .idea/
 .vscode/
+*.swo
 
-# Jekyll build output
-docs/_site/
-docs/.jekyll-cache/
+# General logs
+*.log
+
+# Temporary files
+*.tmp
+.temp/
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+/out/
+*.tsbuildinfo
+
+# Vite
+*.local
 
 # Ralph — ignore everything except key files
 .ralph/*
@@ -28,5 +49,18 @@ docs/.jekyll-cache/
 !.ralph/PROMPT_PLAN.md
 !.ralph/constitution.md
 
+# Ralph backup directories (created by migration)
+.ralph_backup_*
+
 # Ralph machine-specific config (sourced by ralph_loop.sh load_ralphrc)
 .ralphrc
+
+# Jekyll local-build artifacts (docs/)
+docs/_site/
+docs/_site_local/
+docs/_site_inv/
+docs/_site_default/
+docs/.jekyll-cache/
+docs/.bundle/
+docs/vendor/
+docs/Gemfile.lock

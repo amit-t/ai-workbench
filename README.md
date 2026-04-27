@@ -284,6 +284,20 @@ wb.ralph-dispatch
 wb.ralph-dispatch --status    # open PRs per repo + recent worker logs
 ```
 
+### Replanning one repo
+
+When a stakeholder change affects only one repo and you do not want to throw away the other repos' plans:
+
+```bash
+wb.ralph-plan --replan svc-a
+#   = sync-context for svc-a
+#   = (cd repos/svc-a && ralph-plan --engine ... --thinking ...)
+#   = splice the resulting `## svc-a` section into repos/.ralph/fix_plan.md
+#     (replaces existing section; appended if missing)
+```
+
+The splice runs under an advisory `flock` on `.workbench-state/.lock`, so it is safe to run while other workbench writers (publish / approve / reject) are active. `--replan` rejects an unknown repo name (`exit 2`) and is mutually exclusive with `--mode` and a positional repo argument.
+
 ### Configuration
 
 Set in `project.conf` (team default) or override via CLI flag / env var:
@@ -301,7 +315,7 @@ Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd carries 
 
 ### Steering drift footer on ralph PRs (M4)
 
-When the team has local steering overrides under `steering.local/`, `sync-context.sh` writes a markdown footer to `$WB_ROOT/repos/.ralph/pr_footer.md`. Once the ralph-side `.ralph/pr_footer.md` append support merges, ralph picks up the footer automatically at PR creation. Until then, `wb.ralph-annotate [--since 30m]` edits open PR bodies via `gh pr edit` as a post-hoc fallback.
+When the team has local steering overrides under `steering.local/`, `sync-context.sh` writes a markdown footer to `$WB_ROOT/repos/.ralph/pr_footer.md`. Ralph reads that file at PR creation (via the upstream `pr-footer-append` support in `pr_manager.sh`) and appends it to every PR body. The footer file is removed when the overlay set empties.
 
 ## Plan-mode rule
 

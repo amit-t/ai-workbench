@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% include links.html %}<!DOCTYPE html>
 <html lang="{{ site.lang | default: 'en' }}">
 <head>
   <meta charset="utf-8">
@@ -32,7 +32,7 @@
     <a href="{{ '/skills.html' | relative_url }}">Skills</a>
     <a href="{{ '/ralph.html' | relative_url }}">Ralph</a>
     <a href="{{ '/faq.html' | relative_url }}">FAQ</a>
-    <a href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub</a>
+    <a href="{{ links.ai_workbench_repo }}" target="_blank" rel="noreferrer">GitHub</a>
   </nav>
 
   {% assign is_home = false %}
@@ -74,7 +74,7 @@
         <div class="hero-actions">
           <a class="neo-btn neo-btn-primary" href="{{ '/getting-started.html' | relative_url }}">Start Here</a>
           <a class="neo-btn" href="{{ '/skills.html' | relative_url }}">Browse 18 Skills</a>
-          <a class="neo-btn" href="https://github.com/amit-t/ai-workbench" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="neo-btn" href="{{ links.ai_workbench_repo }}" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
     </header>
@@ -97,9 +97,9 @@
   <footer class="container footer">
     <p>
       <code>ai-workbench</code> — template for per-bundle AI harnesses. Pair with
-      <a href="https://github.com/amit-t/ai-devkit">ai-devkit</a> CLI and
-      <a href="https://github.com/amit-t/ai-ralph">ai-ralph</a> autonomous loop.
-      Source on <a href="https://github.com/amit-t/ai-workbench">GitHub</a>.
+      <a href="{{ links.ai_devkit_repo }}">ai-devkit</a> CLI and
+      <a href="{{ links.ai_ralph_repo }}">ai-ralph</a> autonomous loop.
+      Source on <a href="{{ links.ai_workbench_repo }}">GitHub</a>.
     </p>
   </footer>
 

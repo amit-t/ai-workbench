@@ -102,9 +102,9 @@ Every artifact you write starts at `status: draft`. State transitions happen onl
 wb.sync-context                       # push workbench outputs into repos/*/ai/
 wb.ralph-enable-check                 # preflight that `ralph enable --workspace` ran
 wb.ralph-plan [--mode ...] [--engine] # sync context + ralph-plan (workspace by default)
+wb.ralph-plan --replan <repo>         # regen one repo's section, splice into repos/.ralph/fix_plan.md
 wb.ralph-dispatch [--parallel N]      # ralph --workspace --parallel N (ralph owns the loop)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
-wb.ralph-annotate [--since 30m]       # M4 drift footer on open ralph PRs (post-hoc fallback)
 wb.register-repo <name> <url> <role>  # add code repo
 wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
 wb.approve <id>                       # published → approved (validates target_repos)
@@ -122,10 +122,11 @@ wb.steering-lint                      # validate steering/ and steering.local/
 - `ralph enable --workspace` is run once at `$WB_ROOT/repos/` by `init.wb` (Step 3.4b) or `join.wb` (Step 4b, idempotent). `wb.ralph-enable-check` is the preflight that fails fast if the workspace is not enabled.
 - The `ai-devkit` is the only place that bootstraps the ralph workspace and installs the `ralph` binary. The template's own `.ralph/` (template-dev) never travels into stamped wbs; `init.wb` purges every entry listed under `template_dev_only` in `.workbench-manifest.json`.
 - `wb.ralph-plan` defaults to **workspace mode** (single `ralph-plan --workspace` at `$WB_ROOT/repos/`). Falls back to per-repo looping when the installed ralph-plan does not support `--workspace`. Override with `--mode`, env `WB_RALPH_PLAN_MODE`, or `project.conf RALPH_PLAN_MODE`.
+- `wb.ralph-plan --replan <repo>` regenerates only one repo's plan, then splices the resulting `## <repo>` section back into `repos/.ralph/fix_plan.md` (existing section is replaced; appended if missing). Holds an advisory `flock` on `.workbench-state/.lock` during the splice. Use this when a stakeholder change affects one repo and you do not want to redo planning for the rest.
 - `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
 - Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
 - **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.
-- **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): once the ralph-side `.ralph/pr_footer.md` support lands, `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph picks it up automatically. Until then, `wb.ralph-annotate` edits open PR bodies as a post-hoc fallback.
+- **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph appends it to every PR body via the upstream `pr-footer-append` support.
 
 ## Hard rules
 

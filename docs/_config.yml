@@ -1,7 +1,18 @@
 title: AI Workbench
 description: A per-bundle private AI harness for developer and QA collaboration — turns Jira epics into PRDs, engineering specs, TDDs, BDDs, test cases, and ralph fix_plans across multiple code repos.
+
+# Local-build fallback for the github-metadata plugin. On GitHub Pages this is
+# overridden by PAGES_REPO_NWO at deploy time so site.github.owner_name reflects
+# the actual deploying fork.
+repository: amit-t/ai-workbench
+
+# Last-resort owner key for docs/_includes/links.html when site.github.owner_name
+# is unset (e.g. plain `jekyll build` outside Pages with no PAGES_REPO_NWO).
+fallback_owner: amit-t
+
 plugins:
   - jekyll-seo-tag
+  - jekyll-github-metadata
 
 show_downloads: false
 

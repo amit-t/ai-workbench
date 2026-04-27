@@ -1,0 +1,11 @@
+{%- comment -%}
+  Owner-aware link resolver.
+  Reads site.github.owner_name (set by jekyll-github-metadata from PAGES_REPO_NWO at build time).
+  Falls back to site.fallback_owner, then to 'amit-t' as last resort.
+  Pages reference resolved URLs via {{ links.<key> }}.
+{%- endcomment -%}
+{%- assign owner = site.github.owner_name | default: site.fallback_owner | default: 'amit-t' -%}
+{%- assign links = site.data.orgs[owner] -%}
+{%- if links == nil -%}
+  {%- assign links = site.data.orgs[site.fallback_owner | default: 'amit-t'] -%}
+{%- endif -%}

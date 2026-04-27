@@ -3,6 +3,8 @@ title: Home
 layout: default
 ---
 
+{% include links.html %}
+
 ## What It Gives You
 
 - **Shared private git repo** per bundle of one or more Jira epics.
@@ -16,8 +18,8 @@ layout: default
 
 | Repo | Role |
 |------|------|
-| [`ai-workbench`](https://github.com/amit-t/ai-workbench) | Template. `gh repo create --template` stamps an instance per bundle. |
-| [`ai-devkit`](https://github.com/amit-t/ai-devkit) | Global CLI. Provides `init.wb`, `join.wb`, `update.wb`. |
+| [`ai-workbench`]({{ links.ai_workbench_repo }}) | Template. `gh repo create --template` stamps an instance per bundle. |
+| [`ai-devkit`]({{ links.ai_devkit_repo }}) | Global CLI. Provides `init.wb`, `join.wb`, `update.wb`. |
 
 ## Quick Paths
 

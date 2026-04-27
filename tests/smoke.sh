@@ -349,6 +349,18 @@ echo "$dispatch_out" | grep -q 'ralph --workspace --parallel'                 ||
 echo "$dispatch_out" | grep -q "WORKSPACE_ROOT=$(pwd)/repos"                  || fail "dispatch dry-run missing WORKSPACE_ROOT export: $dispatch_out"
 pass "wb.ralph-dispatch --dry-run invokes workspace with parallel and WORKSPACE_ROOT"
 
+# 9m1. wb.ralph-plan --replan unknown-repo exits non-zero
+if ./scripts/ralph-plan.sh --replan does-not-exist 2>/dev/null; then
+  fail "ralph-plan --replan should refuse an unregistered repo name"
+fi
+pass "wb.ralph-plan --replan refuses an unregistered repo"
+
+# 9m2. wb.ralph-plan --replan <known-repo> --dry-run prints the per-repo command
+replan_out=$(./scripts/ralph-plan.sh --replan svc-a --dry-run 2>&1)
+echo "$replan_out" | grep -q 'mode=replan'                                    || fail "ralph-plan --replan did not enter replan mode: $replan_out"
+echo "$replan_out" | grep -q "(cd $(pwd)/repos/svc-a && ralph-plan"           || fail "ralph-plan --replan dry-run missing per-repo command: $replan_out"
+pass "wb.ralph-plan --replan svc-a --dry-run reports the per-repo command"
+
 # 9n. ralph-enable-check preflight refuses when .ralph missing
 rm -rf repos/.ralph repos/.ralphrc
 if ./scripts/ralph-plan.sh --dry-run 2>/dev/null; then

@@ -17,12 +17,9 @@ wb.sync-context() { "$WB_ROOT/scripts/sync-context.sh" "$@"; }
 #   wb.ralph-plan [flags]           # sync context + ralph-plan (workspace by default)
 #   wb.ralph-dispatch [flags]       # cd repos/ && ralph --workspace --parallel N
 #   wb.ralph-dispatch --status      # show open ralph PRs + tail of worker logs
-#   wb.ralph-annotate [--since 30m] # M4 drift footer (post-hoc, retires when
-#                                   #   ralph-side .ralph/pr_footer.md support lands)
 wb.ralph-enable-check() { "$WB_ROOT/scripts/ralph-enable-check.sh" "$@"; }
 wb.ralph-plan()         { "$WB_ROOT/scripts/ralph-plan.sh" "$@"; }
 wb.ralph-dispatch()     { "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"; }
-wb.ralph-annotate()     { "$WB_ROOT/scripts/ralph-annotate-prs.sh" "$@"; }
 
 # ── Repo management ───────────────────────────────────────────────────────────
 wb.register-repo()  { "$WB_ROOT/scripts/register-repo.sh" "$@"; }

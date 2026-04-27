@@ -5,13 +5,13 @@ Last seeded: 2026-04-27 from `SESSION-HANDOFF.md` "What's open" section.
 
 ## High Priority — Plan E. Ralph adapter V2 polish
 
-Follow-ups to the V1 ship that deserve their own PRs.
+Reconciled with `main` after merge: ralph autonomous loops on `main` shipped multiple Plan E items in parallel under different numbering. Consolidated status:
 
-- [~] **E1.** Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to the rewritten aliases. Their `SKILL.md` bodies still reference pre-adapter flags and will misroute users.
-- [ ] **E2.** Upstream-ralph: add `--repos <subset>` filter to `ralph --workspace`, then surface as `wb.ralph-dispatch --repos a,b`. Today users must pre-edit `repos/.ralph/fix_plan.md` to scope a partial dispatch.
-- [ ] **E3.** Upstream-ralph: parallel planning in `ralph-plan --workspace`. V1 plans sequentially per repo; with 4+ repos this is the dispatch bottleneck.
-- [ ] **E4.** Add `wb.ralph-plan --replan <repo>` that regenerates one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state. Companion ralph change likely needed.
-- [ ] **E5.** Retire `wb.ralph-annotate` once every developer's installed `ralph` carries the `pr-footer-append` change. Simplify `sync-context.sh` and drop the alias + script.
+- [x] **E1 (mine).** Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to V1 aliases. **DONE** 2026-04-27 (commit `39bff2a`, cherry-picked from ralph branch into Plan F PR; original ralph PRs #12/#13 closed).
+- [x] **E2.** Retire `wb.ralph-annotate` post-hoc fallback. **DONE** 2026-04-27 on `main` (commits `5e85e99` / `48e2929`).
+- [x] **E3.** Upstream-ralph parallel-planning design doc. **DONE** 2026-04-27 on `main` (commits `37db5fb` / `ca78837` → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream ralph PR pending.
+- [x] **E4.** `wb.ralph-plan --replan <repo>`. **DONE** 2026-04-27 on `main` (commits `37c9d1c` / `fa8dafb`).
+- [ ] **E5.** Upstream-ralph `--repos <subset>` filter for `ralph --workspace`. Design doc was in flight on `main` (commit `97728b6` marked E3 in-progress). Verify `notes/upstream-ralph-v2/repos-subset-filter.md` exists; complete if missing.
 
 ## High Priority — Plan D. Steering V2 polish
 

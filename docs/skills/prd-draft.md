@@ -5,6 +5,8 @@ eyebrow: PO
 subtitle: "Draft a PRD under an approved epic — goals, users, scope, NFRs, acceptance."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | PO | Product | `epic-context` approved | `product/outputs/prds/PRD-NNN-<slug>.md` | `/eng-spec`, `/bdd-gen`, `/design-draft` |
@@ -45,4 +47,4 @@ scope: {service | automation | both}
 
 ## Source
 
-[`skills/prd-draft/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/prd-draft/SKILL.md)
+[`skills/prd-draft/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/prd-draft/SKILL.md)
