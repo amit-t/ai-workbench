@@ -16,7 +16,7 @@ You never write production code from the workbench. Code lives in `repos/*/`, an
 
 Every session, in this order:
 
-0. **Template-dev detection.** If `project.conf` does NOT exist and `SESSION-HANDOFF.md` does exist at repo root, you are in the **ai-workbench template repo itself** (not a stamped workbench instance). Read `SESSION-HANDOFF.md` first and follow steps 1–8 only if they still apply to template-dev work. Otherwise continue:
+0. **Template-dev detection.** If `project.conf` does NOT exist and `SESSION-HANDOFF.md` does exist at repo root, you are in the **ai-workbench template repo itself** (not a stamped workbench instance). Read `SESSION-HANDOFF.md` first and follow steps 1–8 only if they still apply to template-dev work. In template-dev mode, `.ralph/PROMPT.md` and `.ralph/fix_plan.md` are tracked for the template's own ralph loop, but `init.wb` purges them from stamped wbs (see `.workbench-manifest.json` `template_dev_only`). Stamped wbs get their own `repos/.ralph/` workspace via `ralph enable --workspace`, not the template's `.ralph/`. Otherwise continue:
 1. `git pull --rebase` — workbench is shared with a collaborator; pull first.
 2. **Load Layer 0 steering.** Run `wb.steering golden` (or `python3 scripts/steering-load.py golden`). Treat the merged output as hard rules for this session. Re-run whenever `update.wb`, `git pull`, `git merge`, or any edit under `steering/` or `steering.local/` occurs.
 3. Read `project.conf` — workspace label, epics in scope, registered repos and their roles.
@@ -119,7 +119,8 @@ wb.steering-lint                      # validate steering/ and steering.local/
 ## Ralph adapter (quick reference)
 
 - Workbench wraps ai-ralph. Workbench never re-implements ralph internals — enable, loop, parallelism, and PR creation all live in ralph.
-- `ralph enable --workspace` is run once at `$WB_ROOT/repos/` by `init.wb` / `join.wb`. `wb.ralph-enable-check` is the preflight.
+- `ralph enable --workspace` is run once at `$WB_ROOT/repos/` by `init.wb` (Step 3.4b) or `join.wb` (Step 4b, idempotent). `wb.ralph-enable-check` is the preflight that fails fast if the workspace is not enabled.
+- The `ai-devkit` is the only place that bootstraps the ralph workspace and installs the `ralph` binary. The template's own `.ralph/` (template-dev) never travels into stamped wbs; `init.wb` purges every entry listed under `template_dev_only` in `.workbench-manifest.json`.
 - `wb.ralph-plan` defaults to **workspace mode** (single `ralph-plan --workspace` at `$WB_ROOT/repos/`). Falls back to per-repo looping when the installed ralph-plan does not support `--workspace`. Override with `--mode`, env `WB_RALPH_PLAN_MODE`, or `project.conf RALPH_PLAN_MODE`.
 - `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
 - Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
