@@ -4,8 +4,9 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged on both remotes; companion ai-ralph PRs `feat/workspace-plan-mode` and `feat/pr-footer-append` merged).
-**Branch:** `main`. **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
+**Last session:** 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
+**Branch:** `dev` (work in flight). Previous session: 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged; companion ai-ralph PRs `feat/workspace-plan-mode` + `feat/pr-footer-append` merged).
+**Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
 **Main branch protection:** PR required, admin bypass enabled, no force-push, no deletion.
 **gh accounts:** two logged in (`amit-t` active by default, `amit-tiwari_vnt` for Invenco). Use `gh auth switch -u amit-tiwari_vnt` before any PR create/merge on `Invenco-Cloud-Systems-ICS/ai-workbench`, and switch back after.
@@ -13,6 +14,21 @@
 ---
 
 ## What shipped
+
+### Template-dev ralph self-host + stamped-wb ralph bootstrap (2026-04-27)
+
+**Template-dev self-host.** Ralph now runs against the template repo itself for template-dev work. Enabled via `ralph-enable --non-interactive --skip-tasks` at root. `.ralph/PROMPT.md` rewritten with template-dev orientation (reading order, hard rules, cross-repo routing for `ai-ralph` PRs, RALPH_STATUS block preserved). `.ralph/fix_plan.md` seeded with Plan D, Plan E, Plan F from prior `What's open` section. `.ralphrc` gitignored as machine-specific config; `ALLOWED_TOOLS` expanded for template-dev workflows; `PR_DRAFT=true` for safer auto-PRs. Verified by running `rpc.p.b 1` which picked Plan E1 and shipped it (PRs #12 / #13).
+
+**Stamped-wb ralph bootstrap (Plan F1).** `ai-devkit` is now the only place that bootstraps ralph for stamped wbs:
+- `init.prompt.md` Step 3.1 installs `ralph` from local `ai-ralph` clone (or upstream) when missing and verifies `--workspace` support; Step 3.4 always `mkdir -p repos`; new Step 3.4a purges every entry in `.workbench-manifest.json` `template_dev_only`; new Step 3.4b runs `ralph enable --workspace --non-interactive --skip-tasks` at `repos/` and calls `scripts/ralph-enable-check.sh` to verify.
+- `join.prompt.md` Step 0 preflight installs `ralph`; new Step 4b runs `ralph-enable-check.sh` with idempotent `ralph enable --workspace` fallback.
+- `install.zsh` warns when `ralph` is missing or lacks `--workspace`. Auto-install lives in init.wb / join.wb so users see it.
+- `.workbench-manifest.json` now has `.ralph/**` and `repos/.ralph/**` in `user_owned`, plus a new `template_dev_only` list (`SESSION-HANDOFF.md`, `CHANGELOG.md`, `.ralph/PROMPT.md`, `.ralph/fix_plan.md`).
+- `CLAUDE.md` Step 0 + Ralph adapter sections updated to document the rule.
+- `tests/smoke.sh` 22/22 → 25/25 (asserts ralph install probe, `--workspace`, `template_dev_only` purge, `ralph-enable-check.sh` sanity, manifest fields).
+
+### Plan E1 — ralph-workspace-plan + ralph-dispatch skill bodies (2026-04-27)
+- `skills/ralph-workspace-plan/SKILL.md` and `skills/ralph-dispatch/SKILL.md` rewritten to drive the V1 `wb.ralph-plan` / `wb.ralph-dispatch` aliases with only the flags they actually accept. Stale `wb.ralph-loop` reference in `AGENTS.md` patched. Smoke + steering-lint clean. Shipped autonomously by ralph (PRs #12 / #13, both draft).
 
 ### Phase 1 — scaffold
 - Template tree: `CLAUDE.md`, `AGENTS.md`, `DESIGN.md`, manifest, scripts, 18 skills (stubs).
@@ -75,15 +91,26 @@ Parked items from the V1 ship, ordered by leverage:
 3. `wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).
 4. Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.
 
-### E. Ralph adapter V2 polish (new)
-Follow-ups to the V1 ship that deserve their own PRs:
+### E. Ralph adapter V2 polish
+Follow-ups to the V1 ship that deserve their own PRs (E1 done 2026-04-27, see PRs #12 / #13):
 
-1. Parallel planning in `ralph-plan --workspace` (upstream ralph). V1 plan is sequential per repo; for 4+ repos this is the bottleneck.
-2. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`, so `wb.ralph-dispatch --repos a,b` becomes meaningful without pre-editing `fix_plan.md`.
-3. `wb.ralph-plan --replan <repo>` — regenerate one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state.
-4. Wire `ralph-workspace-plan` and `ralph-dispatch` skills to the rewritten aliases; their SKILL.md bodies still reference pre-adapter flags.
+Reconciled with `main` (parallel ralph autonomous run shipped E1, E2, E4 under different numbering; E3 in flight; E5 cherry-picked into `dev`). Remaining work:
 
-### B. Plan B ralph adapter — **DONE** (this session)
+1. ~~Retire `wb.ralph-annotate` once every developer's installed `ralph` binary carries the `pr-footer-append` change. Simplify `sync-context.sh` accordingly and drop the alias.~~ **DONE** 2026-04-27 on `main` (commit 5e85e99 / 48e2929).
+2. ~~Parallel planning in `ralph-plan --workspace` (upstream ralph). Design doc only.~~ **DONE** 2026-04-27 on `main` (commit 37db5fb / ca78837 → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream ralph PR still pending.
+3. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`. Design doc in flight on `main` (97728b6 marked E3 in-progress; check `notes/upstream-ralph-v2/repos-subset-filter.md`).
+4. ~~`wb.ralph-plan --replan <repo>`.~~ **DONE** 2026-04-27 on `main` (commit 37c9d1c / fa8dafb).
+5. ~~Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to V1 aliases.~~ **DONE** 2026-04-27 cherry-picked onto `dev` from ralph branch `ralph-claude/e1-skill-rewiring` as commit 39bff2a (consolidated into Plan F PR; original ralph PRs #12/#13 closed).
+
+### F. Stamped-wb ralph bootstrap — **DONE** (2026-04-27)
+
+1. ~~ai-devkit `init.wb` + `join.wb` install ralph globally during preflight, ensure `repos/` exists, purge `template_dev_only` artifacts, and run `ralph enable --workspace` at `repos/`.~~ **DONE** 2026-04-27.
+2. ~~Refresh `README.md` "Multi-repo execution with ralph" section to mention init.wb's bootstrap step explicitly.~~ **DONE** 2026-04-27.
+3. ~~Add an `update.wb` migration that detects an old stamped wb missing `repos/.ralph/` and runs `ralph enable --workspace` once. Idempotent.~~ **DONE** 2026-04-27 (devkit `update.zsh` post-sync block).
+
+Smoke 22/22 → 27/27.
+
+### B. Plan B ralph adapter — **DONE** (2026-04-25)
 
 ---
 

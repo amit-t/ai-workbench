@@ -368,6 +368,63 @@ if ./scripts/ralph-plan.sh --dry-run 2>/dev/null; then
 fi
 pass "ralph-enable-check blocks ralph-plan when workspace not enabled"
 
+# 9o. ai-devkit init.prompt.md mentions ralph install + --workspace + purge step
+INIT_PROMPT="${HOME}/Projects/Tools-Utilities/ai-devkit/init-workbench/init.prompt.md"
+JOIN_PROMPT="${HOME}/Projects/Tools-Utilities/ai-devkit/join-workbench/join.prompt.md"
+if [[ -f "$INIT_PROMPT" ]]; then
+  grep -q 'command -v ralph'                        "$INIT_PROMPT" || fail "init.prompt.md missing ralph install probe"
+  grep -q -- '--workspace'                          "$INIT_PROMPT" || fail "init.prompt.md missing --workspace flag"
+  grep -q 'ralph enable --workspace'                "$INIT_PROMPT" || fail "init.prompt.md missing ralph enable --workspace command"
+  grep -q 'template_dev_only'                       "$INIT_PROMPT" || fail "init.prompt.md missing template_dev_only purge step"
+  grep -q 'ralph-enable-check.sh'                   "$INIT_PROMPT" || fail "init.prompt.md missing ralph-enable-check sanity"
+  pass "init.prompt.md has ralph install + workspace enable + template-dev purge"
+else
+  echo "  ~ skipping init.prompt.md asserts (ai-devkit not on disk)"
+fi
+if [[ -f "$JOIN_PROMPT" ]]; then
+  grep -q 'command -v ralph'                        "$JOIN_PROMPT" || fail "join.prompt.md missing ralph install probe"
+  grep -q -- '--workspace'                          "$JOIN_PROMPT" || fail "join.prompt.md missing --workspace flag"
+  grep -q 'ralph-enable-check.sh'                   "$JOIN_PROMPT" || fail "join.prompt.md missing ralph-enable-check sanity"
+  pass "join.prompt.md has ralph install + workspace re-check"
+else
+  echo "  ~ skipping join.prompt.md asserts (ai-devkit not on disk)"
+fi
+
+# 9o2. README documents the bootstrap (F2)
+README_FILE="$TEMPLATE_ROOT/README.md"
+grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$README_FILE" || fail "README.md missing F2 bootstrap command"
+grep -q 'template_dev_only'                                       "$README_FILE" || fail "README.md missing template_dev_only mention"
+grep -q -E '(update\.wb.*migrat|migrat.*update\.wb)'              "$README_FILE" || fail "README.md missing update.wb migration note"
+pass "README.md documents F1 bootstrap + F3 migration"
+
+# 9o3. update.zsh has ralph workspace migration (F3)
+UPDATE_ZSH="${HOME}/Projects/Tools-Utilities/ai-devkit/update-workbench/update.zsh"
+if [[ -f "$UPDATE_ZSH" ]]; then
+  grep -q 'Ralph workspace migration'                              "$UPDATE_ZSH" || fail "update.zsh missing F3 migration block"
+  grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$UPDATE_ZSH" || fail "update.zsh missing ralph enable command"
+  grep -q 'WORKSPACE_MODE=true'                                     "$UPDATE_ZSH" || fail "update.zsh missing WORKSPACE_MODE check"
+  pass "update.zsh has F3 ralph workspace migration"
+else
+  echo "  ~ skipping update.zsh asserts (ai-devkit not on disk)"
+fi
+
+# 9p. .workbench-manifest.json declares template_dev_only and includes .ralph/** in user_owned
+python3 - <<'PYEOF' || exit 1
+import json, pathlib, sys
+m = json.loads(pathlib.Path(".workbench-manifest.json").read_text())
+errs = []
+if ".ralph/**" not in m.get("user_owned", []):
+    errs.append(".workbench-manifest.json user_owned missing .ralph/**")
+tdo = m.get("template_dev_only", [])
+for must in ("SESSION-HANDOFF.md", ".ralph/PROMPT.md", ".ralph/fix_plan.md"):
+    if must not in tdo:
+        errs.append(f".workbench-manifest.json template_dev_only missing {must}")
+if errs:
+    for e in errs: print(e, file=sys.stderr)
+    sys.exit(1)
+PYEOF
+pass ".workbench-manifest.json has user_owned .ralph and template_dev_only entries"
+
 # 10. wb.reject round-trip
 cat > product/outputs/prds/PRD-002-reject.md <<'EOF'
 ---

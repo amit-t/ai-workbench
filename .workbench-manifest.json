@@ -28,8 +28,17 @@
     "engineering/**",
     "qa/**",
     "ralph/**",
+    ".ralph/**",
     "repos/**",
+    "repos/.ralph/**",
     "steering.local/**",
     ".workbench-state/**"
-  ]
+  ],
+  "template_dev_only": [
+    "SESSION-HANDOFF.md",
+    "CHANGELOG.md",
+    ".ralph/PROMPT.md",
+    ".ralph/fix_plan.md"
+  ],
+  "_template_dev_only_doc": "Files tracked in the ai-workbench template repo for template-dev work but purged from stamped wbs by init.wb (Step 3.4b) so collaborators do not inherit template-dev state. Update this list whenever a new template-dev-only file is added."
 }
