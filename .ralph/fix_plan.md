@@ -41,7 +41,7 @@ Hard rules for every task:
   - Cover: problem statement, flag spec (comma-separated list, exact-name match, error on unknown), semantics for `fix_plan.md` sections (skip vs hide vs assert), interaction with parallelism (N capped at len(subset)), behavior when subset is empty / equals full list, back-compat, what `wb.ralph-dispatch --repos a,b` should look like once upstream support exists, test coverage.
   Touch ONLY this new file.
 
-- [~] **E4** Add `wb.ralph-plan --replan <repo>` for single-repo plan regeneration.
+- [x] **E4** Add `wb.ralph-plan --replan <repo>` for single-repo plan regeneration.
   Context: V1 has no way to redo planning for one repo without blowing away the rest of `repos/.ralph/fix_plan.md`. Editors often want to refine one repo's plan after a stakeholder change.
   Do:
   - Edit `scripts/ralph-plan.sh` to accept `--replan <repo-name>`. When set:
