@@ -102,6 +102,7 @@ Every artifact you write starts at `status: draft`. State transitions happen onl
 wb.sync-context                       # push workbench outputs into repos/*/ai/
 wb.ralph-enable-check                 # preflight that `ralph enable --workspace` ran
 wb.ralph-plan [--mode ...] [--engine] # sync context + ralph-plan (workspace by default)
+wb.ralph-plan --replan <repo>         # regen one repo's section, splice into repos/.ralph/fix_plan.md
 wb.ralph-dispatch [--parallel N]      # ralph --workspace --parallel N (ralph owns the loop)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
 wb.register-repo <name> <url> <role>  # add code repo
@@ -120,6 +121,7 @@ wb.steering-lint                      # validate steering/ and steering.local/
 - Workbench wraps ai-ralph. Workbench never re-implements ralph internals — enable, loop, parallelism, and PR creation all live in ralph.
 - `ralph enable --workspace` is run once at `$WB_ROOT/repos/` by `init.wb` / `join.wb`. `wb.ralph-enable-check` is the preflight.
 - `wb.ralph-plan` defaults to **workspace mode** (single `ralph-plan --workspace` at `$WB_ROOT/repos/`). Falls back to per-repo looping when the installed ralph-plan does not support `--workspace`. Override with `--mode`, env `WB_RALPH_PLAN_MODE`, or `project.conf RALPH_PLAN_MODE`.
+- `wb.ralph-plan --replan <repo>` regenerates only one repo's plan, then splices the resulting `## <repo>` section back into `repos/.ralph/fix_plan.md` (existing section is replaced; appended if missing). Holds an advisory `flock` on `.workbench-state/.lock` during the splice. Use this when a stakeholder change affects one repo and you do not want to redo planning for the rest.
 - `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
 - Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
 - **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.

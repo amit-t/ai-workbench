@@ -272,6 +272,20 @@ wb.ralph-dispatch
 wb.ralph-dispatch --status    # open PRs per repo + recent worker logs
 ```
 
+### Replanning one repo
+
+When a stakeholder change affects only one repo and you do not want to throw away the other repos' plans:
+
+```bash
+wb.ralph-plan --replan svc-a
+#   = sync-context for svc-a
+#   = (cd repos/svc-a && ralph-plan --engine ... --thinking ...)
+#   = splice the resulting `## svc-a` section into repos/.ralph/fix_plan.md
+#     (replaces existing section; appended if missing)
+```
+
+The splice runs under an advisory `flock` on `.workbench-state/.lock`, so it is safe to run while other workbench writers (publish / approve / reject) are active. `--replan` rejects an unknown repo name (`exit 2`) and is mutually exclusive with `--mode` and a positional repo argument.
+
 ### Configuration
 
 Set in `project.conf` (team default) or override via CLI flag / env var:
