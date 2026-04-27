@@ -44,7 +44,7 @@ draft  ──(wb.publish)──▶  published  ──(wb.approve)──▶  appr
 
 - Never generate a fix_plan entry without an approved PRD (for automation repos: plus approved test spec; for service repos: plus approved engineering spec).
 - Ralph always runs from a code repo's cwd, never from the workbench root.
-- Workspace-mode planning (writes per-repo `.ralph/fix_plan.md`) is invoked via `wb.ralph-plan`; execution is per-repo via `wb.ralph-loop` or `wb.ralph-dispatch`.
+- Workspace-mode planning (writes per-repo `.ralph/fix_plan.md`) is invoked via `wb.ralph-plan`. Execution is via `wb.ralph-dispatch` (cross-repo parallelism via `ralph --workspace --parallel N`); for single-repo debugging drop the wrapper: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`.
 
 ## Template discipline
 
