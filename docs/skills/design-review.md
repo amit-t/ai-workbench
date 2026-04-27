@@ -5,6 +5,8 @@ eyebrow: UXD
 subtitle: "5-perspective review of a generated screen set — UX researcher, accessibility auditor, engineer, brand guardian, end-user voice. Blocks handoff on any P0."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Blocks |
 |-----|-------|---------------|--------|--------|
 | UXD | Design review | `design/outputs/screens/PRD-NNN/index.md` exists | `design/outputs/handoffs/PRD-NNN-review.md` | design handoff on any P0 |
@@ -49,4 +51,4 @@ subtitle: "5-perspective review of a generated screen set — UX researcher, acc
 
 ## Source
 
-[`skills/design-review/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/design-review/SKILL.md)
+[`skills/design-review/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/design-review/SKILL.md)

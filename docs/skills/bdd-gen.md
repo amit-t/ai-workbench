@@ -5,6 +5,8 @@ eyebrow: QA
 subtitle: "Generate Gherkin `.feature` files from an approved PRD. Covers happy / edge / error / security paths."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | QA | QA | PRD approved | `qa/outputs/bdd/PRD-NNN-<capability>.feature` | `/test-cases-gen`, `/test-spec` |
@@ -52,4 +54,4 @@ PRD is approved; user wants executable behavior specs.
 
 ## Source
 
-[`skills/bdd-gen/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/bdd-gen/SKILL.md)
+[`skills/bdd-gen/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/bdd-gen/SKILL.md)

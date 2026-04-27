@@ -4,10 +4,12 @@ layout: default
 eyebrow: Start Here
 ---
 
+{% include links.html %}
+
 ## Install the Devkit (Once per Machine)
 
 ```zsh
-git clone https://github.com/amit-t/ai-devkit ~/Projects/Tools-Utilities/ai-devkit
+git clone {{ links.ai_devkit_repo }} ~/Projects/Tools-Utilities/ai-devkit
 cd ~/Projects/Tools-Utilities/ai-devkit
 ./install.zsh
 source ~/.zshrc

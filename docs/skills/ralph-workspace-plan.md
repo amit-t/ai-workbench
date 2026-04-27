@@ -5,6 +5,8 @@ eyebrow: Orchestrator
 subtitle: "Sync approved context, invoke ralph workspace-mode plan, produce per-repo fix_plans + workbench rollup. Gated on three-stage approvals."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | Orchestrator | Execution plan | PRD + SPEC + TDD + TSD all approved | `repos/*/ai/fix_plan.md` per repo + `ralph/workspace-plan.md` rollup | `/ralph-dispatch` |
@@ -47,4 +49,4 @@ Any failure → print `Gate failure. Missing approvals: {list}. Run wb.publish t
 
 ## Source
 
-[`skills/ralph-workspace-plan/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/ralph-workspace-plan/SKILL.md)
+[`skills/ralph-workspace-plan/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/ralph-workspace-plan/SKILL.md)

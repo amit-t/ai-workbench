@@ -5,6 +5,8 @@ eyebrow: PO
 subtitle: "Pull a Jira epic body into `product/context-library/epics/` as a draft context artifact."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Unblocks |
 |-----|-------|---------------|--------|----------|
 | PO | Intake | Jira epic ID listed in `project.conf EPICS` | `product/context-library/epics/<EPIC-ID>.md` | `/prd-draft` |
@@ -48,4 +50,4 @@ source: {mcp|manual}
 
 ## Source
 
-[`skills/epic-intake/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/epic-intake/SKILL.md)
+[`skills/epic-intake/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/epic-intake/SKILL.md)

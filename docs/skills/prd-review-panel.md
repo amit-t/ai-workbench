@@ -5,6 +5,8 @@ eyebrow: PO
 subtitle: "7-perspective parallel review of a draft PRD. Blocks `wb.approve` if any reviewer flags a P0."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Blocks |
 |-----|-------|---------------|--------|--------|
 | PO | Product review | PRD at `draft` + epic approved | `product/outputs/prds/PRD-NNN-review.md` | `wb.approve PRD-NNN` on any P0 |
@@ -55,4 +57,4 @@ Every reviewer outputs: `✅ What works / ⚠️ Concerns (P0/P1/P2) / ❌ Block
 
 ## Source
 
-[`skills/prd-review-panel/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/prd-review-panel/SKILL.md)
+[`skills/prd-review-panel/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/prd-review-panel/SKILL.md)

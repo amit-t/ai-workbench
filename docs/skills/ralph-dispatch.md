@@ -5,6 +5,8 @@ eyebrow: Orchestrator
 subtitle: "Launch parallel autonomous ralph loops across workbench-registered repos. Cross-repo parallelism — net-new over ralph's within-repo parallelism."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output |
 |-----|-------|---------------|--------|
 | Orchestrator | Execution | `/ralph-workspace-plan` ran; fix_plans present | `ralph/logs/{repo}.log`, `ralph/{repo}.pid`, `ralph/dispatch.log` |
@@ -54,4 +56,4 @@ Per-repo fix_plans exist and user wants ralph to execute, ideally in parallel ac
 
 ## Source
 
-[`skills/ralph-dispatch/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/ralph-dispatch/SKILL.md)
+[`skills/ralph-dispatch/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/ralph-dispatch/SKILL.md)

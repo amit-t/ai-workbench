@@ -5,6 +5,8 @@ eyebrow: ENG
 subtitle: "Mermaid ER + C4-level-2 component diagram + optional hot-path sequence. Renders in GitHub without external tooling."
 ---
 
+{% include links.html %}
+
 | Hat | Stage | Upstream gate | Output | Referenced by |
 |-----|-------|---------------|--------|---------------|
 | Eng | Engineering | SPEC exists (may still be `draft`) | `engineering/outputs/erd/ERD-NNN-<slug>.md` | TDD §Data shapes, test spec |
@@ -56,4 +58,4 @@ related_spec: SPEC-{NNN}
 
 ## Source
 
-[`skills/erd/SKILL.md`](https://github.com/amit-t/ai-workbench/blob/main/skills/erd/SKILL.md)
+[`skills/erd/SKILL.md`]({{ links.ai_workbench_repo }}/blob/main/skills/erd/SKILL.md)
