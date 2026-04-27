@@ -20,3 +20,13 @@ ralph/*.pid
 # Jekyll build output
 docs/_site/
 docs/.jekyll-cache/
+
+# Ralph — ignore everything except key files
+.ralph/*
+!.ralph/fix_plan.md
+!.ralph/PROMPT.md
+!.ralph/PROMPT_PLAN.md
+!.ralph/constitution.md
+
+# Ralph machine-specific config (sourced by ralph_loop.sh load_ralphrc)
+.ralphrc
