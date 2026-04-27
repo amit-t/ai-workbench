@@ -1,6 +1,6 @@
 ---
 name: ralph-dispatch
-description: Launch parallel autonomous ralph loops across workbench-registered repos. Cross-repo parallelism is the net-new behavior — ai-ralph native parallelism is within-repo only.
+description: Drive `wb.ralph-dispatch`. Runs ralph in workspace mode with native cross-repo parallelism. Workbench preflights, syncs context, and shells out; ralph owns the loop, parallelism, and PR creation.
 category: Engineering
 ---
 
@@ -8,19 +8,27 @@ category: Engineering
 
 ## When to use
 
-Per-repo fix_plans exist and the user wants ralph to execute, ideally in parallel across multiple repos.
+Per-repo fix_plans exist (workspace mode: sections of `repos/.ralph/fix_plan.md`; per-repo mode: one fix_plan per repo) and the user wants ralph to execute, with cross-repo parallelism.
 
 ## What this skill adds over `ralph` alone
 
-- ai-ralph has within-repo parallelism (`rpc.p N` spawns N agents working the same fix_plan).
-- This skill adds across-repo parallelism: one ralph loop per registered repo, launched in the background, tracked by pidfile and per-repo log.
+`ralph --workspace --parallel N` natively iterates the workspace fix_plan and runs N loops in parallel. This skill is the workbench-side wrapper that:
+
+- Preflights `ralph enable --workspace` via `wb.ralph-enable-check`.
+- Resolves N from CLI flag, env `WB_RALPH_PARALLEL`, or `project.conf` (default `min(len(REPOS), 4)`).
+- Resolves the engine from CLI flag, env `WB_RALPH_ENGINE`, or `project.conf`.
+- Exports `WORKSPACE_ROOT=$WB_ROOT/repos` so ralph picks up the right context dir.
+- Surfaces `--status`: lists open ralph-authored PRs across registered repos plus a tail of recent ralph worker logs.
+
+Workbench does not re-implement the loop, parallelism, or PR creation; that is `ai-ralph`'s job.
 
 ## Prerequisites
 
-- `/ralph-workspace-plan` has been run for the PRDs in scope. This implies every upstream artifact (PRD, engineering spec, TDD, test spec) is already at `status: approved` with an entry in `.workbench-state/approved.json`. Dispatch inherits that gate — it does not re-check.
-- `.ralph/fix_plan.md` exists and is non-empty in every target repo.
-- Workbench is git-clean (no uncommitted artifacts) — prevents split-brain between workbench and in-flight ralph context.
-- Each target repo is git-clean.
+- `/ralph-workspace-plan` has been run for the PRDs in scope. This implies every upstream artifact (PRD, engineering spec, TDD, test spec) is at `status: approved` with an entry in `.workbench-state/approved.json`. Dispatch inherits that gate; it does not re-check.
+- `repos/.ralph/fix_plan.md` (workspace mode) is non-empty, OR `.ralph/fix_plan.md` exists and is non-empty in every target repo (per-repo mode).
+- `ralph enable --workspace` ran once at `$WB_ROOT/repos/`. `wb.ralph-dispatch` calls `wb.ralph-enable-check` itself; failure aborts the run.
+
+> Note. Per-repo subset selection (`--repos a,b`) is **not yet wired**. It is a parked follow-up (Plan E2) waiting on an upstream `ralph --workspace --repos` filter. Today, scoping a partial dispatch means pre-editing `repos/.ralph/fix_plan.md` to remove sections you do not want executed.
 
 ## Steps
 
@@ -29,46 +37,58 @@ Per-repo fix_plans exist and the user wants ralph to execute, ideally in paralle
    ```bash
    # workbench clean?
    git -C "$WB_ROOT" status --porcelain
-   # each target repo clean?
+   # each registered repo clean?
    for r in <selected-repos>; do git -C "$WB_ROOT/repos/$r" status --porcelain; done
-   # each has a fix_plan?
-   for r in <selected-repos>; do
-     [[ -f "$WB_ROOT/repos/$r/.ralph/fix_plan.md" ]] && [[ -s "$WB_ROOT/repos/$r/.ralph/fix_plan.md" ]] \
-       || echo "fix_plan missing or empty: $r"
-   done
+   # workspace fix_plan has content?
+   [[ -s "$WB_ROOT/repos/.ralph/fix_plan.md" ]] || echo "workspace fix_plan missing or empty"
    ```
 
-2. **Select repos.** Default: all with a fix_plan. Override with `--repos r1,r2`.
+2. **Resolve flags.** Engine and parallelism come from project.conf by default; only set `--parallel` / `--engine` when the user wants to override.
 
-3. **Pick engine.** Respect `DEVIN_DEFAULT`. Override with `--agent`.
-
-4. **Launch:**
+3. **Launch.** Always call through the alias, never the script path:
 
    ```bash
-   ./scripts/ralph-dispatch.sh [--repos {csv}] [--agent {engine}]
+   wb.ralph-dispatch                        # ralph --workspace --parallel N
+   wb.ralph-dispatch --parallel 2
+   wb.ralph-dispatch --engine claude
+   wb.ralph-dispatch --dry-run              # preview the ralph command, do not execute
    ```
 
-5. **Report launched loops** — PIDs, log paths.
+   The alias resolves to `scripts/ralph-dispatch.sh`, which preflights `wb.ralph-enable-check` and then runs `(cd $WB_ROOT/repos && WORKSPACE_ROOT=$WB_ROOT/repos ralph --workspace --parallel N)`. The `--engine` flag is passed through only when the installed ralph reports it.
 
-6. **On status requests**, read pidfiles + logs:
+4. **Watch progress.** Use the dedicated status flag; do not invent your own log scraping:
 
+   ```bash
+   wb.ralph-dispatch --status
    ```
-   | Repo | PID | State | Last line |
-   ```
 
-7. **On completion** (all PIDs gone):
-   - Read last 30 lines of each log; extract exit code and any PR URL the loop printed.
-   - Update `EPIC-PIPELINE.md` `Exec` column: `~` → `✓` on exit 0 with a PR surfaced, `✗` on non-zero.
-   - Remove stale pidfiles.
+   Output lists open ralph-authored PRs (`gh pr list -R {repo} --search 'head:rp-'`) per registered repo, and a tail of the five most recent files under `repos/.ralph/logs/parallel/`.
+
+5. **On completion.** Once `wb.ralph-dispatch --status` shows no active workers and PRs have surfaced:
+   - Read the latest ralph worker logs to confirm exit codes.
+   - Update `EPIC-PIPELINE.md` `Exec` column: `~` → `✓` on success with a PR surfaced, `✗` on non-zero exit.
+   - For PRs that ralph created with team steering overrides applied, confirm the M4 drift footer is present in the PR body (ralph appends it from `repos/.ralph/pr_footer.md`). If the deployed ralph predates the `pr-footer-append` change, run `wb.ralph-annotate [--since 30m]` as the post-hoc fallback.
+
+## Single-repo debugging
+
+For one-repo iteration outside dispatch, drop the wrapper and use ralph directly:
+
+```bash
+(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)
+```
+
+There is no `wb.ralph-loop`. It was retired with the V1 adapter ship.
 
 ## Output contract
 
-- Background processes: one ralph loop per target repo.
-- Writes: `ralph/logs/{repo}.log`, `ralph/{repo}.pid`, `ralph/dispatch.log` (summary).
+- Foreground process: `ralph --workspace --parallel N` running at `$WB_ROOT/repos/`.
+- Writes (ralph-owned, do not edit from workbench): `repos/.ralph/logs/parallel/*.log`, ralph-authored PRs on each target repo.
 - Modifies: `EPIC-PIPELINE.md` on completion.
 
 ## Do not
 
 - Do not launch if workbench or any target repo is dirty.
-- Do not silently ignore a non-zero exit. Surface the last 30 lines in the status summary.
-- Do not leave stale pidfiles.
+- Do not call `scripts/ralph-dispatch.sh` directly. Use `wb.ralph-dispatch` so the preflight runs and `WORKSPACE_ROOT` is exported.
+- Do not write into `repos/.ralph/`. That tree is ralph-owned; workbench only stages `repos/.ralph/pr_footer.md` from `sync-context.sh`.
+- Do not silently ignore a non-zero ralph exit. Surface the relevant log tail in the status summary.
+- Do not re-implement parallel scheduling, pidfiles, or PR scraping. `--status` already surfaces PRs and logs; extend ralph if more is needed.

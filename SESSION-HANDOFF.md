@@ -4,7 +4,7 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged on both remotes; companion ai-ralph PRs `feat/workspace-plan-mode` and `feat/pr-footer-append` merged).
+**Last session:** 2026-04-27 (E1 skill rewiring: `ralph-workspace-plan` and `ralph-dispatch` `SKILL.md` bodies now call the rewritten aliases). Previous: 2026-04-25 (ralph adapter V1 merged on both remotes; companion ai-ralph PRs `feat/workspace-plan-mode` and `feat/pr-footer-append` merged).
 **Branch:** `main`. **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
 **Main branch protection:** PR required, admin bypass enabled, no force-push, no deletion.
@@ -81,8 +81,9 @@ Follow-ups to the V1 ship that deserve their own PRs:
 1. Retire `wb.ralph-annotate` once every developer's installed `ralph` binary carries the `pr-footer-append` change. Simplify `sync-context.sh` accordingly and drop the alias.
 2. Parallel planning in `ralph-plan --workspace` (upstream ralph). V1 plan is sequential per repo; for 4+ repos this is the bottleneck.
 3. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`, so `wb.ralph-dispatch --repos a,b` becomes meaningful without pre-editing `fix_plan.md`.
-4. `wb.ralph-plan --replan <repo>` — regenerate one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state.
-5. Wire `ralph-workspace-plan` and `ralph-dispatch` skills to the rewritten aliases; their SKILL.md bodies still reference pre-adapter flags.
+4. `wb.ralph-plan --replan <repo>` (regenerate one repo's section of `repos/.ralph/fix_plan.md` without blowing away other repos' state).
+
+E1 (wiring `ralph-workspace-plan` / `ralph-dispatch` skill bodies to the rewritten aliases) shipped 2026-04-27; see `CHANGELOG.md` "Ralph adapter V2 — E1 skill rewiring".
 
 ### B. Plan B ralph adapter — **DONE** (this session)
 
