@@ -240,13 +240,25 @@ The workbench wraps [ai-ralph](https://github.com/Invenco-Cloud-Systems-ICS/ai-r
 
 ### One-time bootstrap
 
-`init.wb` and `join.wb` (in ai-devkit) both run:
+`init.wb` and `join.wb` (in ai-devkit) both run a preflight that:
+
+1. Installs the `ralph` binary from your local `ai-ralph` clone (or upstream) when missing.
+2. Verifies `ralph --workspace` support.
+3. Ensures `${WB_ROOT}/repos/` exists.
+4. Purges every entry in `.workbench-manifest.json` `template_dev_only` so stamped wbs do not inherit the template's own `.ralph/PROMPT.md`, `.ralph/fix_plan.md`, `SESSION-HANDOFF.md`, or `CHANGELOG.md`.
+5. Runs the workspace enable:
 
 ```bash
-(cd "$WB_ROOT/repos" && ralph enable --workspace)
+(cd "${WB_ROOT}/repos" && ralph enable --workspace --non-interactive --skip-tasks)
 ```
 
-This materializes `$WB_ROOT/repos/.ralph/{PROMPT.md,fix_plan.md,AGENT.md}` and `.ralphrc` with `WORKSPACE_MODE=true`. If you bootstrapped manually, run the command above yourself, then `wb.ralph-enable-check` to confirm.
+6. Calls `scripts/ralph-enable-check.sh` to confirm `${WB_ROOT}/repos/.ralph/` is healthy and `.ralphrc` carries `WORKSPACE_MODE=true`.
+
+`init.wb` runs this at Step 3.4b; `join.wb` re-checks at Step 4b and idempotently re-enables if a joiner pulled an older workbench predating the bootstrap.
+
+If you bootstrapped manually, run steps 5 and 6 yourself, then `wb.ralph-enable-check`.
+
+Older stamped wbs that were created before this bootstrap can be migrated by running `update.wb`, which detects a missing `repos/.ralph/` and runs `ralph enable --workspace` once.
 
 ### Daily flow
 
