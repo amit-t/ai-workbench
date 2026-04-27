@@ -26,7 +26,7 @@ Hard rules for every task:
   - Drop any smoke assertion that checks for the annotator script's existence.
   Do NOT touch: `scripts/ralph-plan.sh`, `skills/ralph-workspace-plan/`, `skills/ralph-dispatch/` (those belong to E4/E5).
 
-- [~] **E2** Draft upstream-ralph design doc: parallel planning in `ralph-plan --workspace`.
+- [x] **E2** Draft upstream-ralph design doc: parallel planning in `ralph-plan --workspace`.
   Context: V1 plans repos sequentially. With 4+ repos, planning is the bottleneck.
   Do:
   - Create `notes/upstream-ralph-v2/parallel-planning.md`.
