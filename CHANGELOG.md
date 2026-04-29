@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Plan E5, upstream-ralph `--repos <subset>` filter design doc (2026-04-29)
+- `notes/upstream-ralph-v2/repos-subset-filter.md`: design doc for adding `--repos <list>` and `--exclude <list>` flags to `ralph --workspace`. Covers the four motivating scenarios (mid-refactor pin, single-service sprints, scheduled cron runs, symmetric companion to `wb.ralph-plan --replan`), the `discover_workspace_repos()` chokepoint refactor (Option A: optional second arg), cross-repo section behavior under a partial filter (skip by default; opt-in deferred), env passthrough (`RALPH_WORKSPACE_REPOS` / `RALPH_WORKSPACE_EXCLUDE`), back-compat (byte-identical output when no filter), test coverage matrix, and the workbench follow-up surface (`wb.ralph-dispatch --repos`, `WB_RALPH_DISPATCH_REPOS` knob in `project.conf.template`).
+- No code changes shipped: pure design doc. Implementation moves to `ai-ralph` once accepted.
+- Smoke 22/22 still green; no contract change.
+
 ### Plan F2 + F3 — README + update.wb migration (2026-04-27)
 - `README.md` "Multi-repo execution with ralph" → "One-time bootstrap" section rewritten to document the six-step preflight that `init.wb` Step 3.4b and `join.wb` Step 4b run, including the `template_dev_only` purge and the `ralph-enable-check.sh` sanity check. Added a closing note that older stamped wbs can be migrated via `update.wb`.
 - `ai-devkit/update-workbench/update.zsh`: post-sync block detects an old stamped wb missing `repos/.ralph/` (or whose `.ralphrc` lacks `WORKSPACE_MODE=true`) and runs `ralph enable --workspace --non-interactive --skip-tasks` at `${WB_DIR}/repos/`. Idempotent: skipped when workspace already enabled, when ralph is missing from PATH, or when ralph lacks `--workspace` support. After enable, calls `scripts/ralph-enable-check.sh` for a final verify.
