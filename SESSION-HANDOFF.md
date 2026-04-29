@@ -4,7 +4,7 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
+**Last session:** 2026-04-29. Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Smoke 22/22. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
 **Branch:** `dev` (work in flight). Previous session: 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged; companion ai-ralph PRs `feat/workspace-plan-mode` + `feat/pr-footer-append` merged).
 **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
@@ -98,7 +98,7 @@ Reconciled with `main` (parallel ralph autonomous run shipped E1, E2, E4 under d
 
 1. ~~Retire `wb.ralph-annotate` once every developer's installed `ralph` binary carries the `pr-footer-append` change. Simplify `sync-context.sh` accordingly and drop the alias.~~ **DONE** 2026-04-27 on `main` (commit 5e85e99 / 48e2929).
 2. ~~Parallel planning in `ralph-plan --workspace` (upstream ralph). Design doc only.~~ **DONE** 2026-04-27 on `main` (commit 37db5fb / ca78837 → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream ralph PR still pending.
-3. Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`. Design doc in flight on `main` (97728b6 marked E3 in-progress; check `notes/upstream-ralph-v2/repos-subset-filter.md`).
+3. ~~Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`.~~ **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Pure design doc; covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env passthrough, back-compat snapshot. Upstream ralph PR pending.
 4. ~~`wb.ralph-plan --replan <repo>`.~~ **DONE** 2026-04-27 on `main` (commit 37c9d1c / fa8dafb).
 5. ~~Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to V1 aliases.~~ **DONE** 2026-04-27 cherry-picked onto `dev` from ralph branch `ralph-claude/e1-skill-rewiring` as commit 39bff2a (consolidated into Plan F PR; original ralph PRs #12/#13 closed).
 
