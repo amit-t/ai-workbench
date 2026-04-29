@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Plan D3 — `wb.steering-audit` (2026-04-29)
+- `scripts/steering-audit.py`: new read-only script. Walks `steering.local/` via the parser in `scripts/steering-load.py`, classifies each entry as add / supersede / remove, and emits one of three formats: markdown report (default), `--json`, `--list`.
+- Surface fields per overlay: kind, target template rule(s), scope, owner, `created` date, `updated` date with file-mtime fallback, age in days, list of distinct epics whose artifacts fall under the overlay scope, and a promote-suggest flag.
+- Promote-suggest heuristic: an override is flagged when artifacts under its scope span more than one epic in this workbench. REMOVE-kind entries are excluded from promote-suggest (a removal does not need to be promoted, it needs to be reconsidered).
+- Scope-to-artifact-dirs mapping covers `golden`, `role:dev|qa|po|uxd`, `artifact:prd|eng-spec|tdd|erd|bdd|test-cases|test-spec`. Topics return n/a (their applicability depends on per-skill frontmatter).
+- `aliases.sh`: new `wb.steering-audit` wrapper.
+- Docs: `CLAUDE.md` Key commands table, `README.md` "Steering workflow" + Tooling block, `steering/README.md` Drift visibility section all reference the new command.
+- Tests: `tests/smoke.sh` 29/29 → 33/33 with four new assertions covering markdown, `--list`, `--json` schema, and the multi-epic promote-suggest path.
+- Hygiene: `.gitignore` now ignores `__pycache__/` and `*.pyc` (the audit script imports `steering-load.py` which writes bytecode to `scripts/__pycache__/`).
+
 ### Plan E5, upstream-ralph `--repos <subset>` filter design doc (2026-04-29)
 - `notes/upstream-ralph-v2/repos-subset-filter.md`: design doc for adding `--repos <list>` and `--exclude <list>` flags to `ralph --workspace`. Covers the four motivating scenarios (mid-refactor pin, single-service sprints, scheduled cron runs, symmetric companion to `wb.ralph-plan --replan`), the `discover_workspace_repos()` chokepoint refactor (Option A: optional second arg), cross-repo section behavior under a partial filter (skip by default; opt-in deferred), env passthrough (`RALPH_WORKSPACE_REPOS` / `RALPH_WORKSPACE_EXCLUDE`), back-compat (byte-identical output when no filter), test coverage matrix, and the workbench follow-up surface (`wb.ralph-dispatch --repos`, `WB_RALPH_DISPATCH_REPOS` knob in `project.conf.template`).
 - No code changes shipped: pure design doc. Implementation moves to `ai-ralph` once accepted.

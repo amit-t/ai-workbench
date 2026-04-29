@@ -4,7 +4,7 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-29. Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Smoke 22/22. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
+**Last session:** 2026-04-29. Plan D3 (`wb.steering-audit` command) shipped via ralph autonomous loop on worktree branch `ralph-devin/d3-wb-steering-audit-command-surface-which-templat`. New `scripts/steering-audit.py` surfaces overlay kind, targets, age, last-updated, and a promote-suggest heuristic that fires when an override's scope is exercised by artifacts spanning 2+ epics. Smoke 29/29 → 33/33. Earlier today: Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
 **Branch:** `dev` (work in flight). Previous session: 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged; companion ai-ralph PRs `feat/workspace-plan-mode` + `feat/pr-footer-append` merged).
 **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
@@ -14,6 +14,13 @@
 ---
 
 ## What shipped
+
+### Plan D3 — `wb.steering-audit` command (2026-04-29)
+- `scripts/steering-audit.py`: surfaces every overlay under `steering.local/` with kind (add / supersede / remove), targeted template rule(s), scope, owner, `created`, `updated`-with-mtime-fallback, age in days, distinct epics whose artifacts fall under the overlay's scope, and a promote-suggest flag (true when 2+ epics; REMOVE excluded).
+- Three output modes: default markdown report (Summary + Overrides table + Promotion candidates section when applicable), `--json` (machine-readable), `--list` (terse one-line-per-override).
+- `aliases.sh`: new `wb.steering-audit` wrapper.
+- Docs: `CLAUDE.md` Key commands table, `README.md` "Steering workflow" + Tooling block, `steering/README.md` Drift visibility section.
+- Smoke 29/29 → 33/33 (4 new asserts: markdown, --list, --json schema, multi-epic promote-suggest).
 
 ### Template-dev ralph self-host + stamped-wb ralph bootstrap (2026-04-27)
 
@@ -88,7 +95,7 @@ Parked items from the V1 ship, ordered by leverage:
 
 1. Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).
 2. Wb-side CI lint workflow (currently only the template repo runs steering-lint in CI; wb-side workflow should be seeded by `update.wb` so PRs on stamped wbs also validate).
-3. `wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).
+3. ~~`wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).~~ **DONE** 2026-04-29 (`scripts/steering-audit.py`, smoke 29/29 → 33/33). PRs pending.
 4. Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.
 
 ### E. Ralph adapter V2 polish

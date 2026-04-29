@@ -130,6 +130,13 @@ Teams raise **promotion PRs** when a `steering.local/` override has earned its s
 
 - **M1 (local):** `pmo-status` lists local overrides in the current workbench.
 - **M2 (org-wide):** weekly Monday GitHub Action in the template repo queries the org for all repos with topic `ai-workbench`, reads each `steering.local/`, and posts a digest issue. See `docs/steering/setup.md` for GitHub App install steps.
-- **M3 (promotion):** teams raise promotion PRs to the template repo.
+- **M3 (promotion):** teams raise promotion PRs to the template repo. The `wb.steering-audit` command flags promote-suggest candidates: overrides whose scope is exercised by artifacts that span more than one epic in the workbench.
+- **M4 (PR footer):** `sync-context.sh` writes a steering-drift markdown footer into `repos/.ralph/pr_footer.md` so every ralph-authored PR carries the override list.
+
+```
+wb.steering-audit             # markdown report (kind, age, last-updated, promote-suggest)
+wb.steering-audit --json      # machine-readable JSON
+wb.steering-audit --list      # one-line-per-override terse view
+```
 
 See the "Steering workflow" section in the root `README.md` for the role-split.
