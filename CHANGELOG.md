@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Plan D4, steering loader mtime-keyed cache (2026-04-29)
+- `scripts/steering-load.py`: rendered output is now cached under `.workbench-state/steering-cache/<scope>.cache`. The cache is keyed by a sha256 fingerprint over (relative path, st_mtime_ns, st_size) for every input file in `steering/<rel>/` and `steering.local/<rel>/`, so any edit, add, or remove flips the key and invalidates the entry. On hit, the loader returns the cached body verbatim (after stripping the two header lines). On miss, it renders, writes atomically via a `.tmp` rename, and returns the fresh content.
+- New CLI surface: `--no-cache` per-call bypass, `--clear-cache` to wipe the cache dir, and the `WB_STEERING_NO_CACHE=1` env var (also accepted as `true`/`yes`/`on`) for the same effect across a session.
+- Cache writes are best-effort: any `OSError` while creating the cache dir or writing the temp file is swallowed so the loader keeps working on read-only filesystems and inside CI sandboxes.
+- `.gitignore`: `.workbench-state/steering-cache/` excluded so the regenerable cache never lands in git.
+- `tests/smoke.sh`: six new asserts (9e1 through 9e6) cover first-call write, hit returns identical bytes, mutated-cache observability proves the hit path, mtime-touch invalidation, new-overlay-file invalidation, both bypass paths (`--no-cache` flag and `WB_STEERING_NO_CACHE=1`), and `--clear-cache` wiping the dir. Smoke 29/29 to 35/35.
+
 ### Plan E5, upstream-ralph `--repos <subset>` filter design doc (2026-04-29)
 - `notes/upstream-ralph-v2/repos-subset-filter.md`: design doc for adding `--repos <list>` and `--exclude <list>` flags to `ralph --workspace`. Covers the four motivating scenarios (mid-refactor pin, single-service sprints, scheduled cron runs, symmetric companion to `wb.ralph-plan --replan`), the `discover_workspace_repos()` chokepoint refactor (Option A: optional second arg), cross-repo section behavior under a partial filter (skip by default; opt-in deferred), env passthrough (`RALPH_WORKSPACE_REPOS` / `RALPH_WORKSPACE_EXCLUDE`), back-compat (byte-identical output when no filter), test coverage matrix, and the workbench follow-up surface (`wb.ralph-dispatch --repos`, `WB_RALPH_DISPATCH_REPOS` knob in `project.conf.template`).
 - No code changes shipped: pure design doc. Implementation moves to `ai-ralph` once accepted.

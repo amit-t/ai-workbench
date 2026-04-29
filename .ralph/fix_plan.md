@@ -20,7 +20,7 @@ Parked items from the steering V1 ship.
 - [ ] **D1.** Remaining 12 skills get step 0 (load Layer 2 steering) + `relevant_topics` frontmatter: `adr`, `erd`, `epic-intake`, `figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`, `grill-me`, `prd-review-panel`, `pmo-status` (skill side), `ralph-workspace-plan`, `ralph-dispatch`. Critical-path 9 already shipped.
 - [ ] **D2.** Wb-side CI lint workflow seeded by `update.wb`. Currently only the template repo runs `steering-lint` in CI; stamped wbs need it too so PRs there validate.
 - [ ] **D3.** `wb.steering-audit` command. Surface: which template rules a team has overridden, age of overlays, last-updated dates, suggest-promotion heuristic (override used across more than one epic).
-- [ ] **D4.** Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap, only matters at scale.
+- [x] **D4.** Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap, only matters at scale. **DONE** 2026-04-29 (`scripts/steering-load.py`, `.gitignore`, `tests/smoke.sh`). Cache file is `.cache` per scope, header line `# steering-cache fp:<sha256>` keyed by (relpath, st_mtime_ns, st_size) over both `steering/<rel>/*.md` and `steering.local/<rel>/*.md`. Atomic write via `.tmp` rename. Bypass via `--no-cache` flag, `WB_STEERING_NO_CACHE=1` env, or `--clear-cache`. Smoke 29/29 to 35/35.
 
 ## High Priority — Plan F. Stamped-wb ralph bootstrap (in flight 2026-04-27)
 
