@@ -51,9 +51,13 @@ wb.rejected() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list 
 #   wb.steering topic:api-design  # Layer 2 (on demand)
 #   wb.steering-refresh           # reload every scope (use after steering updates)
 #   wb.steering-lint              # validate steering/ + steering.local/
+#   wb.steering-audit [--json|--list]
+#                                 # surface team overrides: kinds, targets,
+#                                 # age, last-updated, promote-suggest heuristic
 wb.steering()         { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" "$@"; }
 wb.steering-refresh() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" all; }
 wb.steering-lint()    { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-lint.py" "$@"; }
+wb.steering-audit()   { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-audit.py" "$@"; }
 
 # ── Git helpers ───────────────────────────────────────────────────────────────
 wb.pull()   { (cd "$WB_ROOT" && git pull --rebase); }

@@ -221,6 +221,7 @@ The template ships canonical steering under `steering/` (template-owned; PR back
 - When a local override earns its stripes (applied for more than one epic, universally useful), raise a promotion PR on the template repo to move the file from `steering.local/` to `steering/` and drop the `-LOCAL` suffix. CODEOWNERS for the target directory review.
 - Invoke the loader explicitly via each skill's step 0, or via `wb.steering <scope>`. Do not try to merge template and overlay in your head.
 - `pmo-status` will surface any non-empty `steering.local/` in its "Steering overrides" section. Review it at session start; promote or justify.
+- For a deeper view, run `wb.steering-audit`. It lists each override's kind, target template rule(s), age, last-updated date, and flags promote-suggest candidates (overrides whose scope is exercised by artifacts that span more than one epic in this workbench).
 
 ### Freshness
 
@@ -229,9 +230,12 @@ Steering changes upstream flow through `update.wb` into stamped workbenches. Cha
 ### Tooling
 
 ```
-wb.steering <scope>     # load merged rules for a scope (golden | role:x | artifact:x | topic:x)
-wb.steering-refresh     # reload every scope
-wb.steering-lint        # validate steering/ and steering.local/
+wb.steering <scope>            # load merged rules for a scope (golden | role:x | artifact:x | topic:x)
+wb.steering-refresh            # reload every scope
+wb.steering-lint               # validate steering/ and steering.local/
+wb.steering-audit              # markdown report of every overlay (kind, age, promote-suggest)
+wb.steering-audit --json       # same data in machine-readable JSON
+wb.steering-audit --list       # one-line-per-override terse view
 ```
 
 ## Multi-repo execution with ralph

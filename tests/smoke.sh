@@ -297,6 +297,65 @@ echo "$footer_out" | grep -q "GP-003.*GP-LOCAL-02"           || fail "footer mis
 echo "$footer_out" | grep -q "GP-004.*REMOVE"                || fail "footer missing remove entry"
 pass "steering-overlays --footer renders add/supersede/remove"
 
+# 9i2. steering-audit surfaces overrides with kind, age, last-updated, promote-suggest
+audit_md=$(python3 ./scripts/steering-audit.py)
+echo "$audit_md" | grep -q '^# Steering audit'                 || fail "audit markdown missing header"
+echo "$audit_md" | grep -q '## Summary'                        || fail "audit markdown missing summary"
+echo "$audit_md" | grep -q '## Overrides'                      || fail "audit markdown missing overrides table"
+echo "$audit_md" | grep -q 'GP-LOCAL-01.*ADD'                  || fail "audit markdown missing GP-LOCAL-01 ADD row"
+echo "$audit_md" | grep -q 'GP-LOCAL-02.*SUPERSEDE.*GP-003'    || fail "audit markdown missing GP-LOCAL-02 SUPERSEDE row"
+echo "$audit_md" | grep -q 'GP-004.removed.*REMOVE.*GP-004'    || fail "audit markdown missing GP-004 REMOVE row"
+# Smoke uses a single epic — promote-suggest should be 0 across the board.
+echo "$audit_md" | grep -q 'Promote-suggest count: 0'          || fail "audit should report 0 promote candidates with single epic"
+echo "$audit_md" | grep -q '## Promotion candidates'           && fail "audit should not render promotion section with 0 candidates"
+pass "steering-audit markdown reports kind, targets, summary; no promote when single epic"
+
+# 9i3. --list mode is parseable and matches override count
+audit_list=$(python3 ./scripts/steering-audit.py --list)
+echo "$audit_list" | head -1 | grep -q '^3 steering override(s):'  || fail "audit --list count mismatch (expected 3): $audit_list"
+echo "$audit_list" | grep -q 'ADD'                                 || fail "audit --list missing ADD row"
+echo "$audit_list" | grep -q 'SUPERSEDE'                           || fail "audit --list missing SUPERSEDE row"
+echo "$audit_list" | grep -q 'REMOVE'                              || fail "audit --list missing REMOVE row"
+pass "steering-audit --list emits one-line-per-override summary"
+
+# 9i4. --json output parses and carries epics_touched + promote_suggest
+python3 - <<'PYEOF' || fail "audit --json failed schema check"
+import json, subprocess, sys
+out = subprocess.check_output(['python3', './scripts/steering-audit.py', '--json'], text=True)
+doc = json.loads(out)
+assert 'overrides' in doc and isinstance(doc['overrides'], list), 'no overrides list'
+assert 'workbench_epics' in doc, 'no workbench_epics'
+assert len(doc['overrides']) == 3, f"expected 3 overrides, got {len(doc['overrides'])}"
+ids = {o['overlay_id'] for o in doc['overrides']}
+assert ids == {'GP-LOCAL-01', 'GP-LOCAL-02', 'GP-004.removed'}, f'unexpected ids {ids}'
+for o in doc['overrides']:
+    for k in ('scope', 'kind', 'targets', 'overlay_id', 'created',
+              'last_updated', 'age_days', 'epics_touched', 'promote_suggest'):
+        assert k in o, f'missing field {k} on {o["overlay_id"]}'
+    assert o['promote_suggest'] is False, 'single-epic workbench should not flag promote'
+PYEOF
+pass "steering-audit --json schema valid; promote_suggest=false with single epic"
+
+# 9i5. Multi-epic workbench flags promote-suggest correctly
+# Seed a second PRD on a second epic via direct file write (no lifecycle), then re-run audit.
+cat > product/outputs/prds/PRD-EXTRA-epic.md <<'EOF'
+---
+id: PRD-EXTRA
+status: draft
+epic: EPIC-EXTRA-002
+target_repos: [svc-a]
+---
+# PRD-EXTRA on second epic
+EOF
+audit_multi=$(python3 ./scripts/steering-audit.py)
+echo "$audit_multi" | grep -q '## Promotion candidates'                 || fail "multi-epic audit should render Promotion candidates section"
+echo "$audit_multi" | grep -q 'Promote-suggest count: 2'                || fail "multi-epic audit should count 2 promote candidates (ADD + SUPERSEDE; REMOVE excluded)"
+echo "$audit_multi" | grep -q 'GP-LOCAL-01.*epics: EPIC-EXTRA-002, EPIC-TEST-001'  \
+  || echo "$audit_multi" | grep -q 'GP-LOCAL-01.*epics: EPIC-TEST-001, EPIC-EXTRA-002' \
+  || fail "multi-epic audit should list both epics on GP-LOCAL-01"
+rm product/outputs/prds/PRD-EXTRA-epic.md
+pass "steering-audit promote-suggest fires when overrides span 2+ epics"
+
 # 9j. sync-context writes pr_footer.md when ralph workspace exists
 mkdir -p repos/.ralph
 ./scripts/sync-context.sh >/dev/null

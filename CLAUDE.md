@@ -114,6 +114,7 @@ wb.approved                           # list ralph-ingestable
 wb.steering <scope>                   # load steering (golden | role:x | artifact:x | topic:x)
 wb.steering-refresh                   # reload every scope (use after steering updates mid-session)
 wb.steering-lint                      # validate steering/ and steering.local/
+wb.steering-audit [--json|--list]     # which template rules a team has overridden, age, promote-suggest
 ```
 
 ## Ralph adapter (quick reference)
