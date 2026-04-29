@@ -11,7 +11,7 @@ Reconciled with `main` after merge: ralph autonomous loops on `main` shipped mul
 - [x] **E2.** Retire `wb.ralph-annotate` post-hoc fallback. **DONE** 2026-04-27 on `main` (commits `5e85e99` / `48e2929`).
 - [x] **E3.** Upstream-ralph parallel-planning design doc. **DONE** 2026-04-27 on `main` (commits `37db5fb` / `ca78837` → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream ralph PR pending.
 - [x] **E4.** `wb.ralph-plan --replan <repo>`. **DONE** 2026-04-27 on `main` (commits `37c9d1c` / `fa8dafb`).
-- [x] **E5.** Upstream-ralph `--repos <subset>` filter for `ralph --workspace`. **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Doc covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env var passthrough, and the workbench follow-up surface (`wb.ralph-dispatch --repos`, `WB_RALPH_DISPATCH_REPOS` in `project.conf.template`). Smoke 22/22 still green; no behavior changes shipped (design only). Upstream ralph PR pending.
+- [x] **E5.** Upstream-ralph `--repos <subset>` filter for `ralph --workspace`. **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Doc covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env var passthrough, and the workbench follow-up surface (`wb.ralph-dispatch --repos`, `WB_RALPH_DISPATCH_REPOS` in `project.conf.template`). Smoke 22/22 still green; no behavior changes shipped (design only). PRs: amit-t/ai-workbench#14, Invenco-Cloud-Systems-ICS/ai-workbench#15. Upstream ralph PR pending.
 
 ## High Priority — Plan D. Steering V2 polish
 
