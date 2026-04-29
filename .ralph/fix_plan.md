@@ -11,7 +11,7 @@ Reconciled with `main` after merge: ralph autonomous loops on `main` shipped mul
 - [x] **E2.** Retire `wb.ralph-annotate` post-hoc fallback. **DONE** 2026-04-27 on `main` (commits `5e85e99` / `48e2929`).
 - [x] **E3.** Upstream-ralph parallel-planning design doc. **DONE** 2026-04-27 on `main` (commits `37db5fb` / `ca78837` → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream ralph PR pending.
 - [x] **E4.** `wb.ralph-plan --replan <repo>`. **DONE** 2026-04-27 on `main` (commits `37c9d1c` / `fa8dafb`).
-- [ ] **E5.** Upstream-ralph `--repos <subset>` filter for `ralph --workspace`. Design doc was in flight on `main` (commit `97728b6` marked E3 in-progress). Verify `notes/upstream-ralph-v2/repos-subset-filter.md` exists; complete if missing.
+- [x] **E5.** Upstream-ralph `--repos <subset>` filter for `ralph --workspace`. **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Doc covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env var passthrough, and the workbench follow-up surface (`wb.ralph-dispatch --repos`, `WB_RALPH_DISPATCH_REPOS` in `project.conf.template`). Smoke 22/22 still green; no behavior changes shipped (design only). PRs: amit-t/ai-workbench#14, Invenco-Cloud-Systems-ICS/ai-workbench#15. Upstream ralph PR pending.
 
 ## High Priority — Plan D. Steering V2 polish
 
@@ -43,7 +43,7 @@ Plan C is human-driven grilling, not autonomous implementation. Skip in unattend
 ## Notes
 
 - Plan E1 is the highest-leverage low-risk item: pure docs/skill edits that prevent users from running broken commands.
-- Plan E2/E3/E4 require companion `ai-ralph` PRs. Land ralph-side first, then surface in workbench. See PROMPT.md "Cross-Repo Routing".
+- Plan E2/E3/E4/E5 require companion `ai-ralph` PRs. Land ralph-side first, then surface in workbench. See PROMPT.md "Cross-Repo Routing".
 - Plan D1 is mechanical and parallelizable per skill. Good candidate for `rpc.p N` with N matching free skills.
 - Plan C should never be picked by an autonomous loop. If ralph picks it, exit clean with `STATUS: BLOCKED`, `EXIT_SIGNAL: true`, `RECOMMENDATION: human-input-required`.
 - Update this file at the end of every loop. Move done items to `## Done` with the PR URL appended in parentheses.
