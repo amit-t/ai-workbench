@@ -101,6 +101,20 @@ scripts/steering-load.py topic:api-design
 
 Agents are expected to run the loader at every invocation point listed in `steering/config.yaml`. See that file for the authoritative list.
 
+### Cache
+
+Rendered output is cached at `.workbench-state/steering-cache/<scope>.cache`, keyed by an mtime+size fingerprint over every file in `steering/<rel>/` and `steering.local/<rel>/`. Editing, adding, or removing any rule file flips the fingerprint and the next call regenerates. The cache directory is gitignored.
+
+Bypass options when needed:
+
+```bash
+scripts/steering-load.py golden --no-cache       # one-shot bypass
+WB_STEERING_NO_CACHE=1 scripts/steering-load.py role:qa   # session-wide bypass
+scripts/steering-load.py --clear-cache           # wipe the cache dir
+```
+
+Cache writes are best-effort. The loader always returns correct content; failure to write the cache (read-only filesystem, permission denied) is silently swallowed.
+
 ---
 
 ## Validation
@@ -130,6 +144,13 @@ Teams raise **promotion PRs** when a `steering.local/` override has earned its s
 
 - **M1 (local):** `pmo-status` lists local overrides in the current workbench.
 - **M2 (org-wide):** weekly Monday GitHub Action in the template repo queries the org for all repos with topic `ai-workbench`, reads each `steering.local/`, and posts a digest issue. See `docs/steering/setup.md` for GitHub App install steps.
-- **M3 (promotion):** teams raise promotion PRs to the template repo.
+- **M3 (promotion):** teams raise promotion PRs to the template repo. The `wb.steering-audit` command flags promote-suggest candidates: overrides whose scope is exercised by artifacts that span more than one epic in the workbench.
+- **M4 (PR footer):** `sync-context.sh` writes a steering-drift markdown footer into `repos/.ralph/pr_footer.md` so every ralph-authored PR carries the override list.
+
+```
+wb.steering-audit             # markdown report (kind, age, last-updated, promote-suggest)
+wb.steering-audit --json      # machine-readable JSON
+wb.steering-audit --list      # one-line-per-override terse view
+```
 
 See the "Steering workflow" section in the root `README.md` for the role-split.

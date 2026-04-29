@@ -2,6 +2,7 @@
 name: adr
 description: Architecture Decision Record at status=draft. Writes engineering/outputs/adrs/ADR-NNN-<slug>.md in the MADR-lite format — context, drivers, options, decision, consequences. Cross-links into the originating SPEC and TDD.
 category: Engineering
+relevant_topics: []
 ---
 
 # /adr
@@ -17,6 +18,8 @@ category: Engineering
 - `engineering/outputs/adrs/` exists.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:adr` (or `python3 scripts/steering-load.py artifact:adr`). Treat the merged ruleset as hard constraints on context framing, option enumeration, decision rationale, and consequence honesty. The loader emits an empty merged blob when no `artifact:adr` rules ship yet; that is fine, the hook is in place for when the council adds them. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Pick ADR number.** Scan `engineering/outputs/adrs/ADR-*.md`, take max + 1, zero-pad to three digits.
 

@@ -2,6 +2,7 @@
 name: prd-review-panel
 description: 7-perspective parallel review of a draft PRD — engineer, designer, executive, legal, UX research, skeptic, customer voice. Writes a review file beside the PRD and blocks wb.approve if any reviewer flags a P0.
 category: Product Management
+relevant_topics: []
 ---
 
 # /prd-review-panel
@@ -18,6 +19,8 @@ category: Product Management
 - Context-library content in `product/context-library/` is readable (strategy, research, personas) when present.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:prd` (or `python3 scripts/steering-load.py artifact:prd`) so reviewer agents hold the PRD to the same constraints the author was meant to obey. The review must enforce those rules, not invent new ones. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Read the PRD in full.** Extract:
    - Problem, hypothesis, goal
