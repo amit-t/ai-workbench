@@ -2,6 +2,7 @@
 name: design-draft
 description: End-to-end UX workflow for an approved PRD — brief, user flow, wireframes, hi-fi screens, review, handoff. Orchestrates sub-skills (/figma-pull, /ds-screen-gen, /design-review) and produces one design artifact per PRD ready for wb.publish.
 category: UX Design
+relevant_topics: []
 ---
 
 # /design-draft
@@ -17,6 +18,8 @@ category: UX Design
 - `design/context-library/design-system-ref.md` is filled in (one DS block minimum) OR the user will be producing DS-free wireframes only.
 
 ## Steps
+
+0. **Load steering.** No `artifact:design` scope ships in template yet; design artifacts do not yet have Layer 2 rules. Layer 0 (golden) loaded at session start and Layer 1 (`role:uxd`) loaded on UX role-switch remain in force. If a per-workbench team has added overlay rules under `steering.local/artifacts/design/`, run `wb.steering artifact:design` to pick them up. Sub-skills (`/figma-pull`, `/ds-screen-gen`, `/design-review`) each run their own step 0 when invoked. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Locate the PRD.** Read `product/outputs/prds/PRD-{NNN}-*.md`. Extract: title, user stories, personas, acceptance criteria, explicit out-of-scope.
 

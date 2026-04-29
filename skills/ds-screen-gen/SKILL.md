@@ -2,6 +2,7 @@
 name: ds-screen-gen
 description: Generate hi-fi HTML or JSX screens for a PRD using the design system referenced in design/context-library/design-system-ref.md. Use when Figma assets are missing or a fast prototype is needed. Every screen ships with default, empty, loading, and error states.
 category: UX Design
+relevant_topics: []
 ---
 
 # /ds-screen-gen
@@ -18,6 +19,8 @@ category: UX Design
 - `design/outputs/screens/{PRD-NNN}/` is writable (create if missing).
 
 ## Steps
+
+0. **Load steering.** No `artifact:design` scope is defined yet; design artifacts do not yet have Layer 2 rules in template. Layer 0 (golden) loaded at session start and Layer 1 (`role:uxd`) loaded on UX role-switch remain in force. If a per-workbench team has added overlay rules under `steering.local/artifacts/design/`, run `wb.steering artifact:design` to pick them up. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Read the DS reference.** Parse `design/context-library/design-system-ref.md`. Extract: `name`, `framework target` (drives HTML vs JSX), `primary components`, token URL. If multiple DS blocks exist, ask the user which one.
 

@@ -2,6 +2,7 @@
 name: erd
 description: Entity-relationship diagram + C4-level-2 component diagram at status=draft. Writes engineering/outputs/erd/ERD-NNN-<slug>.md. Uses Mermaid so diagrams render in GitHub without external tools.
 category: Engineering
+relevant_topics: []
 ---
 
 # /erd
@@ -18,6 +19,8 @@ category: Engineering
 - `project.conf` REPOS populated — diagrams reference repos/services by their canonical names.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:erd` (or `python3 scripts/steering-load.py artifact:erd`). Treat the merged ruleset as hard constraints on entity naming, cardinality notation, C4-level-2 component scope, and migration-note discipline. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Pick ERD number.** Scan `engineering/outputs/erd/ERD-*.md`, max + 1, zero-pad to three digits. Use the same slug as the SPEC when possible (e.g. `ERD-003-audit-log`). Copy `target_repos:` from the SPEC into the ERD frontmatter (validated at `wb.publish` / `wb.approve`).
 

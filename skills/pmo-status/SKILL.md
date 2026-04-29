@@ -2,6 +2,7 @@
 name: pmo-status
 description: Cross-cutting status view of the workbench — epics, PRDs, specs, TDDs, BDDs, ralph fix_plan coverage per repo, dispatch state. Run at session start or on demand. Reads `.workbench-state/` as source of truth; never guesses.
 category: Project Management
+relevant_topics: []
 ---
 
 # /pmo-status
@@ -18,6 +19,8 @@ category: Project Management
 - `project.conf` is sourced (REPOS list).
 
 ## Steps
+
+0. **Load steering.** This skill is read-only and does not produce a typed artifact, so no Layer 2 artifact rules apply. Layer 0 (golden, loaded at session start) governs voice and lifecycle assumptions in the report. The "Steering overrides" section below already calls `scripts/steering-overlays.py` to enumerate `steering.local/` entries; that doubles as a drift-visibility hook on the loader output. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 Read the following in parallel before producing output. Do not infer — read.
 
