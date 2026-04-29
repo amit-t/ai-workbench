@@ -2,6 +2,7 @@
 name: epic-intake
 description: Pull a Jira epic body into product/context-library/epics/, stamp it as a draft context artifact, and prep it for /prd-draft once approved.
 category: Product Management
+relevant_topics: []
 ---
 
 # /epic-intake
@@ -20,6 +21,8 @@ User references a Jira epic ID (e.g. `EPIC-001`) or pastes a Jira link, intendin
 The epic-context file you write starts at `status: draft`. It must be published (`wb.publish epic-{EPIC_ID} product/context-library/epics/{EPIC_ID}.md epic-context`) and approved (`wb.approve epic-{EPIC_ID}`) before `/prd-draft` may consume it.
 
 ## Steps
+
+0. **Load steering.** Run `wb.steering artifact:epic-context` (or `python3 scripts/steering-load.py artifact:epic-context`). Treat the merged ruleset as hard constraints on summary completeness, AC capture, linked-issue handling, and TODO honesty. The loader emits an empty merged blob when no `artifact:epic-context` rules ship yet; the hook is in place for when the council adds them. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Verify epic is in `project.conf`.** If not, ask and append.
 

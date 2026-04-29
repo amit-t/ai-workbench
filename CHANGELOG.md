@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Plan D1, remaining 12 skills get step 0 + relevant_topics (2026-04-29)
+- Added `relevant_topics: []` frontmatter and a Step 0 "Load steering" section to the 12 skills that did not yet have them: `adr`, `erd`, `epic-intake`, `figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`, `grill-me`, `prd-review-panel`, `pmo-status`, `ralph-workspace-plan`, `ralph-dispatch`. The 6 critical-path skills (`prd-draft`, `eng-spec`, `tdd`, `bdd-gen`, `test-cases-gen`, `test-spec`) already shipped with Step 0 in Phase 2; this brings every skill to the same shape.
+- Step 0 contract per skill:
+  - Skills that produce a typed artifact (`adr`, `erd`, `epic-intake`) call `wb.steering artifact:<type>`; the loader emits an empty merged blob when no rules ship yet, so the hook is forward-compat for when the relevant council adds rules under `steering/artifacts/<type>/`.
+  - Skills that review a typed artifact (`prd-review-panel`) call `wb.steering artifact:prd` so reviewer agents enforce the same rules the author obeyed.
+  - Skills that orchestrate or are read-only (`pmo-status`, `ralph-workspace-plan`, `ralph-dispatch`) explicitly note that no Layer 2 artifact applies; Layer 0 (golden) loaded at session start governs voice and the gate logic. Layer 2 was already enforced when each upstream artifact was drafted.
+  - Design skills (`figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`) note that no template `artifact:design` scope ships yet and call `wb.steering artifact:design` only if a per-workbench team has added overlay rules under `steering.local/artifacts/design/`. Layer 1 `role:uxd` is what currently governs them.
+  - `grill-me` defers the load until step 1 has identified the target artifact type, then calls `wb.steering artifact:<type>` so the interview enforces the same rules the author was meant to obey.
+- No code changes shipped; pure SKILL.md content. `tests/smoke.sh` 29/29 still green; `scripts/steering-lint.py` clean.
+
 ### Plan D3 — `wb.steering-audit` (2026-04-29)
 - `scripts/steering-audit.py`: new read-only script. Walks `steering.local/` via the parser in `scripts/steering-load.py`, classifies each entry as add / supersede / remove, and emits one of three formats: markdown report (default), `--json`, `--list`.
 - Surface fields per overlay: kind, target template rule(s), scope, owner, `created` date, `updated` date with file-mtime fallback, age in days, list of distinct epics whose artifacts fall under the overlay scope, and a promote-suggest flag.

@@ -2,6 +2,7 @@
 name: grill-me
 description: Relentless interview that stress-tests a draft epic, PRD, spec, TDD, BDD, or design before approval. Walks the decision tree; resolves one branch at a time. Invoked by user explicitly or when reviewer asks "grill me".
 category: Agent Behavior
+relevant_topics: []
 ---
 
 # /grill-me
@@ -18,6 +19,8 @@ category: Agent Behavior
 - The target is still `status: draft` (grilling after `approved` is too late — fork a follow-up PRD instead).
 
 ## Steps
+
+0. **Load steering for the target artifact.** Step 1 below resolves the artifact type. Once known, run `wb.steering artifact:<type>` (one of: `prd`, `eng-spec`, `tdd`, `erd`, `adr`, `bdd`, `test-cases`, `test-spec`, `test-erd`, `epic-context`). Treat that ruleset as the bar the artifact must clear. Grilling holds the artifact to those rules, not opinion. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Load target.** Read the full artifact plus every referenced upstream artifact (epic-context for a PRD, PRD for a SPEC, SPEC for a TDD, etc.). If an upstream is missing or unapproved, flag it as the first gap and stop — grilling a PRD whose epic is unapproved wastes the session.
 

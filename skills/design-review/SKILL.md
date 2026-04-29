@@ -2,6 +2,7 @@
 name: design-review
 description: 5-perspective review of a generated screen set — UX researcher, accessibility auditor, engineer, brand guardian, end-user voice. Writes review synthesis beside the screens and blocks handoff until P0 items are resolved.
 category: UX Design
+relevant_topics: []
 ---
 
 # /design-review
@@ -17,6 +18,8 @@ category: UX Design
 - Related PRD readable at `product/outputs/prds/PRD-{NNN}-*.md` — used to check flow coverage and acceptance criteria alignment.
 
 ## Steps
+
+0. **Load steering.** No `artifact:design` scope ships in template yet; design artifacts do not yet have Layer 2 rules. Layer 0 (golden) loaded at session start and Layer 1 (`role:uxd`) loaded on UX role-switch remain in force, plus the same `artifact:prd` rules that the PRD author obeyed (run `wb.steering artifact:prd` so reviewer agents hold screens to PRD constraints, not their own opinion). If a per-workbench team has added overlay rules under `steering.local/artifacts/design/`, also run `wb.steering artifact:design`. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Load targets in parallel.**
    - PRD (problem, AC, personas, out-of-scope)
