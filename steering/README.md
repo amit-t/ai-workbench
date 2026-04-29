@@ -101,6 +101,20 @@ scripts/steering-load.py topic:api-design
 
 Agents are expected to run the loader at every invocation point listed in `steering/config.yaml`. See that file for the authoritative list.
 
+### Cache
+
+Rendered output is cached at `.workbench-state/steering-cache/<scope>.cache`, keyed by an mtime+size fingerprint over every file in `steering/<rel>/` and `steering.local/<rel>/`. Editing, adding, or removing any rule file flips the fingerprint and the next call regenerates. The cache directory is gitignored.
+
+Bypass options when needed:
+
+```bash
+scripts/steering-load.py golden --no-cache       # one-shot bypass
+WB_STEERING_NO_CACHE=1 scripts/steering-load.py role:qa   # session-wide bypass
+scripts/steering-load.py --clear-cache           # wipe the cache dir
+```
+
+Cache writes are best-effort. The loader always returns correct content; failure to write the cache (read-only filesystem, permission denied) is silently swallowed.
+
 ---
 
 ## Validation

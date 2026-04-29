@@ -253,6 +253,64 @@ pass "overlay round-trip: add + supersede + remove all apply"
 ./scripts/steering-lint.py >/dev/null || fail "steering-lint.py failed on stamped tree"
 pass "steering-lint clean on stamped tree"
 
+# 9e1. Steering loader cache: first call writes a cache file; second call returns same content
+rm -rf .workbench-state/steering-cache
+cache1_out=$(python3 ./scripts/steering-load.py golden)
+[[ -f .workbench-state/steering-cache/golden.cache ]]                 || fail "loader did not create cache file on first call"
+head -1 .workbench-state/steering-cache/golden.cache | grep -q '^# steering-cache fp:' \
+                                                                       || fail "cache file missing fingerprint header"
+cache2_out=$(python3 ./scripts/steering-load.py golden)
+[[ "$cache1_out" == "$cache2_out" ]]                                  || fail "cached output differs from first output"
+pass "steering loader writes cache + returns identical output on hit"
+
+# 9e2. Cache hit is observably hit: mutate cache body, expect mutated content back
+echo "SMOKE-CACHE-HIT-SENTINEL" >> .workbench-state/steering-cache/golden.cache
+hit_out=$(python3 ./scripts/steering-load.py golden)
+echo "$hit_out" | grep -q "SMOKE-CACHE-HIT-SENTINEL"                  || fail "loader did not consult cache (sentinel missing)"
+pass "steering loader returns cache content when fingerprint matches"
+
+# 9e3. mtime change invalidates cache (sentinel should disappear)
+sleep 0.05
+touch steering/golden-principles/GP-001-artifacts-start-draft.md
+inval_out=$(python3 ./scripts/steering-load.py golden)
+echo "$inval_out" | grep -q "SMOKE-CACHE-HIT-SENTINEL"                && fail "stale cache served after mtime change"
+pass "steering loader invalidates cache on mtime change"
+
+# 9e4. Adding a new overlay file invalidates cache (filename list change flips fingerprint)
+python3 ./scripts/steering-load.py golden >/dev/null  # rewarm
+echo "SMOKE-CACHE-NEWFILE-SENTINEL" >> .workbench-state/steering-cache/golden.cache
+cat > steering.local/golden-principles/GP-LOCAL-03-cache-test.md <<'EOF'
+---
+id: GP-LOCAL-03
+title: Smoke-test cache invalidation on new file
+scope: golden
+owner: smoke-user
+created: 2026-04-23
+---
+**Rule:** Adding a new overlay file flips the fingerprint.
+EOF
+new_out=$(python3 ./scripts/steering-load.py golden)
+echo "$new_out" | grep -q "SMOKE-CACHE-NEWFILE-SENTINEL"              && fail "new overlay file did not invalidate cache"
+echo "$new_out" | grep -q '^## GP-LOCAL-03'                           || fail "new overlay rule missing from regenerated output"
+pass "steering loader invalidates cache when an overlay file is added"
+
+# 9e5. --no-cache and WB_STEERING_NO_CACHE=1 bypass the cache
+echo "SMOKE-CACHE-BYPASS-SENTINEL" >> .workbench-state/steering-cache/golden.cache
+bypass_flag=$(python3 ./scripts/steering-load.py golden --no-cache)
+echo "$bypass_flag" | grep -q "SMOKE-CACHE-BYPASS-SENTINEL"           && fail "--no-cache flag did not bypass cache"
+bypass_env=$(WB_STEERING_NO_CACHE=1 python3 ./scripts/steering-load.py golden)
+echo "$bypass_env" | grep -q "SMOKE-CACHE-BYPASS-SENTINEL"            && fail "WB_STEERING_NO_CACHE=1 did not bypass cache"
+pass "--no-cache flag and WB_STEERING_NO_CACHE=1 both bypass cache"
+
+# 9e6. --clear-cache wipes the cache directory
+python3 ./scripts/steering-load.py --clear-cache
+[[ ! -e .workbench-state/steering-cache ]]                            || fail "--clear-cache did not remove cache dir"
+pass "steering loader --clear-cache wipes cache dir"
+
+# Cleanup: remove the cache-test overlay file so subsequent overlay-count assertions
+# (9i2, 9i3, 9j) match the original three-overlay fixture set.
+rm -f steering.local/golden-principles/GP-LOCAL-03-cache-test.md
+
 # 9f. validate-artifact blocks missing target_repos on a routed type
 cat > product/outputs/prds/PRD-missing-tr.md <<'EOF'
 ---
