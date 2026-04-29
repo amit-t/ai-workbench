@@ -2,6 +2,7 @@
 name: ralph-workspace-plan
 description: Drive `wb.ralph-plan`. Sync approved context, run ralph-plan in workspace mode (or per-repo fallback), produce per-repo fix_plans plus a workbench rollup. Gated on three-stage approvals.
 category: Engineering
+relevant_topics: []
 ---
 
 # /ralph-workspace-plan
@@ -43,6 +44,8 @@ Upstream `ralph-plan --workspace` reads requirements and emits a fix_plan. This 
 Without those, ralph would either plan off stale context or skip gate enforcement.
 
 ## Steps
+
+0. **Load steering.** This skill orchestrates ralph-plan and does not produce a typed workbench artifact, so no Layer 2 artifact rules apply. Layer 0 (golden, loaded at session start) governs the gate logic, voice in the rollup, and the rule against bypassing approvals. Per-artifact Layer 2 steering was already enforced when each upstream PRD, eng-spec, TDD, and test spec was drafted; this skill only consumes them after `wb.approve`. The M4 drift footer (`scripts/steering-overlays.py --footer` via `sync-context.sh`) carries any local-overlay summary into ralph PR bodies. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Scope.** Ask:
    - PRDs to include (default: all approved PRDs with empty `fix_plan repos` column in `EPIC-PIPELINE.md`).

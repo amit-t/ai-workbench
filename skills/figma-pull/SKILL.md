@@ -2,6 +2,7 @@
 name: figma-pull
 description: Park Figma links for a PRD in design/context-library/figma-links.md. If the Figma MCP is enabled in `.mcp.json`, pull frame list and export nodes to design/outputs/screens/{PRD-NNN}/. Default path is link-parking only — no network call needed.
 category: UX Design
+relevant_topics: []
 ---
 
 # /figma-pull
@@ -17,6 +18,8 @@ category: UX Design
 - Optional: `.mcp.json` contains a Figma MCP entry. Detect with `jq '.mcpServers | has("figma")' .mcp.json`. If false, this skill runs in **link-parking mode** only.
 
 ## Steps
+
+0. **Load steering.** No `artifact:figma` scope is defined; design artifacts do not yet have Layer 2 rules. Layer 0 (golden) loaded at session start and Layer 1 (`role:uxd`) loaded on UX role-switch remain in force. If a per-workbench team has added overlay rules under `steering.local/artifacts/design/`, run `wb.steering artifact:design` to pick them up. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Identify target.** Ask for `{PRD-NNN}` and the Figma URL. Validate URL matches `https://www.figma.com/file/<key>/<name>` or `https://www.figma.com/design/<key>/<name>`. Extract `<key>`.
 

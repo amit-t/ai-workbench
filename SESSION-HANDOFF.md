@@ -4,7 +4,7 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-29. Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Smoke 22/22. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
+**Last session:** 2026-04-29. Plan D1 (remaining 12 skills get Step 0 + `relevant_topics` frontmatter) shipped via ralph autonomous loop on worktree branch `ralph-devin/d1-remaining-12-skills-get-step-0-load-layer-2-ste`. Pure SKILL.md content; smoke and steering-lint untouched. Earlier today on 2026-04-29: Plan D3 (`wb.steering-audit` command) shipped via ralph autonomous loop on worktree branch `ralph-devin/d3-wb-steering-audit-command-surface-which-templat`. New `scripts/steering-audit.py` surfaces overlay kind, targets, age, last-updated, and a promote-suggest heuristic that fires when an override's scope is exercised by artifacts spanning 2+ epics. Smoke 29/29 → 33/33. Also earlier today: Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
 **Branch:** `dev` (work in flight). Previous session: 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged; companion ai-ralph PRs `feat/workspace-plan-mode` + `feat/pr-footer-append` merged).
 **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
@@ -14,6 +14,18 @@
 ---
 
 ## What shipped
+
+### Plan D1 — remaining 12 skills get Step 0 + relevant_topics (2026-04-29)
+- Added `relevant_topics: []` and a Step 0 "Load steering" section to the 12 skills that did not yet have them: `adr`, `erd`, `epic-intake`, `figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`, `grill-me`, `prd-review-panel`, `pmo-status`, `ralph-workspace-plan`, `ralph-dispatch`. The 6 critical-path skills that already shipped Step 0 in Phase 2 (`prd-draft`, `eng-spec`, `tdd`, `bdd-gen`, `test-cases-gen`, `test-spec`) were untouched. Every skill now declares `relevant_topics:` in frontmatter and runs Step 0 before any other work.
+- Per-skill pattern: artifact-producers (`adr`, `erd`, `epic-intake`) call `wb.steering artifact:<type>` (forward-compat for `adr` and `epic-context` even though those steering directories are empty today; the loader returns an empty merged blob without erroring); reviewer (`prd-review-panel`) calls `artifact:prd` so reviewer agents enforce the same rules the author obeyed; orchestrators (`ralph-workspace-plan`, `ralph-dispatch`) and read-only (`pmo-status`) note explicitly that Layer 2 was already enforced upstream and only Layer 0 governs voice / gate logic; design skills (`figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`) note the lack of a template `artifact:design` scope and only load `artifact:design` when a per-workbench team has added overlay rules; `grill-me` defers the load to step 1 once the target type is known.
+- Smoke 29/29 still green (no smoke contract changes); steering-lint clean; no Python or shell touched.
+
+### Plan D3 — `wb.steering-audit` command (2026-04-29)
+- `scripts/steering-audit.py`: surfaces every overlay under `steering.local/` with kind (add / supersede / remove), targeted template rule(s), scope, owner, `created`, `updated`-with-mtime-fallback, age in days, distinct epics whose artifacts fall under the overlay's scope, and a promote-suggest flag (true when 2+ epics; REMOVE excluded).
+- Three output modes: default markdown report (Summary + Overrides table + Promotion candidates section when applicable), `--json` (machine-readable), `--list` (terse one-line-per-override).
+- `aliases.sh`: new `wb.steering-audit` wrapper.
+- Docs: `CLAUDE.md` Key commands table, `README.md` "Steering workflow" + Tooling block, `steering/README.md` Drift visibility section.
+- Smoke 29/29 → 33/33 (4 new asserts: markdown, --list, --json schema, multi-epic promote-suggest).
 
 ### Plan D4, steering loader mtime-keyed cache (2026-04-29)
 - `scripts/steering-load.py` caches rendered output at `.workbench-state/steering-cache/<scope>.cache`. Fingerprint is sha256 over (relative path, st_mtime_ns, st_size) for every input file in the scope's template dir and overlay dir, so any edit, add, or remove flips the key. Hit returns the cached body verbatim; miss renders, writes atomically via a `.tmp` rename, and emits the fresh content.
@@ -92,9 +104,9 @@
 ### D. Steering V2 polish
 Parked items from the V1 ship, ordered by leverage:
 
-1. Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).
-2. Wb-side CI lint workflow (currently only the template repo runs steering-lint in CI; wb-side workflow should be seeded by `update.wb` so PRs on stamped wbs also validate).
-3. `wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).
+1. ~~Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).~~ **DONE** 2026-04-29 (Plan D1 above).
+2. Wb-side CI lint workflow (currently only the template repo runs steering-lint in CI; wb-side workflow should be seeded by `update.wb` so PRs on stamped wbs also validate). Plan D2 in progress: PR amit-t/ai-workbench#18 draft.
+3. ~~`wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).~~ **DONE** 2026-04-29 (`scripts/steering-audit.py`, smoke 29/29 → 33/33). PRs: amit-t/ai-workbench#16, Invenco-Cloud-Systems-ICS/ai-workbench#17.
 4. ~~Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.~~ **DONE** 2026-04-29 (`scripts/steering-load.py`, `.gitignore`, smoke 29/29 to 35/35). PRs: amit-t/ai-workbench#15, Invenco-Cloud-Systems-ICS/ai-workbench#16.
 
 ### E. Ralph adapter V2 polish
@@ -146,7 +158,7 @@ Expected URL after enable: `https://amit-t.github.io/ai-workbench/`.
 ```bash
 cd /Users/amittiwari/Projects/Tools-Utilities/ai-workbench
 git pull --rebase origin main
-bash tests/smoke.sh                 # must print "PASSED" (22/22)
+bash tests/smoke.sh                 # must print "PASSED" (29/29)
 git log --oneline -5                # confirm the ralph-adapter merge (5ae20f6 or later) is present
 git remote -v                       # origin + inv both present
 python3 scripts/steering-load.py golden | head -5        # loader sanity

@@ -2,6 +2,7 @@
 name: ralph-dispatch
 description: Drive `wb.ralph-dispatch`. Runs ralph in workspace mode with native cross-repo parallelism. Workbench preflights, syncs context, and shells out; ralph owns the loop, parallelism, and PR creation.
 category: Engineering
+relevant_topics: []
 ---
 
 # /ralph-dispatch
@@ -31,6 +32,8 @@ Workbench does not re-implement the loop, parallelism, or PR creation; that is `
 > Note. Per-repo subset selection (`--repos a,b`) is **not yet wired**. It is a parked follow-up (Plan E2) waiting on an upstream `ralph --workspace --repos` filter. Today, scoping a partial dispatch means pre-editing `repos/.ralph/fix_plan.md` to remove sections you do not want executed.
 
 ## Steps
+
+0. **Load steering.** This skill shells out to `ralph --workspace` and does not produce a typed workbench artifact, so no Layer 2 artifact rules apply. Layer 0 (golden, loaded at session start) governs voice and the rule against bypassing the upstream approval gate. Each fix_plan task ralph executes was generated under per-artifact Layer 2 steering already (PRD, eng-spec, TDD, test spec drafted under `wb.steering artifact:<type>`). The M4 drift footer staged at `repos/.ralph/pr_footer.md` by `sync-context.sh` is what ralph appends to PR bodies, so reviewers see overlay drift on every dispatch. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
 1. **Sanity checks.** Refuse if any fail; print the specific failure.
 
