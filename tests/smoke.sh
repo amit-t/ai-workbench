@@ -542,6 +542,87 @@ if errs:
 PYEOF
 pass ".workbench-manifest.json has user_owned .ralph and template_dev_only entries"
 
+# 9q. wb-ci workflow + helper are present in the stamped tree
+[[ -f .github/workflows/wb-ci.yml ]] || fail ".github/workflows/wb-ci.yml missing from stamped wb"
+[[ -f scripts/wb-ci-validate.py ]]   || fail "scripts/wb-ci-validate.py missing from stamped wb"
+grep -q 'pull_request:'              .github/workflows/wb-ci.yml || fail "wb-ci.yml missing pull_request trigger"
+grep -q 'wb-ci-validate.py --stdin'  .github/workflows/wb-ci.yml || fail "wb-ci.yml missing wb-ci-validate invocation"
+grep -q 'project.conf'               .github/workflows/wb-ci.yml || fail "wb-ci.yml missing project.conf detect step"
+pass "wb-ci workflow and helper land in stamped wb"
+
+# 9q1. .workbench-manifest.json keeps .github/workflows/** template-owned so
+# update.wb continues to refresh the wb-ci workflow on existing stamped wbs.
+python3 - <<'PYEOF' || exit 1
+import json, pathlib, sys
+m = json.loads(pathlib.Path(".workbench-manifest.json").read_text())
+if ".github/workflows/**" not in m.get("template_owned", []):
+    print(".workbench-manifest.json: template_owned missing .github/workflows/**", file=sys.stderr)
+    sys.exit(1)
+PYEOF
+pass ".github/workflows/** stays in template_owned (update.wb seeds wb-ci)"
+
+# 9q2. wb-ci-validate classifies known paths and routes only artifact files
+cls_out=$(python3 - <<'PYEOF'
+from importlib.util import spec_from_file_location, module_from_spec
+spec = spec_from_file_location('wb_ci', 'scripts/wb-ci-validate.py')
+mod = module_from_spec(spec); spec.loader.exec_module(mod)
+cases = [
+    ('product/outputs/prds/PRD-001.md',           'prd'),
+    ('product/outputs/prds/README.md',            None),
+    ('product/context-library/epics/EPIC-1.md',   'epic-context'),
+    ('engineering/outputs/specs/SPEC-001.md',     'eng-spec'),
+    ('engineering/outputs/tdd/TDD-001.md',        'tdd'),
+    ('engineering/outputs/erd/ERD-001.md',        'erd'),
+    ('engineering/outputs/adrs/ADR-001.md',       'adr'),
+    ('qa/outputs/bdd/BDD-001.feature',            'bdd'),
+    ('qa/outputs/bdd/notes.md',                   None),
+    ('qa/outputs/test-cases/TC-001.md',           'test-cases'),
+    ('qa/outputs/test-spec/TSPEC-001.md',         'test-spec'),
+    ('qa/outputs/test-erd/TERD-001.md',           'test-erd'),
+    ('design/outputs/wireframes/foo.md',          None),
+    ('steering/golden-principles/foo.md',         None),
+    ('scripts/foo.py',                            None),
+]
+fails = 0
+for p, expected in cases:
+    got = mod.classify(p)
+    if got != expected:
+        print(f"FAIL classify {p}: got {got}, expected {expected}")
+        fails += 1
+if fails:
+    raise SystemExit(1)
+print("classify OK")
+PYEOF
+)
+echo "$cls_out" | grep -q 'classify OK' || fail "wb-ci-validate.classify mismatch: $cls_out"
+pass "wb-ci-validate.classify maps each artifact dir to its type"
+
+# 9q3. wb-ci-validate exits non-zero when a routable PRD is missing target_repos
+cat > product/outputs/prds/PRD-bad-ci.md <<'EOF'
+---
+id: PRD-BAD-CI
+status: draft
+---
+# PRD missing target_repos for wb-ci-validate test
+EOF
+if echo "product/outputs/prds/PRD-bad-ci.md" \
+   | python3 scripts/wb-ci-validate.py --stdin >/dev/null 2>&1; then
+  fail "wb-ci-validate.py should fail on PRD missing target_repos"
+fi
+pass "wb-ci-validate.py fails on PRD missing target_repos"
+
+# 9q4. wb-ci-validate is silent (exit 0) for non-artifact paths
+echo -e "scripts/foo.py\nREADME.md\nsteering/golden-principles/x.md" \
+  | python3 scripts/wb-ci-validate.py --stdin >/dev/null \
+  || fail "wb-ci-validate.py should ignore non-artifact paths"
+pass "wb-ci-validate.py ignores non-artifact paths"
+
+# 9q5. wb-ci-validate accepts a clean PRD (already approved earlier in the test)
+echo "product/outputs/prds/PRD-001-smoke.md" \
+  | python3 scripts/wb-ci-validate.py --stdin >/dev/null \
+  || fail "wb-ci-validate.py should pass on a valid PRD"
+pass "wb-ci-validate.py passes on a valid PRD"
+
 # 10. wb.reject round-trip
 cat > product/outputs/prds/PRD-002-reject.md <<'EOF'
 ---

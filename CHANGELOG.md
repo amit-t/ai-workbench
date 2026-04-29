@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Plan D2, wb-side CI lint workflow seeded by `update.wb` (2026-04-29)
+- `.github/workflows/wb-ci.yml`: new workflow that runs `python3 scripts/steering-lint.py` plus `python3 scripts/wb-ci-validate.py --stdin` on every PR that touches `product/`, `design/`, `engineering/`, `qa/`, `steering/`, `steering.local/`, or any of the helper scripts. Detects stamped-wb mode by the presence of `project.conf`; in the template repo itself (no `project.conf`) the artifact-validation step is a no-op so only steering-lint runs. `.github/workflows/**` is already `template_owned`, so `update.wb` seeds the workflow into every existing stamped wb on the next sync.
+- `scripts/wb-ci-validate.py`: reads paths from CLI args or stdin, classifies each by directory prefix into one of `prd`, `eng-spec`, `tdd`, `erd`, `adr`, `bdd`, `test-cases`, `test-spec`, `test-erd`, `epic-context`, and runs `scripts/validate-artifact.py` on it. Skips non-artifact paths, README/INDEX docs, and paths that no longer exist in the worktree (renames). Catches missing `target_repos`, unregistered repos, and missing required fields at PR time, before `wb.publish` / `wb.approve` fires locally.
+- `tests/smoke.sh`: five new assertions (9q workflow + helper present in stamped tree; 9q1 manifest still keeps `.github/workflows/**` template-owned; 9q2 classify-by-path table; 9q3 PR with bad PRD fails; 9q4 non-artifact paths are skipped; 9q5 valid PRD passes). Smoke 29/29 → 35/35.
+
 ### Plan D1, remaining 12 skills get step 0 + relevant_topics (2026-04-29)
 - Added `relevant_topics: []` frontmatter and a Step 0 "Load steering" section to the 12 skills that did not yet have them: `adr`, `erd`, `epic-intake`, `figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`, `grill-me`, `prd-review-panel`, `pmo-status`, `ralph-workspace-plan`, `ralph-dispatch`. The 6 critical-path skills (`prd-draft`, `eng-spec`, `tdd`, `bdd-gen`, `test-cases-gen`, `test-spec`) already shipped with Step 0 in Phase 2; this brings every skill to the same shape.
 - Step 0 contract per skill:

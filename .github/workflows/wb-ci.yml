@@ -1,0 +1,99 @@
+name: wb ci
+
+# Stamped-workbench CI lint. Runs on every PR that touches a workbench
+# artifact path (product/, design/, engineering/, qa/) or one of the helper
+# scripts. Two checks:
+#
+#   1) python3 scripts/steering-lint.py
+#      Frontmatter schema for every rule in steering/ and steering.local/.
+#      Cheap; runs unconditionally so steering.local/ overlays are validated
+#      even when only artifacts changed.
+#
+#   2) python3 scripts/wb-ci-validate.py --stdin
+#      Maps each changed file to an artifact type (PRD, eng-spec, TDD, ERD,
+#      ADR, BDD, test-cases, test-spec, test-erd, epic-context) by directory
+#      prefix and runs scripts/validate-artifact.py on it. Catches missing
+#      target_repos, unregistered repos, and missing required fields at PR
+#      time, before wb.publish / wb.approve fires.
+#
+# Seeded into stamped wbs by `update.wb` (`.github/workflows/**` is
+# template-owned per `.workbench-manifest.json`). In the template repo
+# itself there is no `project.conf`, so artifact validation is skipped and
+# only the steering-lint check runs.
+
+on:
+  pull_request:
+    paths:
+      - "product/**"
+      - "design/**"
+      - "engineering/**"
+      - "qa/**"
+      - "steering/**"
+      - "steering.local/**"
+      - "scripts/wb-ci-validate.py"
+      - "scripts/validate-artifact.py"
+      - "scripts/artifact-schema.json"
+      - "scripts/steering-lint.py"
+      - ".github/workflows/wb-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "product/**"
+      - "design/**"
+      - "engineering/**"
+      - "qa/**"
+      - "scripts/wb-ci-validate.py"
+      - "scripts/validate-artifact.py"
+      - "scripts/artifact-schema.json"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need full history to diff PR head against base.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Steering lint
+        run: python3 scripts/steering-lint.py
+
+      - name: Detect stamped workbench
+        id: detect
+        run: |
+          if [[ -f project.conf ]]; then
+            echo "is_wb=true" >> "$GITHUB_OUTPUT"
+            echo "project.conf found; running artifact validation."
+          else
+            echo "is_wb=false" >> "$GITHUB_OUTPUT"
+            echo "project.conf absent (template repo mode); skipping artifact validation."
+          fi
+
+      - name: Validate changed artifacts
+        if: steps.detect.outputs.is_wb == 'true' && github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch origin "${BASE_REF}" --depth=1
+          # diff filter A=added, M=modified. Renames surface as A on the new
+          # path; the old path surfaces as D and is ignored.
+          git diff --name-only --diff-filter=AM \
+            "origin/${BASE_REF}...HEAD" > changed.txt || true
+          if [[ ! -s changed.txt ]]; then
+            echo "no added/modified files; nothing to validate"
+            exit 0
+          fi
+          echo "changed files in PR:"
+          sed 's/^/  /' changed.txt
+          echo
+          python3 scripts/wb-ci-validate.py --stdin < changed.txt
