@@ -15,6 +15,12 @@
 
 ## What shipped
 
+### Plan D4, steering loader mtime-keyed cache (2026-04-29)
+- `scripts/steering-load.py` caches rendered output at `.workbench-state/steering-cache/<scope>.cache`. Fingerprint is sha256 over (relative path, st_mtime_ns, st_size) for every input file in the scope's template dir and overlay dir, so any edit, add, or remove flips the key. Hit returns the cached body verbatim; miss renders, writes atomically via a `.tmp` rename, and emits the fresh content.
+- New CLI: `--no-cache` per-call, `--clear-cache` to wipe the cache dir, `WB_STEERING_NO_CACHE=1` env var (also `true`/`yes`/`on`) for session-wide bypass. Cache writes are best-effort: any `OSError` is swallowed so the loader still works on read-only filesystems.
+- `.gitignore` excludes `.workbench-state/steering-cache/`.
+- `tests/smoke.sh` 29/29 to 35/35: six new asserts cover first-call write, hit returns identical bytes, mutated-cache observability proves the hit path, mtime-touch invalidation, new-overlay-file invalidation, both bypass paths, and `--clear-cache`.
+
 ### Template-dev ralph self-host + stamped-wb ralph bootstrap (2026-04-27)
 
 **Template-dev self-host.** Ralph now runs against the template repo itself for template-dev work. Enabled via `ralph-enable --non-interactive --skip-tasks` at root. `.ralph/PROMPT.md` rewritten with template-dev orientation (reading order, hard rules, cross-repo routing for `ai-ralph` PRs, RALPH_STATUS block preserved). `.ralph/fix_plan.md` seeded with Plan D, Plan E, Plan F from prior `What's open` section. `.ralphrc` gitignored as machine-specific config; `ALLOWED_TOOLS` expanded for template-dev workflows; `PR_DRAFT=true` for safer auto-PRs. Verified by running `rpc.p.b 1` which picked Plan E1 and shipped it (PRs #12 / #13).
@@ -89,7 +95,7 @@ Parked items from the V1 ship, ordered by leverage:
 1. Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).
 2. Wb-side CI lint workflow (currently only the template repo runs steering-lint in CI; wb-side workflow should be seeded by `update.wb` so PRs on stamped wbs also validate).
 3. `wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).
-4. Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.
+4. ~~Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.~~ **DONE** 2026-04-29 (`scripts/steering-load.py`, `.gitignore`, smoke 29/29 to 35/35). PRs: amit-t/ai-workbench#15, Invenco-Cloud-Systems-ICS/ai-workbench#16.
 
 ### E. Ralph adapter V2 polish
 Follow-ups to the V1 ship that deserve their own PRs (E1 done 2026-04-27, see PRs #12 / #13):

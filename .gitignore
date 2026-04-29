@@ -52,6 +52,13 @@ dist/
 # Ralph backup directories (created by migration)
 .ralph_backup_*
 
+# Steering loader cache (regenerated on demand; keyed by mtime+size of inputs)
+.workbench-state/steering-cache/
+
+# Python bytecode caches (steering-overlays.py imports steering-load.py at runtime)
+__pycache__/
+*.pyc
+
 # Ralph machine-specific config (sourced by ralph_loop.sh load_ralphrc)
 .ralphrc
 
