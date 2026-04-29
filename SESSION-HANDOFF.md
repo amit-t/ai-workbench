@@ -4,7 +4,7 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-29. Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Smoke 22/22. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
+**Last session:** 2026-04-29. Plan D2 (wb-side CI lint workflow seeded by `update.wb`) shipped via ralph autonomous loop on worktree branch `ralph-devin/d2-wb-side-ci-lint-workflow-seeded-by-update-wb-cu`. Adds `.github/workflows/wb-ci.yml` + `scripts/wb-ci-validate.py`; smoke 29/29 → 35/35. Previous session same day: Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Smoke 22/22. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
 **Branch:** `dev` (work in flight). Previous session: 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged; companion ai-ralph PRs `feat/workspace-plan-mode` + `feat/pr-footer-append` merged).
 **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
@@ -14,6 +14,12 @@
 ---
 
 ## What shipped
+
+### Plan D2, wb-side CI lint workflow seeded by `update.wb` (2026-04-29)
+- `.github/workflows/wb-ci.yml`: PR check that runs steering-lint plus per-file artifact validation. Triggers on changes to `product/`, `design/`, `engineering/`, `qa/`, `steering/`, `steering.local/`, or any of the helper scripts. The artifact step diffs `origin/<base>...HEAD` and pipes the change list into the helper.
+- `scripts/wb-ci-validate.py`: classifier + runner. Maps each path to one of ten artifact types by directory prefix, skips non-artifact files (README/INDEX, anything outside `product|design|engineering|qa/outputs/`, anything that does not exist in the worktree), and runs `scripts/validate-artifact.py` per file. Catches missing `target_repos`, unregistered repos, and missing required fields at PR time so reviewers do not have to find them by running `wb.publish` locally.
+- Stamped wbs get the workflow for free: `.github/workflows/**` is already in `template_owned`, so `update.wb` syncs `wb-ci.yml` into every existing stamped wb on the next run; new wbs inherit it from `gh repo create --template`. In the template repo itself, `project.conf` is absent, so artifact validation is a no-op and only steering-lint runs.
+- `tests/smoke.sh` 29/29 → 35/35 (asserts workflow + helper presence in stamped tree, manifest still keeps `.github/workflows/**` template-owned, classify-by-path table covers all ten types, helper fails on bad PRD, helper passes on clean PRD, helper ignores non-artifact paths).
 
 ### Template-dev ralph self-host + stamped-wb ralph bootstrap (2026-04-27)
 
@@ -87,7 +93,7 @@
 Parked items from the V1 ship, ordered by leverage:
 
 1. Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).
-2. Wb-side CI lint workflow (currently only the template repo runs steering-lint in CI; wb-side workflow should be seeded by `update.wb` so PRs on stamped wbs also validate).
+2. ~~Wb-side CI lint workflow seeded by `update.wb` so PRs on stamped wbs also validate.~~ **DONE** 2026-04-29 (`.github/workflows/wb-ci.yml` + `scripts/wb-ci-validate.py`).
 3. `wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).
 4. Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.
 

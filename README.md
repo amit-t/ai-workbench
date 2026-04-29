@@ -234,6 +234,10 @@ wb.steering-refresh     # reload every scope
 wb.steering-lint        # validate steering/ and steering.local/
 ```
 
+### CI lint on stamped wbs
+
+Every stamped wb ships `.github/workflows/wb-ci.yml`, seeded from the template via `update.wb` (it lives under `template_owned`). On each PR that touches `product/`, `design/`, `engineering/`, `qa/`, `steering/`, or `steering.local/` the workflow runs `python3 scripts/steering-lint.py` and then runs `python3 scripts/wb-ci-validate.py --stdin` over the diff between the PR base and head. The helper maps every changed file to one of the ten artifact types (`prd`, `eng-spec`, `tdd`, `erd`, `adr`, `bdd`, `test-cases`, `test-spec`, `test-erd`, `epic-context`) by directory prefix and runs `scripts/validate-artifact.py` on it, failing the PR if any required field (notably `target_repos`) is missing or points at an unregistered repo. The artifact step is skipped when `project.conf` is absent, so the workflow is a no-op steering-lint check inside the template repo itself.
+
 ## Multi-repo execution with ralph
 
 The workbench wraps [ai-ralph](https://github.com/Invenco-Cloud-Systems-ICS/ai-ralph). Ralph owns the planner, the workspace loop, parallelism, and PR creation. Workbench only wraps, routes approved artifacts, and ships team steering.
