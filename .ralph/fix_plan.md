@@ -19,7 +19,7 @@ Parked items from the steering V1 ship.
 
 - [ ] **D1.** Remaining 12 skills get step 0 (load Layer 2 steering) + `relevant_topics` frontmatter: `adr`, `erd`, `epic-intake`, `figma-pull`, `ds-screen-gen`, `design-draft`, `design-review`, `grill-me`, `prd-review-panel`, `pmo-status` (skill side), `ralph-workspace-plan`, `ralph-dispatch`. Critical-path 9 already shipped.
 - [ ] **D2.** Wb-side CI lint workflow seeded by `update.wb`. Currently only the template repo runs `steering-lint` in CI; stamped wbs need it too so PRs there validate.
-- [ ] **D3.** `wb.steering-audit` command. Surface: which template rules a team has overridden, age of overlays, last-updated dates, suggest-promotion heuristic (override used across more than one epic).
+- [x] **D3.** `wb.steering-audit` command. **DONE** 2026-04-29 (`scripts/steering-audit.py`). Markdown / `--json` / `--list` outputs, surfaces kind + targets + scope + owner + created + updated + age + epics_touched + promote_suggest. Heuristic: flag overrides whose scope is exercised by artifacts spanning 2+ epics; REMOVE entries are excluded. Smoke 29/29 → 33/33. PRs: amit-t/ai-workbench#16, Invenco-Cloud-Systems-ICS/ai-workbench#17.
 - [ ] **D4.** Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap, only matters at scale.
 
 ## High Priority — Plan F. Stamped-wb ralph bootstrap (in flight 2026-04-27)
