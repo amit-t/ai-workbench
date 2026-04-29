@@ -95,7 +95,7 @@ Parked items from the V1 ship, ordered by leverage:
 1. Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).
 2. Wb-side CI lint workflow (currently only the template repo runs steering-lint in CI; wb-side workflow should be seeded by `update.wb` so PRs on stamped wbs also validate).
 3. `wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).
-4. ~~Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.~~ **DONE** 2026-04-29 (`scripts/steering-load.py`, `.gitignore`, smoke 29/29 to 35/35).
+4. ~~Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.~~ **DONE** 2026-04-29 (`scripts/steering-load.py`, `.gitignore`, smoke 29/29 to 35/35). PRs: amit-t/ai-workbench#15, Invenco-Cloud-Systems-ICS/ai-workbench#16.
 
 ### E. Ralph adapter V2 polish
 Follow-ups to the V1 ship that deserve their own PRs (E1 done 2026-04-27, see PRs #12 / #13):
