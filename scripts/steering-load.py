@@ -2,7 +2,8 @@
 """Steering loader for ai-workbench.
 
 Usage:
-  steering-load.py <scope>
+  steering-load.py <scope> [--no-cache]
+  steering-load.py --clear-cache
 
   <scope> is one of:
     golden
@@ -17,14 +18,23 @@ for overlay entries, applies overlay semantics (add, supersede via explicit
 merged markdown blob ordered by rule ID. A footer summarises which overlays
 were applied.
 
+Rendered output is cached at `.workbench-state/steering-cache/<scope>.cache`,
+keyed by an mtime+size fingerprint of the template and overlay inputs. The
+cache is consulted first; on fingerprint mismatch it is regenerated. Set
+`WB_STEERING_NO_CACHE=1` (or pass `--no-cache`) to bypass. Use `--clear-cache`
+to wipe the cache directory.
+
 Agents are expected to invoke this loader at the invocation points listed in
 `steering/config.yaml`. Do not try to merge overlays in your head.
 """
 from __future__ import annotations
 
+import datetime
+import hashlib
 import os
 import pathlib
 import re
+import shutil
 import sys
 
 WB_ROOT = pathlib.Path(os.environ.get('WB_ROOT',
@@ -32,8 +42,12 @@ WB_ROOT = pathlib.Path(os.environ.get('WB_ROOT',
 STEERING_ROOT = WB_ROOT / 'steering'
 OVERLAY_ROOT  = WB_ROOT / 'steering.local'
 CONFIG_PATH   = STEERING_ROOT / 'config.yaml'
+CACHE_ROOT    = WB_ROOT / '.workbench-state' / 'steering-cache'
 
 FM_FENCE = re.compile(r'(?s)^---\n(.*?)\n---\n?')
+
+_CACHE_HEADER_PREFIX = '# steering-cache fp:'
+_CACHE_GENERATED_PREFIX = '# steering-cache generated:'
 
 
 def _parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -228,27 +242,130 @@ def _iter_all_scopes() -> list[str]:
     return scopes
 
 
-def load_one(scope: str) -> str:
+def _scope_slug(scope: str) -> str:
+    """Filesystem-safe slug for a scope string."""
+    return scope.replace(':', '_').replace('/', '_')
+
+
+def _fingerprint_inputs(rel: pathlib.Path) -> str:
+    """Hash of (relative path, mtime_ns, size) for every input file in scope.
+
+    Covers both the template (`steering/<rel>/`) and the overlay
+    (`steering.local/<rel>/`) so add, supersede, and remove edits all flip
+    the fingerprint. Missing directories contribute no entries.
+    """
+    parts: list[str] = []
+    for label, root in (('T', STEERING_ROOT), ('O', OVERLAY_ROOT)):
+        d = root / rel
+        if not d.is_dir():
+            continue
+        for md in sorted(d.glob('*.md')):
+            try:
+                st = md.stat()
+            except OSError:
+                continue
+            try:
+                rel_path = md.relative_to(WB_ROOT)
+            except ValueError:
+                rel_path = md
+            parts.append(f"{label}:{rel_path}:{st.st_mtime_ns}:{st.st_size}")
+    return hashlib.sha256("\n".join(parts).encode()).hexdigest()
+
+
+def _cache_path(scope: str) -> pathlib.Path:
+    return CACHE_ROOT / f"{_scope_slug(scope)}.cache"
+
+
+def _cache_disabled() -> bool:
+    return os.environ.get('WB_STEERING_NO_CACHE', '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+def _read_cache(scope: str, fp: str) -> str | None:
+    """Return cached content if the fingerprint matches; else None."""
+    p = _cache_path(scope)
+    if not p.is_file():
+        return None
+    try:
+        text = p.read_text()
+    except OSError:
+        return None
+    lines = text.split('\n')
+    if not lines or not lines[0].startswith(_CACHE_HEADER_PREFIX):
+        return None
+    stored = lines[0][len(_CACHE_HEADER_PREFIX):].strip()
+    if stored != fp:
+        return None
+    # Optional second header line (generated timestamp). Strip if present.
+    body_start = 1
+    if len(lines) > 1 and lines[1].startswith(_CACHE_GENERATED_PREFIX):
+        body_start = 2
+    return '\n'.join(lines[body_start:])
+
+
+def _write_cache(scope: str, fp: str, content: str) -> None:
+    """Best-effort cache write. Failure is non-fatal."""
+    p = _cache_path(scope)
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        header = f"{_CACHE_HEADER_PREFIX}{fp}\n{_CACHE_GENERATED_PREFIX}{ts}\n"
+        tmp = p.with_suffix(p.suffix + '.tmp')
+        tmp.write_text(header + content)
+        tmp.replace(p)
+    except OSError:
+        pass
+
+
+def _clear_cache() -> int:
+    """Wipe the cache directory. Returns 0 even when the dir is absent."""
+    try:
+        if CACHE_ROOT.is_dir():
+            shutil.rmtree(CACHE_ROOT)
+    except OSError as exc:
+        print(f"steering-load: failed to clear cache: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def load_one(scope: str, use_cache: bool = True) -> str:
     rel = _load_scope_path(scope)
+    fp = _fingerprint_inputs(rel) if (use_cache and not _cache_disabled()) else None
+    if fp is not None:
+        cached = _read_cache(scope, fp)
+        if cached is not None:
+            return cached
     template = _collect_rules(STEERING_ROOT, rel)
     overlay  = _collect_rules(OVERLAY_ROOT, rel)
     merged, applied = _apply_overlay(template, overlay)
-    return _render(scope, merged, applied, len(template), len(overlay))
+    rendered = _render(scope, merged, applied, len(template), len(overlay))
+    if fp is not None:
+        _write_cache(scope, fp, rendered)
+    return rendered
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 1:
+    args = list(argv)
+    if '--clear-cache' in args:
+        if len(args) != 1:
+            print(__doc__, file=sys.stderr)
+            return 2
+        return _clear_cache()
+    use_cache = True
+    if '--no-cache' in args:
+        use_cache = False
+        args.remove('--no-cache')
+    if len(args) != 1:
         print(__doc__, file=sys.stderr)
         return 2
-    scope = argv[0]
+    scope = args[0]
     if scope == 'all':
         out: list[str] = []
         for s in _iter_all_scopes():
-            out.append(load_one(s))
+            out.append(load_one(s, use_cache=use_cache))
             out.append("\n")
         sys.stdout.write("\n".join(out))
         return 0
-    sys.stdout.write(load_one(scope))
+    sys.stdout.write(load_one(scope, use_cache=use_cache))
     return 0
 
 
