@@ -306,6 +306,38 @@ wb.ralph-plan --replan svc-a
 
 The splice runs under an advisory `flock` on `.workbench-state/.lock`, so it is safe to run while other workbench writers (publish / approve / reject) are active. `--replan` rejects an unknown repo name (`exit 2`) and is mutually exclusive with `--mode` and a positional repo argument.
 
+### Subsetting a dispatch run
+
+Narrow `wb.ralph-dispatch` to a subset of registered repos without rearranging directories or hand-editing `fix_plan.md`. Pairs with `--replan` for symmetric "plan one, execute one" runs.
+
+```bash
+# Allowlist: only these repos
+wb.ralph-dispatch --repos api,worker
+
+# Denylist: every repo except these
+wb.ralph-dispatch --exclude web
+
+# Combined with parallel: ralph caps parallelism at min(N, len(filtered_set))
+wb.ralph-dispatch --parallel 4 --repos api,worker
+
+# Drive from project.conf so all team members run the same scope
+echo 'WB_RALPH_DISPATCH_REPOS="api,worker"' >> project.conf
+wb.ralph-dispatch
+```
+
+`--repos` and `--exclude` are mutually exclusive. Names are validated against `project.conf REPOS` before pass-through, so a typo fails inside the wrapper with the registered list visible. Cross-repo tasks are skipped under any filter.
+
+### Parallel planning
+
+For workspaces with several repos, `wb.ralph-plan --parallel-plan N` runs up to N per-repo plan workers concurrently while keeping merged section ordering stable.
+
+```bash
+wb.ralph-plan --parallel-plan 4
+#   = (cd repos && ralph-plan --workspace --engine ... --thinking ... --parallel-plan 4)
+```
+
+Resolution: CLI flag > `WB_RALPH_PLAN_PARALLEL` > `project.conf RALPH_PLAN_PARALLEL` > unset (sequential V1, byte-identical). The wrapper validates that the value is a positive integer and pre-checks that the installed `ralph-plan` advertises `--parallel-plan`; older binaries get a clear warning instead of a silent passthrough.
+
 ### Configuration
 
 Set in `project.conf` (team default) or override via CLI flag / env var:
@@ -316,6 +348,9 @@ Set in `project.conf` (team default) or override via CLI flag / env var:
 | `RALPH_PLAN_ENGINE` / `--engine` / `WB_RALPH_ENGINE` | devin \| claude \| codex | devin | passed to `ralph-plan` and (when recognised) `ralph` |
 | `RALPH_PLAN_THINKING` / `--thinking` | default \| hard \| ultra | ultra | passed to `ralph-plan` |
 | `WB_RALPH_PARALLEL` / `--parallel` | N | min(len(REPOS),4) | passed to `ralph --workspace` |
+| `WB_RALPH_DISPATCH_REPOS` / `--repos` | comma list | unset | dispatch subset filter; only these registered repos run. Mutually exclusive with `--exclude`. |
+| `WB_RALPH_DISPATCH_EXCLUDE` / `--exclude` | comma list | unset | dispatch denylist; every repo except these. |
+| `RALPH_PLAN_PARALLEL` / `--parallel-plan` / `WB_RALPH_PLAN_PARALLEL` | N | unset | workspace planning concurrency; passes through to `ralph-plan --parallel-plan N`. |
 
 ### `target_repos:` is required
 

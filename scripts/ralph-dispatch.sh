@@ -17,10 +17,19 @@
 #   2. Env var:       WB_RALPH_ENGINE
 #   3. project.conf:  WB_RALPH_ENGINE (falls back to RALPH_PLAN_ENGINE, then devin)
 #
+# Repo-subset filter (forwarded to ralph --workspace --repos / --exclude):
+#   1. CLI flag:      --repos a,b   |  --exclude c
+#   2. Env var:       WB_RALPH_DISPATCH_REPOS  |  WB_RALPH_DISPATCH_EXCLUDE
+#   3. project.conf:  WB_RALPH_DISPATCH_REPOS  |  WB_RALPH_DISPATCH_EXCLUDE
+#   4. Default:       unset (run all repos, V1 behavior)
+# --repos and --exclude are mutually exclusive.
+#
 # Usage:
 #   ./scripts/ralph-dispatch.sh                     # run workspace mode with resolved N
 #   ./scripts/ralph-dispatch.sh --parallel 2
 #   ./scripts/ralph-dispatch.sh --engine claude
+#   ./scripts/ralph-dispatch.sh --repos api,worker  # subset to two registered repos
+#   ./scripts/ralph-dispatch.sh --exclude web       # everything except web
 #   ./scripts/ralph-dispatch.sh --status            # show open ralph-authored PRs + tail logs
 #   ./scripts/ralph-dispatch.sh --dry-run           # echo the ralph command, do not run
 
@@ -30,11 +39,27 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WB_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 [[ -f "$WB_ROOT/project.conf" ]] || { echo "project.conf not found at $WB_ROOT" >&2; exit 1; }
+
+# Capture env-state BEFORE sourcing project.conf, so per-invocation env vars
+# survive the source (project.conf may set its own defaults to empty).
+_env_WB_RALPH_PARALLEL="${WB_RALPH_PARALLEL:-}"
+_env_WB_RALPH_ENGINE="${WB_RALPH_ENGINE:-}"
+_env_WB_RALPH_DISPATCH_REPOS="${WB_RALPH_DISPATCH_REPOS:-}"
+_env_WB_RALPH_DISPATCH_EXCLUDE="${WB_RALPH_DISPATCH_EXCLUDE:-}"
+
 # shellcheck disable=SC1091
 source "$WB_ROOT/project.conf"
 
+# Restore env-supplied values when user actually exported them.
+[[ -n "$_env_WB_RALPH_PARALLEL"          ]] && WB_RALPH_PARALLEL="$_env_WB_RALPH_PARALLEL"
+[[ -n "$_env_WB_RALPH_ENGINE"            ]] && WB_RALPH_ENGINE="$_env_WB_RALPH_ENGINE"
+[[ -n "$_env_WB_RALPH_DISPATCH_REPOS"    ]] && WB_RALPH_DISPATCH_REPOS="$_env_WB_RALPH_DISPATCH_REPOS"
+[[ -n "$_env_WB_RALPH_DISPATCH_EXCLUDE"  ]] && WB_RALPH_DISPATCH_EXCLUDE="$_env_WB_RALPH_DISPATCH_EXCLUDE"
+
 CLI_PARALLEL=""
 CLI_ENGINE=""
+CLI_REPOS=""
+CLI_EXCLUDE=""
 DRY_RUN=false
 STATUS_MODE=false
 EXTRA_ARGS=()
@@ -42,12 +67,19 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --parallel) CLI_PARALLEL="${2:-}"; shift 2 ;;
     --engine)   CLI_ENGINE="${2:-}"; shift 2 ;;
+    --repos)    CLI_REPOS="${2:-}"; shift 2 ;;
+    --exclude)  CLI_EXCLUDE="${2:-}"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
     --status)   STATUS_MODE=true; shift ;;
-    --help|-h)  sed -n '2,24p' "$0"; exit 0 ;;
+    --help|-h)  sed -n '2,33p' "$0"; exit 0 ;;
     *)          EXTRA_ARGS+=("$1"); shift ;;
   esac
 done
+
+if [[ -n "$CLI_REPOS" && -n "$CLI_EXCLUDE" ]]; then
+  echo "ERROR: --repos and --exclude cannot be combined" >&2
+  exit 1
+fi
 
 REPOS_ROOT="$WB_ROOT/repos"
 
@@ -110,7 +142,43 @@ fi
 
 ENGINE="${CLI_ENGINE:-${WB_RALPH_ENGINE:-${RALPH_PLAN_ENGINE:-devin}}}"
 
-echo "[wb.ralph-dispatch] parallel=$PARALLEL engine=$ENGINE"
+# Resolve repo-subset filter: CLI > env > project.conf. Mutually exclusive.
+REPOS_FILTER="${CLI_REPOS:-${WB_RALPH_DISPATCH_REPOS:-}}"
+EXCLUDE_FILTER="${CLI_EXCLUDE:-${WB_RALPH_DISPATCH_EXCLUDE:-}}"
+if [[ -n "$REPOS_FILTER" && -n "$EXCLUDE_FILTER" ]]; then
+  echo "ERROR: --repos / WB_RALPH_DISPATCH_REPOS conflicts with --exclude / WB_RALPH_DISPATCH_EXCLUDE; pick one" >&2
+  exit 1
+fi
+
+# Validate filter names against project.conf REPOS so a typo fails inside the
+# wrapper with the registered-repo list visible. Names are matched as basenames
+# of the registered repo entries.
+_validate_filter_against_registered() {
+  local _list="$1"
+  local _label="$2"
+  [[ -z "$_list" ]] && return 0
+  local registered
+  registered=$(printf '%s\n' "${REPOS[@]}" | awk -F';' '{for(i=1;i<=NF;i++) if ($i ~ /^name=/) print substr($i,6)}')
+  local IFS_saved="$IFS"
+  IFS=','
+  read -r -a wanted <<< "$_list"
+  IFS="$IFS_saved"
+  local n trimmed
+  for n in "${wanted[@]}"; do
+    trimmed="$(echo "$n" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    [[ -z "$trimmed" ]] && continue
+    if ! echo "$registered" | grep -qxF "$trimmed"; then
+      local reg_csv
+      reg_csv="$(echo "$registered" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')"
+      echo "ERROR: ${_label} names unknown repo '$trimmed'. Registered: ${reg_csv}" >&2
+      exit 1
+    fi
+  done
+}
+_validate_filter_against_registered "$REPOS_FILTER"   "--repos / WB_RALPH_DISPATCH_REPOS"
+_validate_filter_against_registered "$EXCLUDE_FILTER" "--exclude / WB_RALPH_DISPATCH_EXCLUDE"
+
+echo "[wb.ralph-dispatch] parallel=$PARALLEL engine=$ENGINE repos=${REPOS_FILTER:-<all>} exclude=${EXCLUDE_FILTER:-<none>}"
 
 cmd=(ralph --workspace --parallel "$PARALLEL")
 # Engine flag passthrough: ralph takes --engine for some binaries; for others
@@ -118,6 +186,22 @@ cmd=(ralph --workspace --parallel "$PARALLEL")
 # pass --engine when the flag is recognized.
 if ralph --help 2>&1 | grep -q -- '--engine'; then
   cmd+=(--engine "$ENGINE")
+fi
+# Repo-subset passthrough (only when ralph supports the flags; older ralph
+# silently rejects unknown flags so we do not pass through if unsupported).
+if [[ -n "$REPOS_FILTER" ]]; then
+  if ralph --help 2>&1 | grep -q -- '--repos'; then
+    cmd+=(--repos "$REPOS_FILTER")
+  else
+    echo "WARN: installed ralph does not support --repos; ignoring filter" >&2
+  fi
+fi
+if [[ -n "$EXCLUDE_FILTER" ]]; then
+  if ralph --help 2>&1 | grep -q -- '--exclude'; then
+    cmd+=(--exclude "$EXCLUDE_FILTER")
+  else
+    echo "WARN: installed ralph does not support --exclude; ignoring filter" >&2
+  fi
 fi
 if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
   cmd+=("${EXTRA_ARGS[@]}")
