@@ -5,6 +5,12 @@
       "source": "amit-t/skills",
       "sourceType": "github",
       "computedHash": "7a1b2156d6a0a7619c7e85a9f4c2c9ad6e4a41eb43ffaa1b71e9f25a9b7cdc08"
+    },
+    "gh-pages-neo-brutalist": {
+      "source": "amit-t/skills",
+      "sourceType": "github",
+      "skillPath": "gh-pages-neo-brutalist/SKILL.md",
+      "computedHash": "7f66b0217014bc561520e00d7e3f72165636333b8f3b3b7827b555afd9c0f332"
     }
   }
 }
