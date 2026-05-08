@@ -25,6 +25,13 @@
 # Engine and thinking depth are resolved similarly, with defaults:
 #   RALPH_PLAN_ENGINE=devin  RALPH_PLAN_THINKING=ultra
 #
+# Parallel-plan resolution order (workspace mode only; forwarded to ralph-plan
+# --parallel-plan N):
+#   1. CLI flag:      --parallel-plan N
+#   2. Env var:       WB_RALPH_PLAN_PARALLEL
+#   3. project.conf:  RALPH_PLAN_PARALLEL
+#   4. Default:       unset (let ralph pick its own default — sequential V1)
+#
 # Usage:
 #   ./scripts/ralph-plan.sh                         # all repos, resolved mode
 #   ./scripts/ralph-plan.sh --mode per-repo
@@ -40,27 +47,58 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WB_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 [[ -f "$WB_ROOT/project.conf" ]] || { echo "project.conf not found at $WB_ROOT" >&2; exit 1; }
+
+# Capture env-state BEFORE sourcing project.conf so per-invocation env vars
+# survive (project.conf often sets its own knobs to empty defaults).
+_env_RALPH_PLAN_MODE="${RALPH_PLAN_MODE:-}"
+_env_WB_RALPH_PLAN_MODE="${WB_RALPH_PLAN_MODE:-}"
+_env_RALPH_PLAN_ENGINE="${RALPH_PLAN_ENGINE:-}"
+_env_RALPH_PLAN_THINKING="${RALPH_PLAN_THINKING:-}"
+_env_RALPH_PLAN_PARALLEL="${RALPH_PLAN_PARALLEL:-}"
+_env_WB_RALPH_PLAN_PARALLEL="${WB_RALPH_PLAN_PARALLEL:-}"
+
 # shellcheck disable=SC1091
 source "$WB_ROOT/project.conf"
+
+[[ -n "$_env_RALPH_PLAN_MODE"          ]] && RALPH_PLAN_MODE="$_env_RALPH_PLAN_MODE"
+[[ -n "$_env_WB_RALPH_PLAN_MODE"       ]] && WB_RALPH_PLAN_MODE="$_env_WB_RALPH_PLAN_MODE"
+[[ -n "$_env_RALPH_PLAN_ENGINE"        ]] && RALPH_PLAN_ENGINE="$_env_RALPH_PLAN_ENGINE"
+[[ -n "$_env_RALPH_PLAN_THINKING"      ]] && RALPH_PLAN_THINKING="$_env_RALPH_PLAN_THINKING"
+[[ -n "$_env_RALPH_PLAN_PARALLEL"      ]] && RALPH_PLAN_PARALLEL="$_env_RALPH_PLAN_PARALLEL"
+[[ -n "$_env_WB_RALPH_PLAN_PARALLEL"   ]] && WB_RALPH_PLAN_PARALLEL="$_env_WB_RALPH_PLAN_PARALLEL"
 
 CLI_MODE=""
 CLI_ENGINE=""
 CLI_THINKING=""
 CLI_REPO=""
 CLI_REPLAN=""
+CLI_PARALLEL_PLAN=""
 DRY_RUN=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode)      CLI_MODE="${2:-}"; shift 2 ;;
-    --engine)    CLI_ENGINE="${2:-}"; shift 2 ;;
-    --thinking)  CLI_THINKING="${2:-}"; shift 2 ;;
-    --replan)    CLI_REPLAN="${2:-}"; shift 2 ;;
-    --dry-run)   DRY_RUN=true; shift ;;
-    --help|-h)   sed -n '2,34p' "$0"; exit 0 ;;
-    -*)          echo "Unknown flag: $1" >&2; exit 2 ;;
-    *)           CLI_REPO="$1"; shift ;;
+    --mode)          CLI_MODE="${2:-}"; shift 2 ;;
+    --engine)        CLI_ENGINE="${2:-}"; shift 2 ;;
+    --thinking)      CLI_THINKING="${2:-}"; shift 2 ;;
+    --replan)        CLI_REPLAN="${2:-}"; shift 2 ;;
+    --parallel-plan) CLI_PARALLEL_PLAN="${2:-}"; shift 2 ;;
+    --dry-run)       DRY_RUN=true; shift ;;
+    --help|-h)       sed -n '2,42p' "$0"; exit 0 ;;
+    -*)              echo "Unknown flag: $1" >&2; exit 2 ;;
+    *)               CLI_REPO="$1"; shift ;;
   esac
 done
+
+# --parallel-plan only applies to workspace mode (planner-side concept).
+if [[ -n "$CLI_PARALLEL_PLAN" ]]; then
+  if [[ -n "$CLI_REPLAN" ]]; then
+    echo "[wb.ralph-plan] --parallel-plan and --replan are mutually exclusive (replan is per-repo)." >&2
+    exit 2
+  fi
+  if [[ -n "$CLI_REPO" ]]; then
+    echo "[wb.ralph-plan] --parallel-plan and a positional repo are mutually exclusive (parallel-plan is workspace mode)." >&2
+    exit 2
+  fi
+fi
 
 if [[ -n "$CLI_REPLAN" && -n "$CLI_MODE" ]]; then
   echo "[wb.ralph-plan] --replan and --mode are mutually exclusive (replan is always per-repo)." >&2
@@ -100,6 +138,15 @@ _resolve_mode() {
 
 ENGINE="${CLI_ENGINE:-${RALPH_PLAN_ENGINE:-devin}}"
 THINKING="${CLI_THINKING:-${RALPH_PLAN_THINKING:-ultra}}"
+PARALLEL_PLAN="${CLI_PARALLEL_PLAN:-${WB_RALPH_PLAN_PARALLEL:-${RALPH_PLAN_PARALLEL:-}}}"
+
+# Validate parallel-plan if set: must be a positive integer.
+if [[ -n "$PARALLEL_PLAN" ]]; then
+  if ! [[ "$PARALLEL_PLAN" =~ ^[1-9][0-9]*$ ]]; then
+    echo "[wb.ralph-plan] --parallel-plan must be a positive integer (got: $PARALLEL_PLAN)" >&2
+    exit 2
+  fi
+fi
 
 _repo_registered() {
   local target="$1"
@@ -121,7 +168,7 @@ else
   MODE="$(_resolve_mode)"
 fi
 
-echo "[wb.ralph-plan] mode=$MODE engine=$ENGINE thinking=$THINKING"
+echo "[wb.ralph-plan] mode=$MODE engine=$ENGINE thinking=$THINKING parallel-plan=${PARALLEL_PLAN:-<unset>}"
 
 # Step 1: sync approved workbench context into repos/<name>/ai/.
 echo "[1/2] Syncing approved context..."
@@ -138,6 +185,13 @@ echo "[2/2] Running ralph-plan ($MODE)..."
 
 _workspace_call() {
   local cmd=(ralph-plan --workspace --engine "$ENGINE" --thinking "$THINKING")
+  if [[ -n "$PARALLEL_PLAN" ]]; then
+    if ralph-plan --help 2>&1 | grep -q -- '--parallel-plan'; then
+      cmd+=(--parallel-plan "$PARALLEL_PLAN")
+    else
+      echo "WARN: installed ralph-plan does not support --parallel-plan; ignoring" >&2
+    fi
+  fi
   echo "  > (cd $WB_ROOT/repos && ${cmd[*]})"
   if [[ "$DRY_RUN" == "true" ]]; then
     return 0

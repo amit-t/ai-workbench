@@ -121,8 +121,8 @@ Follow-ups to the V1 ship that deserve their own PRs (E1 done 2026-04-27, see PR
 Reconciled with `main` (parallel ralph autonomous run shipped E1, E2, E4 under different numbering; E3 in flight; E5 cherry-picked into `dev`). Remaining work:
 
 1. ~~Retire `wb.ralph-annotate` once every developer's installed `ralph` binary carries the `pr-footer-append` change. Simplify `sync-context.sh` accordingly and drop the alias.~~ **DONE** 2026-04-27 on `main` (commit 5e85e99 / 48e2929).
-2. ~~Parallel planning in `ralph-plan --workspace` (upstream ralph). Design doc only.~~ **DONE** 2026-04-27 on `main` (commit 37db5fb / ca78837 → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream ralph PR still pending.
-3. ~~Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`.~~ **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Pure design doc; covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env passthrough, back-compat snapshot. Upstream ralph PR pending.
+2. ~~Parallel planning in `ralph-plan --workspace` (upstream ralph). Design doc only.~~ **DONE** 2026-04-27 on `main` (commit 37db5fb / ca78837 → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream PRs raised 2026-05-07: amit-t/ai-ralph#47 (main), #48 (dev); Invenco-Cloud-Systems-ICS/ai-ralph#13 (main), #14 (dev).
+3. ~~Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`.~~ **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Pure design doc; covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env passthrough, back-compat snapshot. Upstream PRs raised 2026-05-07: amit-t/ai-ralph#49 (main), #50 (dev); Invenco-Cloud-Systems-ICS/ai-ralph#15 (main), #16 (dev).
 4. ~~`wb.ralph-plan --replan <repo>`.~~ **DONE** 2026-04-27 on `main` (commit 37c9d1c / fa8dafb).
 5. ~~Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to V1 aliases.~~ **DONE** 2026-04-27 cherry-picked onto `dev` from ralph branch `ralph-claude/e1-skill-rewiring` as commit 39bff2a (consolidated into Plan F PR; original ralph PRs #12/#13 closed).
 
@@ -152,10 +152,9 @@ Smoke 22/22 → 27/27.
 
 ---
 
-## GitHub Pages — still pending (user action)
+## GitHub Pages — DONE 2026-05-07
 
-`https://github.com/amit-t/ai-workbench/settings/pages` → Source: **Deploy from branch** → `main` + `/docs` → Save.
-Expected URL after enable: `https://amit-t.github.io/ai-workbench/`.
+Enabled by user. Site live at expected URL.
 
 ---
 
