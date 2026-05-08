@@ -103,7 +103,10 @@ wb.sync-context                       # push workbench outputs into repos/*/ai/
 wb.ralph-enable-check                 # preflight that `ralph enable --workspace` ran
 wb.ralph-plan [--mode ...] [--engine] # sync context + ralph-plan (workspace by default)
 wb.ralph-plan --replan <repo>         # regen one repo's section, splice into repos/.ralph/fix_plan.md
+wb.ralph-plan --parallel-plan N       # workspace mode: run up to N per-repo plan workers concurrently
 wb.ralph-dispatch [--parallel N]      # ralph --workspace --parallel N (ralph owns the loop)
+wb.ralph-dispatch --repos a,b         # subset run: only these registered repos
+wb.ralph-dispatch --exclude c         # subset run: every repo except these (mutually exclusive with --repos)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
 wb.register-repo <name> <url> <role>  # add code repo
 wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
@@ -124,7 +127,9 @@ wb.steering-audit [--json|--list]     # which template rules a team has overridd
 - The `ai-devkit` is the only place that bootstraps the ralph workspace and installs the `ralph` binary. The template's own `.ralph/` (template-dev) never travels into stamped wbs; `init.wb` purges every entry listed under `template_dev_only` in `.workbench-manifest.json`.
 - `wb.ralph-plan` defaults to **workspace mode** (single `ralph-plan --workspace` at `$WB_ROOT/repos/`). Falls back to per-repo looping when the installed ralph-plan does not support `--workspace`. Override with `--mode`, env `WB_RALPH_PLAN_MODE`, or `project.conf RALPH_PLAN_MODE`.
 - `wb.ralph-plan --replan <repo>` regenerates only one repo's plan, then splices the resulting `## <repo>` section back into `repos/.ralph/fix_plan.md` (existing section is replaced; appended if missing). Holds an advisory `flock` on `.workbench-state/.lock` during the splice. Use this when a stakeholder change affects one repo and you do not want to redo planning for the rest.
+- `wb.ralph-plan --parallel-plan N` (workspace mode only) forwards to `ralph-plan --workspace --parallel-plan N` so per-repo plan calls fan out concurrently. Buffer-then-merge keeps section ordering stable. Resolution: CLI > `WB_RALPH_PLAN_PARALLEL` > `project.conf RALPH_PLAN_PARALLEL` > unset (sequential V1). Pairs symmetrically with `wb.ralph-dispatch --repos` for "plan one, execute one" runs.
 - `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
+- `wb.ralph-dispatch --repos <list>` / `--exclude <list>` narrows a workspace run to a subset of registered repos (forwarded to `ralph --workspace --repos`/`--exclude`). Mutually exclusive. Names are validated against `project.conf REPOS` before pass-through, so a typo fails inside the wrapper. Resolution: CLI > env (`WB_RALPH_DISPATCH_REPOS` / `WB_RALPH_DISPATCH_EXCLUDE`) > `project.conf` > unset (run all). Cross-repo tasks are skipped under any filter.
 - Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
 - **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.
 - **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph appends it to every PR body via the upstream `pr-footer-append` support.

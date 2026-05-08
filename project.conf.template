@@ -39,3 +39,16 @@ RALPH_PLAN_THINKING="ultra"
 # wb.ralph-dispatch parallelism. Leave empty to default to min(len(REPOS), 4).
 # CLI --parallel and env WB_RALPH_PARALLEL override this.
 WB_RALPH_PARALLEL=""
+
+# wb.ralph-dispatch repo-subset filter (forwarded to ralph --workspace --repos / --exclude).
+# Comma-separated list of registered repo names. Mutually exclusive: set one or
+# the other (or both empty). CLI --repos / --exclude and env
+# WB_RALPH_DISPATCH_REPOS / WB_RALPH_DISPATCH_EXCLUDE override these.
+WB_RALPH_DISPATCH_REPOS=""
+WB_RALPH_DISPATCH_EXCLUDE=""
+
+# wb.ralph-plan parallel-plan workers (forwarded to ralph-plan --workspace --parallel-plan N).
+# Empty = let ralph-plan pick its own default (sequential V1). Positive integer
+# enables concurrent per-repo planning. CLI --parallel-plan and env
+# WB_RALPH_PLAN_PARALLEL override this.
+RALPH_PLAN_PARALLEL=""
