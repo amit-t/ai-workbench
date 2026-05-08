@@ -428,7 +428,7 @@ mkdir -p "$MOCK_BIN"
 cat > "$MOCK_BIN/ralph-plan" <<'EOF'
 #!/usr/bin/env bash
 if [[ "$1" == "--help" ]]; then
-  echo "usage: ralph-plan [--workspace] [--engine ENG] [--thinking T]"
+  echo "usage: ralph-plan [--workspace] [--engine ENG] [--thinking T] [--parallel-plan N]"
   exit 0
 fi
 echo "mock ralph-plan called with: $*"
@@ -437,7 +437,7 @@ EOF
 cat > "$MOCK_BIN/ralph" <<'EOF'
 #!/usr/bin/env bash
 if [[ "$1" == "--help" ]]; then
-  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG]"
+  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]"
   exit 0
 fi
 echo "mock ralph called with: $*"
@@ -465,6 +465,54 @@ dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
 echo "$dispatch_out" | grep -q 'ralph --workspace --parallel'                 || fail "dispatch dry-run missing --workspace --parallel: $dispatch_out"
 echo "$dispatch_out" | grep -q "WORKSPACE_ROOT=$(pwd)/repos"                  || fail "dispatch dry-run missing WORKSPACE_ROOT export: $dispatch_out"
 pass "wb.ralph-dispatch --dry-run invokes workspace with parallel and WORKSPACE_ROOT"
+
+# 9m.r1. wb.ralph-dispatch --repos forwards to ralph --repos
+dispatch_out=$(./scripts/ralph-dispatch.sh --repos svc-a --dry-run 2>&1)
+echo "$dispatch_out" | grep -q -- '--repos svc-a'                             || fail "dispatch --repos not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q 'repos=svc-a'                                  || fail "dispatch banner missing repos=: $dispatch_out"
+pass "wb.ralph-dispatch --repos forwards to ralph --repos"
+
+# 9m.r2. wb.ralph-dispatch --exclude forwards to ralph --exclude
+dispatch_out=$(./scripts/ralph-dispatch.sh --exclude svc-a --dry-run 2>&1)
+echo "$dispatch_out" | grep -q -- '--exclude svc-a'                           || fail "dispatch --exclude not forwarded: $dispatch_out"
+pass "wb.ralph-dispatch --exclude forwards to ralph --exclude"
+
+# 9m.r3. wb.ralph-dispatch unknown repo name fails inside the wrapper
+if ./scripts/ralph-dispatch.sh --repos does-not-exist --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject unknown repo name in --repos"
+fi
+pass "wb.ralph-dispatch --repos rejects unknown repo names"
+
+# 9m.r4. wb.ralph-dispatch --repos and --exclude are mutually exclusive
+if ./scripts/ralph-dispatch.sh --repos svc-a --exclude foo --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --repos with --exclude"
+fi
+pass "wb.ralph-dispatch --repos / --exclude mutually exclusive"
+
+# 9m.r5. WB_RALPH_DISPATCH_REPOS env var picked up
+dispatch_out=$(WB_RALPH_DISPATCH_REPOS=svc-a ./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -q -- '--repos svc-a'                             || fail "dispatch env WB_RALPH_DISPATCH_REPOS not picked up: $dispatch_out"
+pass "WB_RALPH_DISPATCH_REPOS env var forwards to ralph --repos"
+
+# 9m.p1. wb.ralph-plan --parallel-plan forwards to ralph-plan --parallel-plan
+plan_out=$(./scripts/ralph-plan.sh --parallel-plan 4 --dry-run 2>&1)
+echo "$plan_out" | grep -q 'parallel-plan=4'                                  || fail "plan banner missing parallel-plan=4: $plan_out"
+echo "$plan_out" | grep -q -- '--parallel-plan 4'                             || fail "plan dry-run missing --parallel-plan passthrough: $plan_out"
+pass "wb.ralph-plan --parallel-plan forwards to ralph-plan --parallel-plan"
+
+# 9m.p2. wb.ralph-plan --parallel-plan rejects non-positive integer
+if ./scripts/ralph-plan.sh --parallel-plan 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-plan --parallel-plan should reject 0"
+fi
+if ./scripts/ralph-plan.sh --parallel-plan abc --dry-run 2>/dev/null; then
+  fail "wb.ralph-plan --parallel-plan should reject non-integer"
+fi
+pass "wb.ralph-plan --parallel-plan validates positive integer"
+
+# 9m.p3. WB_RALPH_PLAN_PARALLEL env var picked up
+plan_out=$(WB_RALPH_PLAN_PARALLEL=2 ./scripts/ralph-plan.sh --dry-run 2>&1)
+echo "$plan_out" | grep -q 'parallel-plan=2'                                  || fail "plan env WB_RALPH_PLAN_PARALLEL not picked up: $plan_out"
+pass "WB_RALPH_PLAN_PARALLEL env var forwards to ralph-plan --parallel-plan"
 
 # 9m1. wb.ralph-plan --replan unknown-repo exits non-zero
 if ./scripts/ralph-plan.sh --replan does-not-exist 2>/dev/null; then
