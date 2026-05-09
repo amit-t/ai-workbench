@@ -5,8 +5,22 @@
 
 WB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
+# ── Versioning preamble helper ──────────────────────────────────────────────
+# Sourced from aliases.sh by every meaningful wb.* function. Sources the
+# canonical version-check lib (dropped by ai-devkit / ai-ralph installers).
+# If the lib is missing, this is a silent no-op (graceful degradation for users
+# who have not yet pulled the new ai-devkit installer).
+_wb_check() {
+  local libvc="${HOME}/.local/share/wb-versioncheck/version-check.sh"
+  [[ -f "$libvc" ]] || return 0
+  # shellcheck disable=SC1090
+  . "$libvc"
+  WB_TEMPLATE_VERSION_FILE="${WB_ROOT}/.workbench-state/template-version.json" \
+    _wb_versioncheck wb 2>&1 || true
+}
+
 # ── Context sync ──────────────────────────────────────────────────────────────
-wb.sync-context() { "$WB_ROOT/scripts/sync-context.sh" "$@"; }
+wb.sync-context() { _wb_check; "$WB_ROOT/scripts/sync-context.sh" "$@"; }
 
 # ── Ralph ─────────────────────────────────────────────────────────────────────
 # Workbench wraps ai-ralph; ralph owns the core loop + parallelism + PR creation.
@@ -17,12 +31,12 @@ wb.sync-context() { "$WB_ROOT/scripts/sync-context.sh" "$@"; }
 #   wb.ralph-plan [flags]           # sync context + ralph-plan (workspace by default)
 #   wb.ralph-dispatch [flags]       # cd repos/ && ralph --workspace --parallel N
 #   wb.ralph-dispatch --status      # show open ralph PRs + tail of worker logs
-wb.ralph-enable-check() { "$WB_ROOT/scripts/ralph-enable-check.sh" "$@"; }
-wb.ralph-plan()         { "$WB_ROOT/scripts/ralph-plan.sh" "$@"; }
-wb.ralph-dispatch()     { "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"; }
+wb.ralph-enable-check() { _wb_check; "$WB_ROOT/scripts/ralph-enable-check.sh" "$@"; }
+wb.ralph-plan()         { _wb_check; "$WB_ROOT/scripts/ralph-plan.sh" "$@"; }
+wb.ralph-dispatch()     { _wb_check; "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"; }
 
 # ── Repo management ───────────────────────────────────────────────────────────
-wb.register-repo()  { "$WB_ROOT/scripts/register-repo.sh" "$@"; }
+wb.register-repo()  { _wb_check; "$WB_ROOT/scripts/register-repo.sh" "$@"; }
 
 # ── Artifact lifecycle ────────────────────────────────────────────────────────
 # All transitions go through scripts/lifecycle.py, which:
@@ -33,9 +47,9 @@ wb.register-repo()  { "$WB_ROOT/scripts/register-repo.sh" "$@"; }
 # Three states: draft -> published -> approved. Only these aliases (and the
 # underlying CLI) should ever touch the state files.
 
-wb.publish()  { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" publish "$@"; }
-wb.approve()  { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" approve "$@"; }
-wb.reject()   { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" reject  "$@"; }
+wb.publish()  { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" publish "$@"; }
+wb.approve()  { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" approve "$@"; }
+wb.reject()   { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" reject  "$@"; }
 wb.published(){ WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list published; }
 wb.approved() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list approved; }
 wb.rejected() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list rejected; }
@@ -54,10 +68,10 @@ wb.rejected() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list 
 #   wb.steering-audit [--json|--list]
 #                                 # surface team overrides: kinds, targets,
 #                                 # age, last-updated, promote-suggest heuristic
-wb.steering()         { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" "$@"; }
-wb.steering-refresh() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" all; }
-wb.steering-lint()    { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-lint.py" "$@"; }
-wb.steering-audit()   { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-audit.py" "$@"; }
+wb.steering()         { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" "$@"; }
+wb.steering-refresh() { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" all; }
+wb.steering-lint()    { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-lint.py" "$@"; }
+wb.steering-audit()   { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-audit.py" "$@"; }
 
 # ── Git helpers ───────────────────────────────────────────────────────────────
 wb.pull()   { (cd "$WB_ROOT" && git pull --rebase); }
