@@ -363,3 +363,11 @@ When the team has local steering overrides under `steering.local/`, `sync-contex
 ## Plan-mode rule
 
 Read `CLAUDE.md` for the session-start protocol and plan-mode rule. Summary: always explore and plan before writing code; never commit fix_plan entries without an approved PRD or engineering spec.
+
+## Versioning + upgrades
+
+ai-workbench (template) ships under semver. Stamped workbenches inherit the version they were created from in `.workbench-state/template-version.json`. Run `wb.upgrade` inside a stamped wb to pull template-owned files from upstream and refresh the stamp.
+
+Notification banners fire automatically on `wb.publish`, `wb.approve`, `wb.ralph-plan`, etc., when the upstream template has a newer version than this wb. The check is throttled to one network call per 12h.
+
+Full system documented in [ai-devkit/docs/versioning.md](https://github.com/amit-t/ai-devkit/blob/main/docs/versioning.md).
