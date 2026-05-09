@@ -16,7 +16,7 @@ _wb_check() {
   # shellcheck disable=SC1090
   . "$libvc"
   WB_TEMPLATE_VERSION_FILE="${WB_ROOT}/.workbench-state/template-version.json" \
-    _wb_versioncheck wb 2>&1 || true
+    _wb_versioncheck wb || true
 }
 
 # ── Context sync ──────────────────────────────────────────────────────────────
