@@ -144,6 +144,13 @@ wb.steering-audit [--json|--list]     # which template rules a team has overridd
 - No em dashes in documents. Use commas or parentheses. Exception: code blocks preserve exact content.
 - No hype words. No "leverage", "utilize", "robust", "streamline", "unlock". Plain English.
 
+## Versioning (agent-relevant only)
+
+- Existing alias `update.wb` has been renamed to `wb.upgrade` (canonical). Old name still works via deprecation shim, use `wb.upgrade` in suggestions.
+- `*.upgrade` family for global tools: `wb.upgrade` (this stamped wb), `devkit.upgrade` (global ai-devkit clone), `ralph.upgrade` (global ai-ralph clone). One-step doctor: `devkit doctor`.
+- Never edit `version.json` manually unless explicitly asked. release-please auto-bumps from Conventional Commit messages on merge to main.
+- When introducing peer-version requirements (e.g., a wb feature that requires ralph >= X), edit the `requires` field in `version.json` in the same PR, that field is human-maintained.
+
 ## Steering (quick reference)
 
 - Layer 0 (golden) is loaded at session start (step 2 above).
