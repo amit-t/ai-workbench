@@ -47,6 +47,11 @@ matches_buf=""
 # Scan every .md and .html under docs/. Recursive on purpose — pages live in subdirs
 # (skills/, steering/) too, and the spec's intent is "no hardcoded owner URLs anywhere
 # in rendered docs source".
+#
+# Pruned dirs:
+#   - docs/_site*, docs/.jekyll-cache, docs/.bundle, docs/vendor — Jekyll build output.
+#   - docs/superpowers/plans, docs/superpowers/specs — internal dev artifacts (not
+#     Jekyll-rendered pages); hardcoded URLs are intentional in plan + spec docs.
 while IFS= read -r -d '' file; do
   rel="${file#./}"
   if is_allowlisted "$rel"; then
@@ -60,7 +65,8 @@ while IFS= read -r -d '' file; do
     done <<< "$hits"
   fi
 done < <(find docs \
-  \( -path 'docs/_site*' -o -path 'docs/.jekyll-cache' -o -path 'docs/.bundle' -o -path 'docs/vendor' \) -prune -o \
+  \( -path 'docs/_site*' -o -path 'docs/.jekyll-cache' -o -path 'docs/.bundle' -o -path 'docs/vendor' \
+     -o -path 'docs/superpowers/plans' -o -path 'docs/superpowers/specs' \) -prune -o \
   -type f \( -name '*.md' -o -name '*.html' \) -print0)
 
 if (( violations > 0 )); then
