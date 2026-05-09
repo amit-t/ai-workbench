@@ -1,0 +1,19 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  aliases-preamble:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run aliases preamble test
+        run: bash tests/test-aliases-preamble.sh
+  # TODO(windows): add windows-latest when the version-check lib is bash-portable
+  # enough to run under git-bash.
