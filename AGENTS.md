@@ -59,6 +59,13 @@ draft  ──(wb.publish)──▶  published  ──(wb.approve)──▶  appr
 - MCP credentials live in environment variables, never in `.mcp.json` as literals, never in logs.
 - Never write to a code repo under `repos/*` without ralph.
 
+## Versioning (agent-relevant only)
+
+- Existing alias `update.wb` has been renamed to `wb.upgrade` (canonical). Old name still works via deprecation shim, use `wb.upgrade` in suggestions.
+- `*.upgrade` family for global tools: `wb.upgrade` (this stamped wb), `devkit.upgrade` (global ai-devkit clone), `ralph.upgrade` (global ai-ralph clone). One-step doctor: `devkit doctor`.
+- Never edit `version.json` manually unless explicitly asked. release-please auto-bumps from Conventional Commit messages on merge to main.
+- When introducing peer-version requirements (e.g., a wb feature that requires ralph >= X), edit the `requires` field in `version.json` in the same PR, that field is human-maintained.
+
 ## Voice rules
 
 - Plain English. Short sentences.
