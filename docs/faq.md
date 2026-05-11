@@ -35,3 +35,7 @@ Yes, but `project.conf`'s `WORKBENCH_REPO` needs to match afterwards. There is n
 ## Is the `.workbench-state/` Dir Shared?
 
 Yes — it is tracked in git. Both collaborators see the same `published.json`, `approved.json`, `rejected.json`. This is deliberate: the approval state is a shared artifact that ralph reads, so both sides need to agree on it.
+
+## Why Do I See "[wb] checking for updates..." Every Time I Run a wb Command?
+
+You don't, actually. The first meaningful `wb.*` command in any 12-hour window triggers a single GitHub-API call to compare your stamped wb's template version against upstream `ai-workbench`. If a newer template version is available, a one-line banner is printed before your command runs. Otherwise the preamble is silent. The result is cached for 12 hours (configurable via `check_ttl_hours` in upstream `version.json`), so subsequent calls within the window do nothing. The check is fail-open: offline machines, rate-limit hits, and missing `gh` all skip silently. Trivial list aliases (`wb.published`, `wb.approved`, `wb.rejected`) never trigger the check at all. See [Versioning + upgrades](./versioning.html) for the full picture.
