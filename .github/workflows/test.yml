@@ -24,5 +24,52 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run wb resolver test
         run: bash tests/test-wb-resolve-root.sh
-  # TODO(windows): add windows-latest when the version-check lib is bash-portable
-  # enough to run under git-bash.
+  # Windows-via-WSL2 is covered by the ubuntu-latest matrix slot above
+  # (WSL2 Ubuntu = Linux kernel + Ubuntu userspace = same shell environment).
+  # Native windows-latest deferred pending team-chat survey of dev usage.
+  shell-lint:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install zsh + shellcheck (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh shellcheck
+      - name: Install shellcheck (macOS)
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+      - name: bash -n on all *.sh
+        run: |
+          files=$(git ls-files '*.sh')
+          if [ -z "$files" ]; then
+            echo "no *.sh files; skipping"
+            exit 0
+          fi
+          # shellcheck disable=SC2086
+          bash -n $files
+      - name: zsh -n on all *.zsh
+        run: |
+          files=$(git ls-files '*.zsh')
+          if [ -z "$files" ]; then
+            echo "no *.zsh files; skipping"
+            exit 0
+          fi
+          # shellcheck disable=SC2086
+          zsh -n $files
+      - name: shellcheck -x -e SC1091 on all *.sh (severity=error)
+        run: |
+          files=$(git ls-files '*.sh')
+          if [ -z "$files" ]; then
+            echo "no *.sh files; skipping"
+            exit 0
+          fi
+          # Severity is pinned to "error" for PR 3a to keep CI green while
+          # warning-level findings (SC2064, SC2097, SC2098, SC2012; informational
+          # quoting plus ls-vs-find guidance) are addressed in PR 3c per the
+          # Wave 3 stub (notes/wsl-port-plan.md lines 133-159).
+          # shellcheck disable=SC2086
+          shellcheck -S error -x -e SC1091 $files
