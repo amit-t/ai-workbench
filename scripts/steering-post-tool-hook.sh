@@ -37,6 +37,7 @@ fi
 if [[ "$should_reload" == "true" ]]; then
   if [[ -f "$WB_ROOT/scripts/steering-load.py" ]]; then
     echo "[steering] Reloading Layer 0 (golden) after tool use." >&2
+    # shellcheck disable=SC2097,SC2098 # intentional: export parent WB_ROOT into the child env for one call; the same-name assignment is correct here, not a typo.
     WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" golden >&2 || true
   fi
 fi
