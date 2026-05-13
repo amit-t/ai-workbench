@@ -43,5 +43,12 @@
     ".ralph/PROMPT.md",
     ".ralph/fix_plan.md"
   ],
-  "_template_dev_only_doc": "Files tracked in the ai-workbench template repo for template-dev work but purged from stamped wbs by init.wb (Step 3.4b) so collaborators do not inherit template-dev state. Update this list whenever a new template-dev-only file is added."
+  "_template_dev_only_doc": "Files tracked in the ai-workbench template repo for template-dev work but purged from stamped wbs by init.wb (Step 3.4b) so collaborators do not inherit template-dev state. Update this list whenever a new template-dev-only file is added.",
+  "auto_generated": [
+    "context/*/CONTEXT.md",
+    "context/*/CONTEXT-MAP.md",
+    "context/*/docs/adr/*.md",
+    "context/README.md"
+  ],
+  "_auto_generated_doc": "Files written by the repo-context-scan skill via wb.rescan. Tracked by the ai-devkit context-scan wrapper (lib/wb-context-scan.zsh). update.wb may overwrite the body of these files; user-authored YAML frontmatter keys are preserved via defensive merge. Transient staging lives under .context-scan/ (gitignored)."
 }

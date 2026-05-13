@@ -59,3 +59,5 @@ else
 fi
 
 echo "Done. $NAME registered as $ROLE."
+echo
+echo "→ Build wb context for this repo:  wb.rescan ${NAME}"
