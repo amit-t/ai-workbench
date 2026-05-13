@@ -67,16 +67,19 @@ jobs:
           fi
           # shellcheck disable=SC2086
           zsh -n $files
-      - name: shellcheck -x -e SC1091 on all *.sh (severity=error)
+      - name: shellcheck -x -e SC1091 on all *.sh (severity=warning)
         run: |
           files=$(git ls-files '*.sh')
           if [ -z "$files" ]; then
             echo "no *.sh files; skipping"
             exit 0
           fi
-          # Severity is pinned to "error" for PR 3a to keep CI green while
-          # warning-level findings (SC2064, SC2097, SC2098, SC2012; informational
-          # quoting plus ls-vs-find guidance) are addressed in PR 3c per the
-          # Wave 3 stub (notes/wsl-port-plan.md lines 133-159).
+          # Severity is pinned to "warning" as of PR 3c (the final Wave 3 PR
+          # of the WSL2 port). All warning-tier findings flagged by PR 3a's
+          # audit (SC2064, SC2097, SC2098) have been resolved by mechanical
+          # fixes plus targeted # shellcheck disable= directives where the
+          # idiom is correct and the warning is a false positive.
+          # Info-tier findings (e.g. SC2012 in ralph-dispatch.sh) remain out
+          # of scope at this gate.
           # shellcheck disable=SC2086
-          shellcheck -S error -x -e SC1091 $files
+          shellcheck -S warning -x -e SC1091 $files
