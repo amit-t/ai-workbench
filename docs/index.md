@@ -29,6 +29,7 @@ layout: default
 - **Looking for a specific skill?** [Skills reference](./skills.html).
 - **Ralph integration questions?** [Ralph integration](./ralph.html).
 - **How steering works (golden principles, role rules, overlays)?** [Steering workflow](./steering/).
+- **Update notifications + how to upgrade?** [Versioning + upgrades](./versioning.html).
 - **Something unclear?** [FAQ](./faq.html).
 
 ## Typical Flow

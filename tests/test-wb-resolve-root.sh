@@ -10,6 +10,7 @@ REPO_ROOT="${SCRIPT_DIR}/.."
 
 scratch="$(mktemp -d)"
 scratch="$(cd "$scratch" && pwd -P)"  # canonicalise; macOS /var → /private/var
+# shellcheck disable=SC2064 # expand $scratch now: the canonical path is captured at trap-install time and must not depend on runtime state.
 trap "rm -rf '$scratch'" EXIT
 
 # Helpers --------------------------------------------------------------

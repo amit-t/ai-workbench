@@ -193,6 +193,10 @@ Rules:
 
 Every generated artifact (PRD, spec, TDD, ERD, ADR, BDD, test cases, test spec) flows through `draft → published → approved`. See [Artifact lifecycle](./lifecycle.html) for the full state machine, downstream preconditions, and lifecycle commands.
 
+## Version Notifications
+
+Meaningful `wb.*` commands (publish, approve, reject, sync-context, ralph-plan, ralph-dispatch, register-repo, steering*) fire a one-shot version check on the first call per 12-hour window. If a newer `ai-workbench` template is available upstream, a one-line banner is printed before the command runs; the check is fail-open, so offline runs are silent. Trivial list aliases (`wb.published`, `wb.approved`, `wb.rejected`) skip the check. See [Versioning + upgrades](./versioning.html) for the full mapping and the `wb.upgrade` flow.
+
 ## Security Model
 
 - Workbench repos are **private**. Only CODEOWNERS-listed accounts have push access.
