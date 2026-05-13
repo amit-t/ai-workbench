@@ -229,12 +229,23 @@ if [[ "$AGGREGATE_ONLY" != "true" ]]; then
     echo "── $repo ──"
 
     # setup → SCAN_DIR
-    SCAN_DIR=""
-    if ! SCAN_DIR="$(zsh "$LIB" setup "$WB_ROOT" "$repo")"; then
+    # The lib emits a single line `SCAN_DIR=<abs-path>` on stdout. Capture
+    # it, then strip the `SCAN_DIR=` prefix so downstream code holds a real
+    # filesystem path. Without the strip, `-d "$SCAN_DIR"` would always be
+    # false and every run would skip with "setup returned invalid SCAN_DIR".
+    SETUP_OUT=""
+    if ! SETUP_OUT="$(zsh "$LIB" setup "$WB_ROOT" "$repo")"; then
       echo "  setup failed for $repo — skipping" >&2
       FAILED_REPOS+=("$repo")
       continue
     fi
+    if [[ "$SETUP_OUT" != SCAN_DIR=* ]]; then
+      echo "  setup did not emit SCAN_DIR= line for $repo — skipping" >&2
+      echo "  setup stdout: $SETUP_OUT" >&2
+      FAILED_REPOS+=("$repo")
+      continue
+    fi
+    SCAN_DIR="${SETUP_OUT#SCAN_DIR=}"
     if [[ -z "$SCAN_DIR" || ! -d "$SCAN_DIR" ]]; then
       echo "  setup returned invalid SCAN_DIR for $repo — skipping" >&2
       FAILED_REPOS+=("$repo")
