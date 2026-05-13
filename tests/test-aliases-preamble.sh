@@ -5,6 +5,10 @@
 #   3. When a stub lib is present, _wb_check sources it and calls _wb_versioncheck wb.
 #   4. Every wrapped wb.* function still calls through to its target script (verified by
 #      stubbing the target and observing it ran).
+# Notes:
+#   - We override the resolved workbench by exporting WB_PIN (the public hook
+#     in aliases.sh) rather than the old WB_ROOT env-var trick, which no
+#     longer works since each wb.* function declares WB_ROOT as a local.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/.."
@@ -17,6 +21,7 @@ HOME_OVERRIDE="$scratch/home_a"
 mkdir -p "$HOME_OVERRIDE/.local/share/wb-versioncheck"
 WB_FAKE_ROOT="$scratch/fake_wb_a"
 mkdir -p "$WB_FAKE_ROOT/.workbench-state" "$WB_FAKE_ROOT/scripts"
+: > "$WB_FAKE_ROOT/project.conf"  # makes WB_PIN validation pass
 # Fake target script that prints a sentinel
 cat > "$WB_FAKE_ROOT/scripts/sync-context.sh" <<'SH'
 #!/usr/bin/env bash
@@ -29,7 +34,7 @@ chmod +x "$WB_FAKE_ROOT/scripts/sync-context.sh"
 bash -c "
   source '$REPO_ROOT/aliases.sh'
   HOME='$HOME_OVERRIDE'
-  WB_ROOT='$WB_FAKE_ROOT'
+  export WB_PIN='$WB_FAKE_ROOT'
   out=\"\$(wb.sync-context arg1 arg2 2>&1)\"
   case \"\$out\" in
     *\"SENTINEL_RAN arg1 arg2\"*) echo OK_A ;;
@@ -48,13 +53,14 @@ SH
 
 WB_FAKE_ROOT="$scratch/fake_wb_b"
 mkdir -p "$WB_FAKE_ROOT/.workbench-state" "$WB_FAKE_ROOT/scripts"
+: > "$WB_FAKE_ROOT/project.conf"  # makes WB_PIN validation pass
 cp "$scratch/fake_wb_a/scripts/sync-context.sh" "$WB_FAKE_ROOT/scripts/sync-context.sh"
 chmod +x "$WB_FAKE_ROOT/scripts/sync-context.sh"
 
 bash -c "
   source '$REPO_ROOT/aliases.sh'
   HOME='$HOME_OVERRIDE'
-  WB_ROOT='$WB_FAKE_ROOT'
+  export WB_PIN='$WB_FAKE_ROOT'
   out=\"\$(wb.sync-context probe 2>&1 1>/dev/null)\"
   case \"\$out\" in
     *\"STUB_VERSIONCHECK_FIRED tool=wb\"*) echo OK_B_STUB ;;
@@ -70,6 +76,7 @@ bash -c "
 # ── Case C: trivial wb.published is NOT wrapped (no version-check fires) ────
 WB_FAKE_ROOT="$scratch/fake_wb_c"
 mkdir -p "$WB_FAKE_ROOT/.workbench-state" "$WB_FAKE_ROOT/scripts"
+: > "$WB_FAKE_ROOT/project.conf"  # makes WB_PIN validation pass
 cat > "$WB_FAKE_ROOT/scripts/lifecycle.py" <<'PY'
 #!/usr/bin/env python3
 import sys
@@ -80,7 +87,7 @@ chmod +x "$WB_FAKE_ROOT/scripts/lifecycle.py"
 bash -c "
   source '$REPO_ROOT/aliases.sh'
   HOME='$HOME_OVERRIDE'
-  WB_ROOT='$WB_FAKE_ROOT'
+  export WB_PIN='$WB_FAKE_ROOT'
   out=\"\$(wb.published 2>&1)\"
   case \"\$out\" in
     *STUB_VERSIONCHECK_FIRED*) echo \"FAIL_C: trivial alias should NOT fire version-check; out='\$out'\"; exit 1 ;;
