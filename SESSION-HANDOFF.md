@@ -15,6 +15,14 @@
 
 ## What shipped
 
+### Multi-workbench resolution for `wb.*` aliases (2026-05-13)
+- `aliases.sh`: every `wb.*` command now resolves the active wb per call via a new `_wb_resolve_root` helper. Priority order: `WB_PIN` env var → walk up from `$PWD` for `project.conf` → source-baked default. One sourced `aliases.sh` now serves every stamped wb on the machine; switching workbenches no longer requires re-sourcing.
+- New aliases: `wb.switch <path>` (validates `<path>/project.conf`, exports `WB_PIN`), `wb.unswitch` (clears the pin), `wb.where` (prints resolved wb + how — pin / cwd / default). `wb.info` extended with the resolution source.
+- Loud-failure semantics: an invalid `WB_PIN` errors immediately and never silently falls through to cwd. Outside-any-wb + no valid default prints the hint `wb.switch /path/to/wb-<label>`.
+- Tests: new `tests/test-wb-resolve-root.sh` (17 cases covering pin/cwd/default priorities, nested wbs, symlinks, end-to-end wrapper dispatch). `tests/test-aliases-preamble.sh` migrated from the old `WB_ROOT=` env-var override to `WB_PIN=` (the new public hook), with project.conf seeded in fake wb fixtures. `.github/workflows/test.yml` adds a `wb-resolve-root` matrix job on ubuntu + macos. `tests/smoke.sh` unchanged (already resolves via cwd from inside the stamped tree).
+- Spec: `docs/superpowers/specs/2026-05-13-wb-multi-workbench-resolution-design.md`.
+- Migration: `aliases.sh` is `template_owned`. Stamped wbs receive the new resolver on the next `wb.upgrade`. Sole back-compat change: the undocumented `export WB_ROOT=…` pre-source trick no longer works (each wb.* function declares `WB_ROOT` as a local). The only known consumer was `test-aliases-preamble.sh`, migrated in this change.
+
 ### Plan D2, wb-side CI lint workflow seeded by `update.wb` (2026-04-29)
 - `.github/workflows/wb-ci.yml`: PR check that runs steering-lint plus per-file artifact validation. Triggers on changes to `product/`, `design/`, `engineering/`, `qa/`, `steering/`, `steering.local/`, or any of the helper scripts. The artifact step diffs `origin/<base>...HEAD` and pipes the change list into the helper.
 - `scripts/wb-ci-validate.py`: classifier + runner. Maps each path to one of ten artifact types by directory prefix, skips non-artifact files (README/INDEX, anything outside `product|design|engineering|qa/outputs/`, anything that does not exist in the worktree), and runs `scripts/validate-artifact.py` per file. Catches missing `target_repos`, unregistered repos, and missing required fields at PR time so reviewers do not have to find them by running `wb.publish` locally.

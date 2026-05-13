@@ -1,9 +1,64 @@
 #!/usr/bin/env bash
 # ai-workbench CLI aliases
-# Source from a workbench instance:
+#
+# Source once per shell, from any workbench:
 #   source /path/to/wb-<label>/aliases.sh
+#
+# Every wb.* command resolves the target workbench per call, in this priority:
+#   1. WB_PIN env var (set via `wb.switch <path>`, cleared via `wb.unswitch`)
+#   2. Walking up from $PWD until a `project.conf` is found
+#   3. The wb whose aliases.sh was sourced (single-wb back-compat)
+# If none resolve, the command errors with a hint.
 
-WB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+# Source-baked default — last-resort fallback for users who source from a
+# workbench and then `cd` outside its tree. Never referenced directly outside
+# of `_wb_resolve_root`.
+_WB_ROOT_DEFAULT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+
+# ── Multi-workbench resolution ───────────────────────────────────────────────
+# Resolves the active workbench root for the current call. Sets two globals
+# in the caller's scope (variables cannot escape command substitution, so we
+# avoid `$(...)` here):
+#   __WB_ROOT_OUT       absolute path to the resolved wb root
+#   _WB_RESOLVED_VIA    one of: pin | cwd | default
+# Returns 0 on success; on failure prints a hint to stderr and returns 1.
+_wb_resolve_root() {
+  __WB_ROOT_OUT=""
+  _WB_RESOLVED_VIA=""
+  # 1. Explicit pin (loud failure if invalid — never silently fall through).
+  if [[ -n "${WB_PIN:-}" ]]; then
+    if [[ -f "$WB_PIN/project.conf" ]]; then
+      __WB_ROOT_OUT="$(cd "$WB_PIN" && pwd -P)"
+      _WB_RESOLVED_VIA=pin
+      return 0
+    fi
+    echo "wb: WB_PIN=$WB_PIN is not a workbench (no project.conf)" >&2
+    return 1
+  fi
+  # 2. Walk up from $PWD (canonicalised) looking for project.conf.
+  local dir
+  dir="$(pwd -P 2>/dev/null || pwd)"
+  while [[ -n "$dir" && "$dir" != "/" ]]; do
+    if [[ -f "$dir/project.conf" ]]; then
+      __WB_ROOT_OUT="$dir"
+      _WB_RESOLVED_VIA=cwd
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  # 3. Source-baked default (works for single-wb users; skipped in template-dev
+  #    clones where no project.conf sits next to aliases.sh).
+  if [[ -f "$_WB_ROOT_DEFAULT/project.conf" ]]; then
+    __WB_ROOT_OUT="$_WB_ROOT_DEFAULT"
+    _WB_RESOLVED_VIA=default
+    return 0
+  fi
+  cat >&2 <<'EOM'
+wb: not inside a workbench tree.
+  hint: cd into a wb, or run: wb.switch /path/to/wb-<label>
+EOM
+  return 1
+}
 
 # ── Versioning preamble helper ──────────────────────────────────────────────
 # Sourced from aliases.sh by every meaningful wb.* function. Sources the
@@ -19,8 +74,47 @@ _wb_check() {
     _wb_versioncheck wb || true
 }
 
+# ── Pin management ───────────────────────────────────────────────────────────
+#   wb.switch <path>     Pin the active wb for this shell.
+#   wb.unswitch          Clear the pin.
+#   wb.where             Print resolved wb + how it was resolved.
+wb.switch() {
+  local arg="${1:-}"
+  if [[ -z "$arg" ]]; then
+    echo "usage: wb.switch <path-to-wb-root>" >&2
+    return 2
+  fi
+  if [[ ! -d "$arg" ]]; then
+    echo "wb.switch: $arg is not a directory" >&2
+    return 1
+  fi
+  if [[ ! -f "$arg/project.conf" ]]; then
+    echo "wb.switch: $arg is not a workbench (no project.conf)" >&2
+    return 1
+  fi
+  WB_PIN="$(cd "$arg" && pwd -P)"
+  export WB_PIN
+  echo "pinned: $WB_PIN"
+}
+
+wb.unswitch() {
+  unset WB_PIN
+  echo "pin cleared"
+}
+
+wb.where() {
+  _wb_resolve_root || return 1
+  echo "$__WB_ROOT_OUT  (via ${_WB_RESOLVED_VIA})"
+}
+
 # ── Context sync ──────────────────────────────────────────────────────────────
-wb.sync-context() { _wb_check; "$WB_ROOT/scripts/sync-context.sh" "$@"; }
+wb.sync-context() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/sync-context.sh" "$@"
+}
 
 # ── Ralph ─────────────────────────────────────────────────────────────────────
 # Workbench wraps ai-ralph; ralph owns the core loop + parallelism + PR creation.
@@ -31,12 +125,36 @@ wb.sync-context() { _wb_check; "$WB_ROOT/scripts/sync-context.sh" "$@"; }
 #   wb.ralph-plan [flags]           # sync context + ralph-plan (workspace by default)
 #   wb.ralph-dispatch [flags]       # cd repos/ && ralph --workspace --parallel N
 #   wb.ralph-dispatch --status      # show open ralph PRs + tail of worker logs
-wb.ralph-enable-check() { _wb_check; "$WB_ROOT/scripts/ralph-enable-check.sh" "$@"; }
-wb.ralph-plan()         { _wb_check; "$WB_ROOT/scripts/ralph-plan.sh" "$@"; }
-wb.ralph-dispatch()     { _wb_check; "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"; }
+wb.ralph-enable-check() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/ralph-enable-check.sh" "$@"
+}
+wb.ralph-plan() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/ralph-plan.sh" "$@"
+}
+wb.ralph-dispatch() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"
+}
 
 # ── Repo management ───────────────────────────────────────────────────────────
-wb.register-repo()  { _wb_check; "$WB_ROOT/scripts/register-repo.sh" "$@"; }
+wb.register-repo() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/register-repo.sh" "$@"
+}
 
 # ── Artifact lifecycle ────────────────────────────────────────────────────────
 # All transitions go through scripts/lifecycle.py, which:
@@ -47,12 +165,45 @@ wb.register-repo()  { _wb_check; "$WB_ROOT/scripts/register-repo.sh" "$@"; }
 # Three states: draft -> published -> approved. Only these aliases (and the
 # underlying CLI) should ever touch the state files.
 
-wb.publish()  { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" publish "$@"; }
-wb.approve()  { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" approve "$@"; }
-wb.reject()   { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" reject  "$@"; }
-wb.published(){ WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list published; }
-wb.approved() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list approved; }
-wb.rejected() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list rejected; }
+wb.publish() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/lifecycle.py" publish "$@"
+}
+wb.approve() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/lifecycle.py" approve "$@"
+}
+wb.reject() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/lifecycle.py" reject "$@"
+}
+wb.published() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  python3 "$WB_ROOT/scripts/lifecycle.py" list published
+}
+wb.approved() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  python3 "$WB_ROOT/scripts/lifecycle.py" list approved
+}
+wb.rejected() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  python3 "$WB_ROOT/scripts/lifecycle.py" list rejected
+}
 
 # ── Steering ──────────────────────────────────────────────────────────────────
 # Loads merged steering rules (template + team overlay) for a scope, or all
@@ -68,23 +219,62 @@ wb.rejected() { WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/lifecycle.py" list 
 #   wb.steering-audit [--json|--list]
 #                                 # surface team overrides: kinds, targets,
 #                                 # age, last-updated, promote-suggest heuristic
-wb.steering()         { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" "$@"; }
-wb.steering-refresh() { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-load.py" all; }
-wb.steering-lint()    { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-lint.py" "$@"; }
-wb.steering-audit()   { _wb_check; WB_ROOT="$WB_ROOT" python3 "$WB_ROOT/scripts/steering-audit.py" "$@"; }
+wb.steering() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/steering-load.py" "$@"
+}
+wb.steering-refresh() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/steering-load.py" all
+}
+wb.steering-lint() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/steering-lint.py" "$@"
+}
+wb.steering-audit() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/steering-audit.py" "$@"
+}
 
 # ── Git helpers ───────────────────────────────────────────────────────────────
-wb.pull()   { (cd "$WB_ROOT" && git pull --rebase); }
-wb.status() { (cd "$WB_ROOT" && git status --short); }
-wb.log()    { (cd "$WB_ROOT" && git log --oneline -20); }
+wb.pull() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  ( cd "$WB_ROOT" && git pull --rebase )
+}
+wb.status() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  ( cd "$WB_ROOT" && git status --short )
+}
+wb.log() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  ( cd "$WB_ROOT" && git log --oneline -20 )
+}
 
 # ── Info ──────────────────────────────────────────────────────────────────────
 wb.info() {
-  echo "Workbench: $WB_ROOT"
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  echo "Workbench:    $WB_ROOT"
+  echo "Resolved via: ${_WB_RESOLVED_VIA}"
   [[ -f "$WB_ROOT/project.conf" ]] && source "$WB_ROOT/project.conf" && {
-    echo "  Label:    ${WORKBENCH_LABEL:-?}"
-    echo "  Repo:     ${WORKBENCH_REPO:-?}"
-    echo "  Epics:    ${EPICS[*]:-?}"
-    echo "  Repos:    ${#REPOS[@]} registered"
+    echo "  Label:      ${WORKBENCH_LABEL:-?}"
+    echo "  Repo:       ${WORKBENCH_REPO:-?}"
+    echo "  Epics:      ${EPICS[*]:-?}"
+    echo "  Repos:      ${#REPOS[@]} registered"
   }
 }
