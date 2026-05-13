@@ -14,6 +14,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/.."
 
 scratch="$(mktemp -d)"
+# shellcheck disable=SC2064 # expand $scratch now: the path is captured at trap-install time and must not depend on runtime state.
 trap "rm -rf '$scratch'" EXIT
 
 # ── Case A: lib missing → preamble is silent ────────────────────────────────
