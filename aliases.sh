@@ -156,6 +156,24 @@ wb.register-repo() {
   "$WB_ROOT/scripts/register-repo.sh" "$@"
 }
 
+# ── Context scan (repo-context-scan integration) ─────────────────────────────
+# Builds/refreshes context/<repo>/CONTEXT.md (or CONTEXT-MAP.md) and seed ADRs
+# for each registered repo by invoking the repo-context-scan skill via an
+# agent subprocess. Reads $DEVKIT_CLONE to locate the ai-devkit wrapper lib.
+#
+#   wb.rescan <repo>            # rescan one repo
+#   wb.rescan --all             # rescan every project.conf REPOS entry
+#   wb.rescan --aggregate-only  # regenerate context/README.md only
+#   wb.rescan --force <repo>    # wipe user-authored prose, full re-scan
+#   wb.rescan --agent devin|claude <repo>   # override engine
+wb.rescan() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/wb-rescan.sh" "$@"
+}
+
 # ── Artifact lifecycle ────────────────────────────────────────────────────────
 # All transitions go through scripts/lifecycle.py, which:
 #   - Takes an advisory flock on .workbench-state/.lock (concurrency safe).
