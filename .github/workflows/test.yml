@@ -13,8 +13,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install zsh (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh
       - name: Run aliases preamble test
         run: bash tests/test-aliases-preamble.sh
+      - name: Run aliases bash+zsh source test
+        run: bash tests/test-aliases-bash-source.sh
   wb-resolve-root:
     strategy:
       matrix:
