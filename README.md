@@ -392,3 +392,7 @@ ai-workbench (template) ships under semver. Stamped workbenches inherit the vers
 Notification banners fire automatically on `wb.publish`, `wb.approve`, `wb.ralph-plan`, etc., when the upstream template has a newer version than this wb. The check is throttled to one network call per 12h.
 
 Full system documented in [ai-devkit/docs/versioning.md](https://github.com/amit-t/ai-devkit/blob/main/docs/versioning.md).
+
+## Running on WSL2
+
+WSL2 Ubuntu is a supported environment. See [`docs/onboarding-wsl.md`](docs/onboarding-wsl.md) for prereqs (`apt install zsh jq gh python3`), path advice (clone under `$HOME`, not `/mnt/c/`), and a common-issues troubleshooting list. The `.github/workflows/smoke-wb.yml` CI job runs the full onboarding flow on `ubuntu-latest` (the same shell environment as WSL2 Ubuntu); `tests/integration/smoke-wb-onboarding.sh` is its local mirror.

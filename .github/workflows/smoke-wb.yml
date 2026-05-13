@@ -1,0 +1,174 @@
+name: smoke-wb
+
+# End-to-end onboarding smoke for ai-workbench on WSL2 / Ubuntu.
+#
+# This job stamps a workbench from the template checkout, registers a local
+# bare-repo target, drops two fixture artifacts (epic-context + PRD), runs the
+# full publish to approve to wb.ralph-plan --dry-run path, and asserts each
+# step. The agent-driven `init.wb` flow (interactive Claude/Devin session) is
+# replaced by a deterministic shell stamp because CI has no agent runtime.
+#
+# Locked decisions:
+#   - WSL2 Ubuntu only (no windows-latest matrix).
+#   - ubuntu-latest is the WSL proxy.
+#   - macos-latest is intentionally NOT in scope here (Wave 3 PR 3a covers
+#     macOS in the lint / aliases matrix; this smoke targets the WSL surface).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  onboard-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install prereqs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh jq gh git python3 python3-pip
+
+      - name: Check out workbench template
+        uses: actions/checkout@v4
+        with:
+          path: ai-workbench
+
+      - name: Check out devkit
+        uses: actions/checkout@v4
+        with:
+          repository: amit-t/ai-devkit
+          ref: main
+          path: ai-devkit
+
+      - name: Check out ralph
+        uses: actions/checkout@v4
+        with:
+          repository: amit-t/ai-ralph
+          ref: main
+          path: ai-ralph
+
+      - name: Install ralph
+        run: bash ai-ralph/install.sh
+
+      - name: Install devkit
+        env:
+          DEVKIT_NONINTERACTIVE: "1"
+        run: zsh ai-devkit/install.zsh --yes
+
+      - name: PATH check
+        run: |
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Stamp a fresh workbench from template
+        # Replaces the interactive `init.wb` flow. init.wb launches an
+        # interactive Claude/Devin agent session that calls `gh repo create
+        # --template` and renders project.conf. In CI we do the deterministic
+        # subset: copy the checkout and render project.conf placeholders.
+        run: |
+          set -euo pipefail
+          cp -R ai-workbench "$HOME/wb-wsl-smoke"
+          cd "$HOME/wb-wsl-smoke"
+          # Render project.conf from the committed template. Placeholders use
+          # values that satisfy the smoke; init.wb would interview the user.
+          sed \
+            -e 's|{{LABEL}}|wsl-smoke|g' \
+            -e 's|{{REPO_URL}}|https://example.invalid/wb-wsl-smoke|g' \
+            -e 's|{{TEMPLATE_UPSTREAM_URL}}|https://github.com/amit-t/ai-workbench|g' \
+            -e 's|{{CREATED_BY}}|ci-smoke|g' \
+            -e "s|{{CREATED_AT}}|$(date -u +%Y-%m-%dT%H:%M:%SZ)|g" \
+            -e 's|{{ORG}}|amit-t|g' \
+            -e 's|{{EPICS_BASH_ARRAY}}|"EPIC-001"|g' \
+            -e 's|{{REPOS_BASH_ENTRIES}}|  # populated by wb.register-repo|g' \
+            project.conf.template > project.conf
+          # Verify project.conf is well-formed
+          bash -n project.conf
+          echo "Stamped workbench at $HOME/wb-wsl-smoke"
+
+      - name: Register a local target repo
+        # wb.register-repo runs `git clone $URL`. Use a local bare repo so we
+        # don't hit the network and the role+target_repos validation has a
+        # registered name to match against.
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/fake-target.git"
+          (cd "$HOME/fake-target.git" && git init --bare -q)
+          cd "$HOME/wb-wsl-smoke"
+          source aliases.sh
+          wb.register-repo demo-repo "$HOME/fake-target.git" service generic
+
+      - name: Drop fixture artifacts at status:draft
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          mkdir -p product/context-library/epics product/outputs/prds
+          # epic-context: allowed_targets=none, so no target_repos
+          cat > product/context-library/epics/EPIC-001.md <<'EOF'
+          ---
+          id: EPIC-001
+          type: epic-context
+          status: draft
+          ---
+          # EPIC-001 smoke fixture
+          EOF
+          # prd: allowed_targets=from_project_conf, target_repos required
+          cat > product/outputs/prds/PRD-001.md <<'EOF'
+          ---
+          id: PRD-001
+          type: prd
+          status: draft
+          target_repos: [demo-repo]
+          ---
+          # PRD-001 smoke fixture
+          EOF
+
+      - name: Publish + approve EPIC-001
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          source aliases.sh
+          wb.publish EPIC-001 product/context-library/epics/EPIC-001.md epic-context
+          wb.approve EPIC-001
+
+      - name: Publish + approve PRD-001
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          source aliases.sh
+          wb.publish PRD-001 product/outputs/prds/PRD-001.md prd
+          wb.approve PRD-001
+
+      - name: Assert both artifacts approved
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          jq -e '.items | map(.id) | contains(["EPIC-001","PRD-001"])' \
+            .workbench-state/approved.json
+
+      - name: Steering golden (Layer 0)
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          source aliases.sh
+          wb.steering golden | head -20
+
+      - name: ralph-enable --workspace (non-interactive)
+        # Note: the installed binary is `ralph-enable` (hyphen); workbench
+        # docs sometimes write `ralph enable` (space) but `ralph` itself has
+        # no `enable` subcommand. Both bootstrap into the same .ralph/.
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke/repos"
+          ralph-enable --workspace --non-interactive
+
+      - name: wb.ralph-enable-check preflight
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          source aliases.sh
+          wb.ralph-enable-check
+
+      - name: wb.ralph-plan --dry-run
+        run: |
+          set -euo pipefail
+          cd "$HOME/wb-wsl-smoke"
+          source aliases.sh
+          wb.ralph-plan --dry-run
