@@ -38,6 +38,27 @@ cd ~/workbenches/wb-example
 update.wb
 ```
 
+## Working across multiple workbenches
+
+Source `aliases.sh` once per shell from any wb (or your `~/.zshrc`). Every `wb.*` command then resolves the active workbench per call, in this priority:
+
+1. `WB_PIN` env var (set via `wb.switch <path>`, cleared via `wb.unswitch`).
+2. Walking up from `$PWD` until a directory containing `project.conf` is found.
+3. The wb whose `aliases.sh` was sourced (zero-config fallback for single-wb users).
+
+```bash
+# Inspect which wb the next command will target.
+wb.where
+# /Users/me/workbenches/wb-gitlore  (via cwd)
+
+# Pin a wb explicitly (survives cd's; cleared by wb.unswitch).
+wb.switch ~/workbenches/wb-billing
+wb.ralph-dispatch --parallel 4   # acts on wb-billing regardless of cwd
+wb.unswitch
+```
+
+No need to re-source `aliases.sh` when switching workbenches.
+
 ## Directory map
 
 See `DESIGN.md` in the harness root for the full tree and the `template_owned` / `user_owned` split.

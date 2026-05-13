@@ -99,6 +99,10 @@ Every artifact you write starts at `status: draft`. State transitions happen onl
 ## Key commands (sourced via `aliases.sh`)
 
 ```
+wb.switch <path>                      # pin active wb for this shell (path must contain project.conf)
+wb.unswitch                           # clear pin
+wb.where                              # print resolved wb + how (pin | cwd | default)
+wb.info                               # workbench summary, includes resolution source
 wb.sync-context                       # push workbench outputs into repos/*/ai/
 wb.ralph-enable-check                 # preflight that `ralph enable --workspace` ran
 wb.ralph-plan [--mode ...] [--engine] # sync context + ralph-plan (workspace by default)
@@ -119,6 +123,18 @@ wb.steering-refresh                   # reload every scope (use after steering u
 wb.steering-lint                      # validate steering/ and steering.local/
 wb.steering-audit [--json|--list]     # which template rules a team has overridden, age, promote-suggest
 ```
+
+## Multi-workbench resolution
+
+Every `wb.*` command resolves the target workbench per call. One sourced `aliases.sh` serves every stamped wb on the machine, in this priority:
+
+1. `WB_PIN` env var (set via `wb.switch <path>`, cleared via `wb.unswitch`).
+2. Walking up from `$PWD` until a directory containing `project.conf` is found (canonicalised via `pwd -P`, so symlinks resolve).
+3. The wb whose `aliases.sh` was sourced (single-wb back-compat).
+
+Edge cases: an invalid `WB_PIN` errors loudly (never silently falls through to cwd). Nested workbenches resolve to the innermost. When nothing resolves, the command errors with the hint `wb.switch /path/to/wb-<label>`.
+
+`wb.where` is the diagnostic — run it before any cross-wb action to confirm which wb the next command will target.
 
 ## Ralph adapter (quick reference)
 
