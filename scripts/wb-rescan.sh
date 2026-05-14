@@ -174,6 +174,12 @@ _run_agent() {
   # $1 = SCAN_DIR
   # Returns 0 if agent succeeded, nonzero otherwise. On failure, prints the
   # last 200 chars of stderr to stdout for the caller to capture.
+  #
+  # NB: the agent's *stdout* is also routed to $stderr_log (not the caller's
+  # stdout). Caller uses command substitution to capture our stdout as the
+  # failure reason — letting the agent's stdout flow through would mis-tag a
+  # successful scan (every real LLM prints an analysis paragraph) as
+  # `status: scan-failed (<analysis text>)`.
   local scan_dir="$1"
   local stderr_log
   stderr_log="$(mktemp -t wb-rescan-stderr.XXXXXX)"
@@ -183,17 +189,25 @@ _run_agent() {
     # Test path: eval the command verbatim inside the scan dir.
     # eval is intentional — tests need to inject shell snippets (e.g.
     # `touch CONTEXT.md && echo done`). Not reachable in production paths.
-    ( cd "$scan_dir" && eval "$WB_SCAN_AGENT_CMD" ) 2>"$stderr_log" || rc=$?
+    ( cd "$scan_dir" && eval "$WB_SCAN_AGENT_CMD" ) >>"$stderr_log" 2>>"$stderr_log" || rc=$?
   else
     local prompt
     prompt="Invoke /repo-context-scan in this directory. Return one paragraph summarizing term count + ADR count + any blockers. Do NOT modify files outside this cwd. Do NOT make commits."
+    # Non-interactive (-p) mode defaults to read-only permissions for both
+    # engines. Without an explicit permission flag the agent cannot write the
+    # CONTEXT.md / docs/adr/* files that repo-context-scan produces, so every
+    # real-LLM scan would land as `status: scan-failed` with reason "Write was
+    # blocked by the session's non-interactive permission mode". Pass the
+    # widest-allow flag each engine offers; safety is bounded by the worktree
+    # because finalize harvests only specific paths and removes scan_dir
+    # afterwards.
     case "$ENGINE" in
       claude)
         if ! command -v claude >/dev/null 2>&1; then
           echo "wb.rescan: \`claude\` not on PATH. Install claude-code or pass --agent devin." >&2
           rc=127
         else
-          ( cd "$scan_dir" && claude -p "$prompt" ) 2>"$stderr_log" || rc=$?
+          ( cd "$scan_dir" && claude --permission-mode acceptEdits -p "$prompt" ) >>"$stderr_log" 2>>"$stderr_log" || rc=$?
         fi
         ;;
       devin)
@@ -201,7 +215,10 @@ _run_agent() {
           echo "wb.rescan: \`devin\` not on PATH. Install devin CLI or pass --agent claude." >&2
           rc=127
         else
-          ( cd "$scan_dir" && devin -p "$prompt" ) 2>"$stderr_log" || rc=$?
+          # devin's flag parser requires --permission-mode to precede -p,
+          # otherwise the prompt is consumed as the flag's value and the
+          # CLI errors out with "Usage: devin [OPTIONS] [-- <PROMPT>...]".
+          ( cd "$scan_dir" && devin --permission-mode dangerous -p "$prompt" ) >>"$stderr_log" 2>>"$stderr_log" || rc=$?
         fi
         ;;
       *)
