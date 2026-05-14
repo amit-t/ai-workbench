@@ -2,6 +2,13 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.2.0](https://github.com/amit-t/ai-workbench/compare/v1.1.0...v1.2.0) (2026-05-14)
+
+
+### Features
+
+* **scan:** sync dev → main (wb.rescan + context scan auto-run) ([3fc698e](https://github.com/amit-t/ai-workbench/commit/3fc698e91cc1d9a5273502f66b876ee6cbaed70d))
+
 ## [1.1.0](https://github.com/amit-t/ai-workbench/compare/v1.0.0...v1.1.0) (2026-05-13)
 
 
