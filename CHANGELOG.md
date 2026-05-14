@@ -2,6 +2,13 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.2.1](https://github.com/amit-t/ai-workbench/compare/v1.2.0...v1.2.1) (2026-05-14)
+
+
+### Bug Fixes
+
+* **scan:** wb.rescan brick — permission-mode, flag order, stdout leak ([#35](https://github.com/amit-t/ai-workbench/issues/35)) ([66fc7ee](https://github.com/amit-t/ai-workbench/commit/66fc7ee1054139ef0c3ac2070c35054bc10c5f61))
+
 ## [1.2.0](https://github.com/amit-t/ai-workbench/compare/v1.1.0...v1.2.0) (2026-05-14)
 
 
