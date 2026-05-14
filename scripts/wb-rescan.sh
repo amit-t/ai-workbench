@@ -187,13 +187,21 @@ _run_agent() {
   else
     local prompt
     prompt="Invoke /repo-context-scan in this directory. Return one paragraph summarizing term count + ADR count + any blockers. Do NOT modify files outside this cwd. Do NOT make commits."
+    # Non-interactive (-p) mode defaults to read-only permissions for both
+    # engines. Without an explicit permission flag the agent cannot write the
+    # CONTEXT.md / docs/adr/* files that repo-context-scan produces, so every
+    # real-LLM scan would land as `status: scan-failed` with reason "Write was
+    # blocked by the session's non-interactive permission mode". Pass the
+    # widest-allow flag each engine offers; safety is bounded by the worktree
+    # because finalize harvests only specific paths and removes scan_dir
+    # afterwards.
     case "$ENGINE" in
       claude)
         if ! command -v claude >/dev/null 2>&1; then
           echo "wb.rescan: \`claude\` not on PATH. Install claude-code or pass --agent devin." >&2
           rc=127
         else
-          ( cd "$scan_dir" && claude -p "$prompt" ) 2>"$stderr_log" || rc=$?
+          ( cd "$scan_dir" && claude --permission-mode acceptEdits -p "$prompt" ) 2>"$stderr_log" || rc=$?
         fi
         ;;
       devin)
@@ -201,7 +209,10 @@ _run_agent() {
           echo "wb.rescan: \`devin\` not on PATH. Install devin CLI or pass --agent claude." >&2
           rc=127
         else
-          ( cd "$scan_dir" && devin -p "$prompt" ) 2>"$stderr_log" || rc=$?
+          # devin's flag parser requires --permission-mode to precede -p,
+          # otherwise the prompt is consumed as the flag's value and the
+          # CLI errors out with "Usage: devin [OPTIONS] [-- <PROMPT>...]".
+          ( cd "$scan_dir" && devin --permission-mode dangerous -p "$prompt" ) 2>"$stderr_log" || rc=$?
         fi
         ;;
       *)
