@@ -79,3 +79,6 @@ docs/Gemfile.lock
 # Worktree dirs
 .claude/worktrees/
 .worktrees/
+
+# Repo-context-scan worktree staging (devkit-managed, transient)
+.context-scan/
