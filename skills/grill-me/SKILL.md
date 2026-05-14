@@ -1,64 +1,34 @@
 ---
 name: grill-me
-description: Relentless interview that stress-tests a draft epic, PRD, spec, TDD, BDD, or design before approval. Walks the decision tree; resolves one branch at a time. Invoked by user explicitly or when reviewer asks "grill me".
-category: Agent Behavior
-relevant_topics: []
+description: Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions "grill me". Supports a depth selector (quick / standard / deep) — deep is the default.
 ---
 
-# /grill-me
+Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
-## When to use
+Ask the questions one at a time.
 
-- User wants gaps surfaced before moving an artifact from `draft` to `published`.
-- Output of any other skill feels hand-wavy and the author wants it pressure-tested.
-- Mentions of "grill me", "stress test", "poke holes", or "find gaps" in the prompt.
+If a question can be answered by exploring the codebase, explore the codebase instead.
 
-## Prerequisites
+## Step 0 — Ask for grill depth before grilling
 
-- A concrete target artifact. Either the path on disk or the artifact id plus `.workbench-state/`-resolvable location.
-- The target is still `status: draft` (grilling after `approved` is too late — fork a follow-up PRD instead).
+Before the first real question, ask the user which depth to run at. **Default is `deep`** (deepest). Offer the three options with a one-line description each, plus a one-shot invocation shortcut for next time:
 
-## Steps
+> Grill depth? (default: **deep**)
+>
+> - **deep** — walk every branch of the decision tree, critical + edge + corner cases, cross-reference assertions against code / docs / prior decisions, invent boundary scenarios, surface contradictions hard. Unbounded until shared understanding.
+> - **standard** — critical assumptions + main edge cases + obvious cross-references. Skip exotic corner cases. ~15–25 questions or until major branches are resolved.
+> - **quick** — top 5 highest-leverage hard-hitters only. Deal-breaker assumptions and dead-on-arrival risks. ~5–10 questions. Triage, not full coverage.
+>
+> Reply with `deep` / `standard` / `quick` (or just hit return for deep). You can also pre-select next time with `/grill-me deep`, `/grill-me standard`, or `/grill-me quick` — aliases `3` / `2` / `1` and `deepest` / `medium` / `sharp` also work.
 
-0. **Load steering for the target artifact.** Step 1 below resolves the artifact type. Once known, run `wb.steering artifact:<type>` (one of: `prd`, `eng-spec`, `tdd`, `erd`, `adr`, `bdd`, `test-cases`, `test-spec`, `test-erd`, `epic-context`). Treat that ruleset as the bar the artifact must clear. Grilling holds the artifact to those rules, not opinion. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
+If the user invoked the skill with an argument that maps to a level (e.g. `/grill-me quick`, `/grill-me 2`, `/grill-me deepest`), **skip Step 0** and proceed directly at that depth. Echo the chosen depth in one short line ("Running at **quick** depth — top hard-hitters only.") so the user knows what they're getting.
 
-1. **Load target.** Read the full artifact plus every referenced upstream artifact (epic-context for a PRD, PRD for a SPEC, SPEC for a TDD, etc.). If an upstream is missing or unapproved, flag it as the first gap and stop — grilling a PRD whose epic is unapproved wastes the session.
+If the argument is ambiguous or unrecognised, fall back to asking.
 
-2. **Pick stance by artifact type.**
-   - `epic-context` → business value, success metric, ownership, deadline reality.
-   - `prd` → scope slice, acceptance criteria coverage, edge cases, non-goals honesty.
-   - `eng-spec` → architecture fit, contract compatibility, rollback plan, observability.
-   - `tdd` → testability, race conditions, failure modes, public API shape.
-   - `bdd` / `test-cases` / `test-spec` → traceability, negative paths, non-functional coverage.
-   - `design` artifacts → flow gaps, accessibility, empty/error/loading states.
+## How depth shapes the grilling
 
-3. **Walk the decision tree one branch at a time.** For each question: state the question, state your own recommended answer with a one-line justification, then ask the user to confirm, amend, or override. Do not batch. Do not accept hedging as an answer — push until the branch is resolved or explicitly parked.
+- **deep** — every branch, every dependency. Stress with invented scenarios. Cross-check claims against the codebase. Push back on hedging language. Do not stop until you can summarise the plan back without holes.
+- **standard** — cover the spine of the plan plus the obvious edges. Probe each major assumption once. Stop when the critical path is solid even if leafy decisions remain.
+- **quick** — only the questions whose wrong answer would kill or seriously bend the plan. Skip stylistic, naming, and second-order concerns. One pass, no follow-up branches unless the answer reveals a critical gap.
 
-4. **Explore instead of asking when the answer is on disk.** If a question can be resolved by reading a file in `repos/`, `product/`, `engineering/`, or `.workbench-state/`, read it first and present the finding instead of asking.
-
-5. **Record findings inline** in a scratch block at the top of the artifact under an HTML comment, e.g.:
-
-   ```markdown
-   <!-- grill-me session {YYYY-MM-DD}
-   - [resolved] non-goal for mobile clients — explicit now at §5
-   - [parked]  SLO target — deferred to spec; tracked as GRILL-1
-   - [open]    rollback strategy if migration partially applied
-   -->
-   ```
-
-6. **Exit criteria.** End when: every branch resolved, every `[parked]` item has an owner + date, OR user types "stop grill". Summarise open items with a one-line recommendation each.
-
-## Example question (for a PRD)
-
-> **Q1 — Scope bleed.** Section 1 says "all authenticated users" but §4 AC-2 limits to admins. My read: the PRD is an admin-only slice and §1 should narrow. Agree, or is there a user-tier dimension I'm missing?
-
-## Output contract
-
-- Modifies (optional): adds a scratch `<!-- grill-me ... -->` block to the target artifact.
-- Does not change `status`. Grilling never auto-publishes or auto-approves.
-
-## Do not
-
-- Do not edit the artifact body during the interview. Only the scratch block changes.
-- Do not continue past 20 questions without summarising and asking the user whether to go deeper.
-- Do not invent facts about upstream artifacts. Read them.
+Depth never lowers rigor on the questions you *do* ask — it changes how many branches you walk, not how sharp each question is.
