@@ -62,17 +62,20 @@ Every artifact you write starts at `status: draft`. State transitions happen onl
 
 **Downstream skill preconditions** (upstream must be `approved`):
 
-| Skill | Requires at `approved` |
-|-------|------------------------|
-| `/prd-draft` | epic-context file (typed `epic-context`, produced by `/epic-intake`) |
-| `/eng-spec` | PRD |
-| `/tdd` | engineering spec |
-| `/erd` | engineering spec |
-| `/adr` | engineering spec if one exists; otherwise no upstream gate (ADRs can stand alone) |
-| `/bdd-gen` | PRD |
-| `/test-cases-gen` | BDDs (all relevant `.feature` files) |
-| `/test-spec` | PRD + BDDs + test cases |
-| `/ralph-workspace-plan` | PRD + engineering spec + TDD + test spec |
+| Skill | Requires at `approved` | Grill default |
+|-------|------------------------|---------------|
+| `/prd-draft` | epic-context file (typed `epic-context`, produced by `/epic-intake`) | `/grill-me` (`repo: null`) |
+| `/design-draft` | PRD | `/grill-me` (`repo: null`) |
+| `/eng-spec` | PRD | `/domain-grill` per `target_repo` (fall back to `/grill-me` if no CONTEXT.md) |
+| `/tdd` | engineering spec | `/domain-grill` per `target_repo` (fallback `/grill-me`) |
+| `/erd` | engineering spec | `/domain-grill` per `target_repo` (fallback `/grill-me`) |
+| `/adr` | engineering spec if one exists; otherwise no upstream gate (ADRs can stand alone) | `/domain-grill` per related-SPEC `target_repo` (fallback `/grill-me`; cross-cutting ADRs grill once with `repo: null`) |
+| `/bdd-gen` | PRD | `/domain-grill` per `target_repo` (fallback `/grill-me`) |
+| `/test-cases-gen` | BDDs (all relevant `.feature` files) | `/domain-grill` per `target_repo` (fallback `/grill-me`) |
+| `/test-spec` | PRD + BDDs + test cases | `/domain-grill` per `target_repo` for TSD, optional chained TERD pass (fallback `/grill-me`) |
+| `/ralph-workspace-plan` | PRD + engineering spec + TDD + test spec | — (no grill step; consumes approved artifacts) |
+
+Grilling substrate (per-artifact stance, scratch-block format, `grilled:` frontmatter schema) lives in `skills/grill-substrate.md`. Hosts read it before invoking the depth-aware generic grill skills (`.claude/skills/grill-me/`, `.claude/skills/domain-grill/`). Skipping a grill is permitted; `wb.publish` emits a warning and review-panel skills add a P2 finding when the receipt is missing or incomplete.
 
 ## Context library routing
 

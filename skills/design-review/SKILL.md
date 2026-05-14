@@ -28,6 +28,21 @@ relevant_topics: []
    - `design/context-library/brand/*` if present
    - `design/context-library/personas/*` if present
 
+1.5. **Grill receipt check.** Read the design index's `grilled:` frontmatter block (per `skills/grill-substrate.md` §3). Compute:
+   - `grill_status: ungrilled` — block absent.
+   - `grill_status: incomplete` — any `passes[].result` is not `resolved`.
+   - `grill_status: complete` — block present and every `passes[].result == "resolved"`.
+
+   When `grill_status` is `ungrilled` or `incomplete`, the synthesis step below must surface a P2 finding under the UX Researcher section:
+
+   ```
+   P2 — Ungrilled artifact — manual scrutiny recommended.
+       grill_status: {ungrilled | incomplete}; passes: {summary or "absent"}.
+       Re-run /design-draft grill step (or /grill-me on the design index) before handoff.
+   ```
+
+   Never blocks handoff. P2 only.
+
 2. **Dispatch 5 reviewer subagents in parallel** (single message, 5 Task calls). Each receives: the full PRD text, the brief, the screen file, brand + personas context, and their own rubric below. Do not inline-review — the parallel dispatch keeps context lean per agent.
 
    **Rubrics:**

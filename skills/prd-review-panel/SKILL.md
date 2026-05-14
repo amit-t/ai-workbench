@@ -34,7 +34,22 @@ relevant_topics: []
 
 2. **Determine focus.** PRD frontmatter may carry `stage: {kickoff | planning | xfn | solution | launch}` — adjust reviewer emphasis. If no stage given, default to `planning`.
 
-3. **Dispatch 7 reviewer subagents in parallel** (single message, 7 Task calls). Each receives the full PRD text + stage + relevant context-library excerpts. Rubrics:
+2.5. **Grill receipt check.** Read the PRD's `grilled:` frontmatter block (per `skills/grill-substrate.md` §3). Compute:
+   - `grill_status: ungrilled` — block absent.
+   - `grill_status: incomplete` — any `passes[].result` is not `resolved` (includes `skipped`, `aborted`, `aborted-cascade`, `parked-N`).
+   - `grill_status: complete` — block present and every `passes[].result == "resolved"`.
+
+   When `grill_status` is `ungrilled` or `incomplete`, the synthesis step below must surface a P2 finding under the Skeptic reviewer's section:
+
+   ```
+   P2 — Ungrilled artifact — manual scrutiny recommended.
+       grill_status: {ungrilled | incomplete}; passes: {summary or "absent"}.
+       Re-run /prd-draft grill step (or /grill-me PRD-{NNN}) before approval.
+   ```
+
+   Never blocks. P2 only.
+
+3. **Dispatch 7 reviewer subagents in parallel** (single message, 7 Task calls). Each receives the full PRD text + stage + relevant context-library excerpts + `grill_status`. Rubrics:
 
    **1. Engineering** — feasibility, dependencies/integration, scalability, edge cases, estimate realism.
    **2. Design** — user experience, interaction patterns, information architecture, missing states.
