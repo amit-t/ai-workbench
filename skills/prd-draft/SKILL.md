@@ -20,6 +20,8 @@ An epic-context file is approved and the user wants to scope a PRD.
 
 0. **Load steering.** Run `wb.steering artifact:prd` (or `python3 scripts/steering-load.py artifact:prd`). Treat the merged ruleset as hard constraints on every section written below. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none for PRDs by default).
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the artifact frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Compute the next PRD number.** Scan `product/outputs/prds/PRD-*.md` (ignore any under deprecated `approved/` subfolder — it should not exist after Phase 2 migration). Take max numeric part + 1, zero-pad to three digits.
 
 2. **Pick a slug.** Ask the user — kebab-case, 2–4 words.
@@ -42,6 +44,7 @@ An epic-context file is approved and the user wants to scope a PRD.
    epic: {EPIC_ID}
    scope: {service | automation | both}
    target_repos: [{repo-1}, {repo-2}]
+   precision_mode: {on | off}
    ---
 
    # PRD-{NNN}: {title}

@@ -22,6 +22,8 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
 
 0. **Load steering.** Run `wb.steering artifact:test-spec` and `wb.steering topic:test-data`. Treat the merged rulesets as hard constraints on coverage targets per layer, environment matrix, flaky-test strategy, and test-ERD linkage.
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the TSD + TERD frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Read inputs.** PRD, all approved `qa/outputs/bdd/PRD-{NNN}-*.feature`, `qa/outputs/test-cases/PRD-{NNN}-cases.md`. Read `qa/context-library/` for existing automation conventions.
 
 2. **Identify the automation repo.** Pull from `project.conf REPOS` (role=automation-tests). Capture name + stack hint. Set `target_repos: [automation-repo]` in frontmatter (validated at `wb.publish` / `wb.approve`).
@@ -38,6 +40,7 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
    epic: {EPIC_ID}
    prd: PRD-{NNN}
    target_repos: [{automation-tests-repo}]
+   precision_mode: {on | off}
    bdd_sources:
      - PRD-{NNN}-{cap-1}.feature
    test_case_sources:
@@ -108,6 +111,7 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
    parent_spec: TSD-{NNN}
    status: draft
    target_repos: [{automation-tests-repo}]
+   precision_mode: {on | off}
    ---
 
    # Test ERD for TSD-{NNN}
