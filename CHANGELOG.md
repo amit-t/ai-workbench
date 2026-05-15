@@ -2,6 +2,15 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.4.0](https://github.com/amit-t/ai-workbench/compare/v1.3.0...v1.4.0) (2026-05-15)
+
+
+### Features
+
+* **skills:** install precision-mode skill ([bbacea5](https://github.com/amit-t/ai-workbench/commit/bbacea593eeef73ea44d1e5e35cde6111acccd1b))
+* **skills:** wire precision-mode into 9 draft hosts (Phase 3) ([5e0ca31](https://github.com/amit-t/ai-workbench/commit/5e0ca318ea3c90b4e0635f11cffdd3bf5be9c340))
+* **skills:** wire precision-mode into 9 draft hosts (Phase 3) ([57e51af](https://github.com/amit-t/ai-workbench/commit/57e51afafa3f27a31c0b42c2b1e4430879b27d47))
+
 ## [1.3.0](https://github.com/amit-t/ai-workbench/compare/v1.2.1...v1.3.0) (2026-05-15)
 
 
