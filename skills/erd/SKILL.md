@@ -22,6 +22,8 @@ relevant_topics: []
 
 0. **Load steering.** Run `wb.steering artifact:erd` (or `python3 scripts/steering-load.py artifact:erd`). Treat the merged ruleset as hard constraints on entity naming, cardinality notation, C4-level-2 component scope, and migration-note discipline. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the ERD frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Pick ERD number.** Scan `engineering/outputs/erd/ERD-*.md`, max + 1, zero-pad to three digits. Use the same slug as the SPEC when possible (e.g. `ERD-003-audit-log`). Copy `target_repos:` from the SPEC into the ERD frontmatter (validated at `wb.publish` / `wb.approve`).
 
 2. **Choose diagram set.** Ask the user; default to all three:
@@ -41,6 +43,7 @@ relevant_topics: []
    epic: {EPIC_ID}
    related_spec: SPEC-{NNN}
    target_repos: [{repo-1}, {repo-2}]
+   precision_mode: {on | off}
    ---
 
    # ERD-{NNN}: {title}

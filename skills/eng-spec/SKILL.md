@@ -20,6 +20,8 @@ User has an approved PRD and wants to draft the engineering spec.
 
 0. **Load steering.** Run `wb.steering artifact:eng-spec` and then `wb.steering topic:api-design` (declared in this skill's frontmatter). Treat the merged rulesets as hard constraints on every section written below.
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the SPEC frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Read the PRD** (frontmatter + all sections). Identify outcomes and constraints.
 
 2. **Read engineering context.** `engineering/context-library/` for stack notes; `engineering/outputs/adrs/` for relevant prior decisions (approved ADRs only).
@@ -40,6 +42,7 @@ User has an approved PRD and wants to draft the engineering spec.
    epic: {EPIC_ID}
    prd: PRD-{NNN}
    target_repos: [{repo-1}, {repo-2}]
+   precision_mode: {on | off}
    ---
 
    # SPEC-{NNN}: {title}
