@@ -6,11 +6,23 @@
       "sourceType": "github",
       "computedHash": "7a1b2156d6a0a7619c7e85a9f4c2c9ad6e4a41eb43ffaa1b71e9f25a9b7cdc08"
     },
+    "domain-grill": {
+      "source": "amit-t/skills",
+      "sourceType": "github",
+      "skillPath": "domain-grill/SKILL.md",
+      "computedHash": "412c39517a1e76cf3afbfd01d2c83f51cc1e12468d32e80ebf06748327fc6ba6"
+    },
     "gh-pages-neo-brutalist": {
       "source": "amit-t/skills",
       "sourceType": "github",
       "skillPath": "gh-pages-neo-brutalist/SKILL.md",
       "computedHash": "7f66b0217014bc561520e00d7e3f72165636333b8f3b3b7827b555afd9c0f332"
+    },
+    "grill-me": {
+      "source": "amit-t/skills",
+      "sourceType": "github",
+      "skillPath": "grill-me/SKILL.md",
+      "computedHash": "85da1b168c6f3aa93fd67ca9871fcb1f5e3c446c8efcfd5aa95f63a5fa842ae7"
     },
     "handoff": {
       "source": "amit-t/skills",

@@ -95,7 +95,22 @@ An epic-context file is approved and the user wants to scope a PRD.
    | PRD-{NNN} {title} | draft | — | — | — | — | — | — | — |
    ```
 
-6. **Tell the user next steps:**
+6. **Grill pass.** Read `skills/grill-substrate.md` (single source for stance, scratch-block format, and `grilled:` frontmatter schema). Then:
+
+   - **Mode:** PRDs always grill via `/grill-me`. No per-repo split (`repo: null`).
+   - **Prompt (Option-B with teeth):**
+     ```
+     PRD-{NNN} drafted at product/outputs/prds/PRD-{NNN}-{slug}.md.
+     Prior grill: <none | YYYY-MM-DD depth (resolved N, parked M)>
+     Run /grill-me now? Depth? [deep|standard|quick] (default: deep)
+     [Y/n/skip-this-session]
+     ```
+     Default Y on first run. Default n if `grilled.date` is current and artifact mtime less than or equal to `grilled.date`.
+   - **Execute.** On `Y`: pre-stage the `prd` stance from §1 of `grill-substrate.md` + the scratch-block format from §2, then invoke `Skill("grill-me", args=<depth>)`.
+   - **Record.** On pass end, append the scratch block to the PRD body (after frontmatter) and atomically update the `grilled:` frontmatter block per §3 of `grill-substrate.md` (tempfile + rename).
+   - **Abort / skip / cascade-resume.** Follow §4 cheat-sheet. Never blocks; outcomes flow to `wb.publish` (warning) and `prd-review-panel` (P2 finding).
+
+7. **Tell the user next steps:**
 
    > PRD-{NNN} drafted at `product/outputs/prds/PRD-{NNN}-{slug}.md` (status: draft).
    > Review, then: `wb.publish PRD-{NNN} product/outputs/prds/PRD-{NNN}-{slug}.md prd`.
