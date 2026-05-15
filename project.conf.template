@@ -52,3 +52,11 @@ WB_RALPH_DISPATCH_EXCLUDE=""
 # enables concurrent per-repo planning. CLI --parallel-plan and env
 # WB_RALPH_PLAN_PARALLEL override this.
 RALPH_PLAN_PARALLEL=""
+
+# Precision mode for draft-producing skills (prd-draft, design-draft, eng-spec,
+# tdd, erd, adr, bdd-gen, test-cases-gen, test-spec). When "on", each host
+# invokes Skill("precision-mode") at Step 0.5 so artifact bodies are dense
+# (lead-with-answer, no filler, structure over prose). Resolved as:
+#   env WB_PRECISION_MODE > project.conf PRECISION_MODE > default "on".
+# Off only if reviewers explicitly need narrative-heavy drafts.
+PRECISION_MODE="on"

@@ -21,6 +21,8 @@ relevant_topics: []
 
 0. **Load steering.** No `artifact:design` scope ships in template yet; design artifacts do not yet have Layer 2 rules. Layer 0 (golden) loaded at session start and Layer 1 (`role:uxd`) loaded on UX role-switch remain in force. If a per-workbench team has added overlay rules under `steering.local/artifacts/design/`, run `wb.steering artifact:design` to pick them up. Sub-skills (`/figma-pull`, `/ds-screen-gen`, `/design-review`) each run their own step 0 when invoked. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the design index + handoff frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Locate the PRD.** Read `product/outputs/prds/PRD-{NNN}-*.md`. Extract: title, user stories, personas, acceptance criteria, explicit out-of-scope.
 
 2. **Set up output scaffold.** Ensure these dirs exist: `design/outputs/briefs/`, `design/outputs/user-flows/`, `design/outputs/wireframes/`, `design/outputs/screens/PRD-{NNN}/`, `design/outputs/handoffs/`.
@@ -50,6 +52,7 @@ relevant_topics: []
    design_index: design/outputs/screens/PRD-{NNN}/index.md
    review: design/outputs/handoffs/PRD-{NNN}-review.md
    owner: {gh-user}
+   precision_mode: {on | off}
    ---
 
    # Handoff — PRD-{NNN}
