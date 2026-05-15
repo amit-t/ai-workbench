@@ -94,7 +94,23 @@ SPEC is approved; user wants implementation-ready detail for ralph.
 
 4. **Update `EPIC-PIPELINE.md`.** Set TDD column to `TDD-{NNN}`.
 
-5. **Tell the user:**
+5. **Grill pass.** Read `skills/grill-substrate.md` (single source for stance, scratch-block format, and `grilled:` frontmatter schema). Then:
+
+   - **Mode (per repo, Resolution Z):** for each `repo` in the TDD's `target_repos`, use `/domain-grill` when `${WB_ROOT}/context/<repo>/CONTEXT.md` exists, otherwise fall back to `/grill-me` for that repo.
+   - **Prompt (Option-B with teeth, batched):**
+     ```
+     TDD-{NNN} drafted at engineering/outputs/tdd/TDD-{NNN}-{slug}.md.
+     Targets: repo-A (domain-grill), repo-B (grill-me, no CONTEXT.md), ...
+     Prior grill: <none | YYYY-MM-DD depth (resolved N, parked M)>
+     Run grill now? Depth? [deep|standard|quick] (default: deep)
+     [Y/n/skip-this-session]
+     ```
+     Default Y on first run. Default n if `grilled.date` is current and artifact mtime less than or equal to `grilled.date`.
+   - **Execute sequentially.** On `Y`, for each target repo: pre-stage the `tdd` stance from §1 of `grill-substrate.md` + the scratch-block format from §2, then invoke `Skill("domain-grill" | "grill-me", args=<depth>)` with `cwd=${WB_ROOT}/context/<repo>/` for domain-grill, or `cwd=${WB_ROOT}` for the fallback.
+   - **Record per pass.** Append scratch block + atomically extend `grilled.passes` (tempfile + rename). Per-pass durability.
+   - **Abort / skip / cascade-resume.** Per §4 cheat-sheet. Cascade prompt default Y. Never blocks.
+
+6. **Tell the user:**
 
    > TDD-{NNN} drafted (status: draft). Review, then:
    > ```

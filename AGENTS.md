@@ -40,6 +40,8 @@ draft  ──(wb.publish)──▶  published  ──(wb.approve)──▶  appr
 - Rejections are logged to `.workbench-state/rejected.json` with a reason.
 - Downstream skills (e.g. `/eng-spec`) must verify upstream `approved` state before running.
 
+Each draft-producing skill (`prd-draft`, `design-draft`, `eng-spec`, `tdd`, `erd`, `adr`, `bdd-gen`, `test-cases-gen`, `test-spec`) prompts for a grill pass between writing the artifact and printing its "next steps" tail. Product and design hosts use `/grill-me`. Engineering hosts default to `/domain-grill` per `target_repo` (falling back to `/grill-me` per repo when `${WB_ROOT}/context/<repo>/CONTEXT.md` is absent). Outcomes are recorded in a `grilled:` frontmatter block per `skills/grill-substrate.md`. Skipping is allowed and never blocks `wb.publish`; reviewers see a P2 finding when the receipt is missing or incomplete.
+
 ## Ralph rules
 
 - Never generate a fix_plan entry without an approved PRD (for automation repos: plus approved test spec; for service repos: plus approved engineering spec).

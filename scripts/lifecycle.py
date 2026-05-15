@@ -42,6 +42,8 @@ ALLOWED_TYPES = {
 YAML_STATUS_RE   = re.compile(r'^(status:\s*)(draft|published|approved)\s*$', re.M)
 YAML_FRONT_RE    = re.compile(r'(?s)(^---\n)(.*?)(\n---)')
 GHERKIN_HEADER_RE = re.compile(r'^(\s*#\s*status:\s*)(draft|published|approved)\s*$', re.M)
+GRILLED_KEY_RE   = re.compile(r'(?m)^\s*#?\s*grilled\s*:')
+GRILLED_RESULT_RE = re.compile(r'(?m)\bresult\s*:\s*([A-Za-z][A-Za-z\-]*(?:-\d+)?)')
 
 
 def _state_paths(root: pathlib.Path):
@@ -127,6 +129,39 @@ def _safe_resolve(root: pathlib.Path, rel: str) -> pathlib.Path:
     return full
 
 
+def _grill_warning(root: pathlib.Path, rel_path: str) -> None:
+    """Emit stderr warning when `grilled:` is missing or has non-resolved passes.
+
+    Warning only — never blocks. Authors retain sovereignty; reviewers see the receipt.
+    """
+    full = (root / rel_path)
+    if not full.is_file():
+        return
+    text = full.read_text()
+    if not GRILLED_KEY_RE.search(text):
+        print(
+            f"warning: {rel_path} has no `grilled:` block. "
+            f"Consider running the host skill's grill step before approval.",
+            file=sys.stderr,
+        )
+        return
+    results = GRILLED_RESULT_RE.findall(text)
+    if not results:
+        print(
+            f"warning: {rel_path} has a `grilled:` block but no `result:` entries found. "
+            f"Verify the block was written by the host skill.",
+            file=sys.stderr,
+        )
+        return
+    non_resolved = [r for r in results if r != 'resolved']
+    if non_resolved:
+        print(
+            f"warning: {rel_path} was published with non-resolved grill passes: {non_resolved}. "
+            f"Reviewers will see a P2 finding; consider re-grilling before approval.",
+            file=sys.stderr,
+        )
+
+
 def _validate_artifact(root: pathlib.Path, rel_path: str, atype: str) -> None:
     """Run scripts/validate-artifact.py against the artifact; raise SystemExit on failure."""
     validator = root / 'scripts' / 'validate-artifact.py'
@@ -170,6 +205,7 @@ def cmd_publish(root: pathlib.Path, aid: str, apath: str, atype: str) -> None:
             )
 
         _validate_artifact(root, apath, atype)
+        _grill_warning(root, apath)
         _flip_status(full, 'published')
 
         if existing:
