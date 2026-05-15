@@ -52,3 +52,14 @@ WB_RALPH_DISPATCH_EXCLUDE=""
 # enables concurrent per-repo planning. CLI --parallel-plan and env
 # WB_RALPH_PLAN_PARALLEL override this.
 RALPH_PLAN_PARALLEL=""
+
+# wb.ralph-dispatch continuous-mode knobs.
+# Setting WB_RALPH_MAX_TASKS engages ralph's continuous mode: workers stay
+# saturated up to N concurrent until M total attempts have been spent. Without
+# M, dispatch runs in V1 batch mode (byte-identical to prior behavior).
+# CLI --max-tasks / --max-task-attempts / --respawn-delay / --no-tabs and the
+# matching env vars override these.
+WB_RALPH_MAX_TASKS=""          # M — total attempts; engages continuous mode when set
+WB_RALPH_MAX_TASK_ATTEMPTS=""  # K — per-task retry cap (ralph default: 1)
+WB_RALPH_RESPAWN_DELAY=""      # SEC — cooldown between worker respawns (default: 0)
+WB_RALPH_DISABLE_TABS=""       # set to "true" to force single-pane orchestrator

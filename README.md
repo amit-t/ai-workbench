@@ -359,6 +359,27 @@ wb.ralph-plan --parallel-plan 4
 
 Resolution: CLI flag > `WB_RALPH_PLAN_PARALLEL` > `project.conf RALPH_PLAN_PARALLEL` > unset (sequential V1, byte-identical). The wrapper validates that the value is a positive integer and pre-checks that the installed `ralph-plan` advertises `--parallel-plan`; older binaries get a clear warning instead of a silent passthrough.
 
+### Continuous dispatch
+
+`wb.ralph-dispatch` defaults to batch mode: spawn N agents, wrapper exits when all N have stopped. **Continuous mode** keeps N workers saturated until M total task attempts have been spent (success or failure both count), or the queue drains. It is the right shape for long unattended runs over a deep workspace fix_plan.
+
+```bash
+# Named form (preferred — pairs cleanly with project.conf)
+wb.ralph-dispatch --parallel 3 --max-tasks 30
+
+# Positional form (mirrors ralph's `--parallel N M` shape byte-identically)
+wb.ralph-dispatch --parallel 3 30
+
+# Force single-pane orchestrator + 2 retries per task + 5s respawn cooldown
+wb.ralph-dispatch --parallel 3 30 --no-tabs --max-task-attempts 2 --respawn-delay 5
+
+# Drive from project.conf so the team runs the same shape
+echo 'WB_RALPH_MAX_TASKS="50"' >> project.conf
+wb.ralph-dispatch --parallel 4
+```
+
+Resolution for each knob: CLI flag > env > `project.conf` > unset. The wrapper capability-gates the forwarding against `ralph --help`: an older ralph that does not understand `--parallel N M` causes `wb.ralph-dispatch --max-tasks` to fail fast with a clear error, never silently downgrade to batch.
+
 ### Configuration
 
 Set in `project.conf` (team default) or override via CLI flag / env var:
@@ -372,6 +393,10 @@ Set in `project.conf` (team default) or override via CLI flag / env var:
 | `WB_RALPH_DISPATCH_REPOS` / `--repos` | comma list | unset | dispatch subset filter; only these registered repos run. Mutually exclusive with `--exclude`. |
 | `WB_RALPH_DISPATCH_EXCLUDE` / `--exclude` | comma list | unset | dispatch denylist; every repo except these. |
 | `RALPH_PLAN_PARALLEL` / `--parallel-plan` / `WB_RALPH_PLAN_PARALLEL` | N | unset | workspace planning concurrency; passes through to `ralph-plan --parallel-plan N`. |
+| `WB_RALPH_MAX_TASKS` / `--max-tasks` / positional `--parallel N M` | M | unset | engages ralph's continuous mode (workers stay saturated until M attempts). |
+| `WB_RALPH_MAX_TASK_ATTEMPTS` / `--max-task-attempts` | K | 1 (ralph) | per-task retry cap; task skip-listed after K failures. Inert without `--max-tasks`. |
+| `WB_RALPH_RESPAWN_DELAY` / `--respawn-delay` | SEC | 0 (ralph) | cooldown between worker respawns. Inert without `--max-tasks`. |
+| `WB_RALPH_DISABLE_TABS` (set `true`) / `--no-tabs` | bool | (off) | force single-pane orchestrator instead of per-worker terminal tabs. |
 
 ### `target_repos:` is required
 

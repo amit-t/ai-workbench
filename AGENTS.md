@@ -47,6 +47,7 @@ Each draft-producing skill (`prd-draft`, `design-draft`, `eng-spec`, `tdd`, `erd
 - Never generate a fix_plan entry without an approved PRD (for automation repos: plus approved test spec; for service repos: plus approved engineering spec).
 - Ralph always runs from a code repo's cwd, never from the workbench root.
 - Workspace-mode planning (writes per-repo `.ralph/fix_plan.md`) is invoked via `wb.ralph-plan`. Execution is via `wb.ralph-dispatch` (cross-repo parallelism via `ralph --workspace --parallel N`); for single-repo debugging drop the wrapper: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`.
+- Long unattended runs over a deep workspace fix_plan engage **continuous mode** via `wb.ralph-dispatch --max-tasks M` (or positional `--parallel N M`): workers stay saturated up to N until M attempts have been spent. Without M, dispatch is V1 batch (byte-identical).
 
 ## Template discipline
 
