@@ -29,6 +29,12 @@
       "sourceType": "github",
       "skillPath": "handoff/SKILL.md",
       "computedHash": "253bb09b7a3179faa7355c946439fb58744a69e70efa7dcbc58462b4afd8bf65"
+    },
+    "precision-mode": {
+      "source": "amit-t/skills",
+      "sourceType": "github",
+      "skillPath": "precision-mode/SKILL.md",
+      "computedHash": "9340e04e9c8a659333587e907a62aa871516030fba567bcce186099e16c1870a"
     }
   }
 }

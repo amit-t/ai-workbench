@@ -21,6 +21,8 @@ relevant_topics: []
 
 0. **Load steering.** Run `wb.steering artifact:adr` (or `python3 scripts/steering-load.py artifact:adr`). Treat the merged ruleset as hard constraints on context framing, option enumeration, decision rationale, and consequence honesty. The loader emits an empty merged blob when no `artifact:adr` rules ship yet; that is fine, the hook is in place for when the council adds them. Any `relevant_topics` declared in this skill's frontmatter are loaded after (none by default).
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the ADR frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Pick ADR number.** Scan `engineering/outputs/adrs/ADR-*.md`, take max + 1, zero-pad to three digits.
 
 2. **Pick a slug.** Ask the user — kebab-case, 3-6 words, decision-oriented ("use-postgres-for-audit-log" not "database").
@@ -42,6 +44,7 @@ relevant_topics: []
    related_spec: {SPEC-NNN or "—"}
    supersedes: {ADR-NNN or "—"}
    superseded_by: —
+   precision_mode: {on | off}
    ---
 
    # ADR-{NNN}: {title}

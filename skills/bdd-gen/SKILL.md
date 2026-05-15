@@ -20,6 +20,8 @@ PRD is approved; user wants executable behavior specs.
 
 0. **Load steering.** Run `wb.steering artifact:bdd` and `wb.steering topic:test-data`. Treat the merged rulesets as hard constraints on tag selection, scenario structure, Examples-table contents, and status-header placement.
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into each `.feature` Gherkin header as `# precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Read the approved PRD.** Extract ACs.
 
 2. **Group into feature files.** One feature file per cohesive capability. Name: `PRD-{NNN}-{capability-slug}.feature`. Identify the target automation repo(s) from `project.conf REPOS` (role=automation-tests); the Gherkin header gets `# target_repos: [...]` (validated at `wb.publish` / `wb.approve`).
@@ -32,6 +34,7 @@ PRD is approved; user wants executable behavior specs.
    # epic: {EPIC_ID}
    # prd: PRD-{NNN}
    # target_repos: [{automation-tests-repo}]
+   # precision_mode: {on | off}
    # created: {today}
    # owner: {gh-user}
    # language: en
