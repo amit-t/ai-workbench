@@ -129,7 +129,25 @@ Approved PRD + approved BDDs + approved test cases. User wants the QA engineerin
 
 5. **Update `EPIC-PIPELINE.md`.** Set `Test Spec` column to `TSD-{NNN}`.
 
-6. **Tell the user:**
+6. **Grill pass.** Read `skills/grill-substrate.md` (single source for stance, scratch-block format, and `grilled:` frontmatter schema). Then:
+
+   - **Targets:** the TSD (primary artifact) is grilled with the `test-spec` stance. The TERD is grilled separately as a follow-up pass with the `erd` stance (same depth) — ask the user whether to chain TERD grilling after TSD grilling (default Y).
+   - **Mode (per repo, Resolution Z):** for each `repo` in the TSD's `target_repos`, use `/domain-grill` when `${WB_ROOT}/context/<repo>/CONTEXT.md` exists, otherwise fall back to `/grill-me` for that repo.
+   - **Prompt (Option-B with teeth, batched):**
+     ```
+     TSD-{NNN} drafted at qa/outputs/test-spec/TSD-{NNN}-{slug}.md.
+     Targets: automation-repo (domain-grill or grill-me), ...
+     Prior grill: <none | YYYY-MM-DD depth (resolved N, parked M)>
+     Run grill now? Depth? [deep|standard|quick] (default: deep)
+     Chain TERD-{NNN} grill after? [Y/n] (default: Y)
+     [Y/n/skip-this-session]
+     ```
+     Default Y on first run. Default n if `grilled.date` is current and artifact mtime less than or equal to `grilled.date`.
+   - **Execute sequentially.** On `Y`, for each target repo: pre-stage the `test-spec` stance from §1 of `grill-substrate.md` (or `erd` stance when chaining the TERD pass) + the scratch-block format from §2, then invoke `Skill("domain-grill" | "grill-me", args=<depth>)` with `cwd=${WB_ROOT}/context/<repo>/` for domain-grill, or `cwd=${WB_ROOT}` for the fallback.
+   - **Record per pass.** Append scratch block to the relevant file (TSD or TERD) + atomically extend that file's `grilled.passes` (tempfile + rename). Per-pass durability.
+   - **Abort / skip / cascade-resume.** Per §4 cheat-sheet. Cascade prompt default Y. Never blocks.
+
+7. **Tell the user:**
 
    > TSD-{NNN} + TERD-{NNN} drafted (status: draft). Publish and approve each:
    > ```

@@ -31,6 +31,14 @@ PROJECT_CONF = WB_ROOT / 'project.conf'
 FM_FENCE = re.compile(r'(?s)^---\n(.*?)\n---')
 REPOS_LINE_RE = re.compile(r'^\s*"name=([^;]+);')
 
+VALID_DEPTHS = {'deep', 'standard', 'quick', 'null', ''}
+VALID_MODES = {'grill-me', 'domain-grill', 'skipped'}
+RESULT_RE = re.compile(r'^(resolved|skipped|aborted|aborted-cascade|parked-\d+)$')
+PASS_LEAD_RE = re.compile(r'^\s*-\s*(?:\{?\s*)?mode\s*:')
+KEY_DEPTH_RE = re.compile(r'^\s*depth\s*:')
+KEY_PASSES_RE = re.compile(r'^\s*passes\s*:')
+KEY_DATE_RE = re.compile(r'^\s*date\s*:')
+
 
 def _parse_yaml_frontmatter(text: str) -> dict:
     m = FM_FENCE.match(text)
@@ -80,6 +88,140 @@ def _coerce(value: str) -> object:
             return []
         return [p.strip().strip('"').strip("'") for p in inner.split(',') if p.strip()]
     return value.strip('"').strip("'")
+
+
+def _extract_grilled_block(text: str, header_kind: str) -> str | None:
+    """Return the raw `grilled:` subtree lines (without the `grilled:` key line itself),
+    or None if absent. Stops at the next top-level frontmatter key or the closing fence.
+
+    Handles both YAML frontmatter and Gherkin `# grilled:` header comments.
+    """
+    if header_kind == 'gherkin':
+        body_lines: list[str] = []
+        in_block = False
+        for raw_line in text.splitlines():
+            s = raw_line.rstrip()
+            stripped = s.lstrip()
+            if not stripped.startswith('#'):
+                if in_block and stripped:
+                    break
+                if in_block:
+                    continue
+                if stripped:
+                    break
+                continue
+            inner = stripped[1:]
+            if inner.lstrip().startswith('grilled:'):
+                in_block = True
+                continue
+            if in_block:
+                if not inner.strip():
+                    break
+                first_char = inner.lstrip()[:1]
+                lead_spaces = len(inner) - len(inner.lstrip())
+                if lead_spaces == 0 and first_char and first_char not in {'-', '#'}:
+                    break
+                body_lines.append(inner)
+        if not in_block and not body_lines:
+            return None
+        return '\n'.join(body_lines)
+
+    m = FM_FENCE.match(text)
+    if not m:
+        return None
+    fm = m.group(1)
+    body_lines = []
+    in_block = False
+    for line in fm.splitlines():
+        if not in_block:
+            if line.startswith('grilled:'):
+                in_block = True
+            continue
+        if line and not line.startswith((' ', '\t', '-')):
+            break
+        body_lines.append(line)
+    if not in_block:
+        return None
+    return '\n'.join(body_lines)
+
+
+def _parse_grilled(block: str) -> tuple[dict, list[dict]]:
+    """Parse the indented YAML subtree under `grilled:` into (top_keys, passes_list)."""
+    top: dict[str, str] = {}
+    passes: list[dict] = []
+    current: dict | None = None
+    in_passes = False
+    for raw in block.splitlines():
+        line = raw.rstrip()
+        if not line.strip():
+            continue
+        stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+        if KEY_DATE_RE.match(line):
+            top['date'] = stripped.split(':', 1)[1].strip()
+            in_passes = False
+            continue
+        if KEY_DEPTH_RE.match(line):
+            top['depth'] = stripped.split(':', 1)[1].strip().strip("'\"")
+            in_passes = False
+            continue
+        if KEY_PASSES_RE.match(line):
+            in_passes = True
+            continue
+        if not in_passes:
+            continue
+        if PASS_LEAD_RE.match(line):
+            current = {}
+            passes.append(current)
+            inner = stripped[1:].strip()
+            if inner.startswith('{') and inner.endswith('}'):
+                _parse_inline_obj(inner, current)
+                current = None
+                continue
+            k, _, v = inner.partition(':')
+            current[k.strip()] = v.strip().strip("'\"")
+            continue
+        if current is not None and indent > 0 and ':' in stripped and not stripped.startswith('-'):
+            k, _, v = stripped.partition(':')
+            current[k.strip()] = v.strip().strip("'\"")
+    return top, passes
+
+
+def _parse_inline_obj(inline: str, into: dict) -> None:
+    """Parse `{ mode: x, repo: y, result: z, open: 0, parked: 0 }` into `into`."""
+    inner = inline.strip().lstrip('{').rstrip('}').strip()
+    if not inner:
+        return
+    for part in inner.split(','):
+        if ':' not in part:
+            continue
+        k, _, v = part.partition(':')
+        into[k.strip()] = v.strip().strip("'\"")
+
+
+def _validate_grilled(rel_path: str, block: str) -> None:
+    top, passes = _parse_grilled(block)
+    if 'date' not in top:
+        die(f"{rel_path}: grilled.date is required when grilled: block is present.")
+    depth = (top.get('depth') or '').strip().strip("'\"")
+    if depth not in VALID_DEPTHS:
+        die(f"{rel_path}: grilled.depth must be one of {sorted(VALID_DEPTHS - {''})}; got '{depth}'.")
+    if not passes:
+        die(f"{rel_path}: grilled.passes must be a non-empty list.")
+    required_pass_keys = {'mode', 'repo', 'result', 'open', 'parked'}
+    for i, p in enumerate(passes):
+        missing = required_pass_keys - set(p.keys())
+        if missing:
+            die(f"{rel_path}: grilled.passes[{i}] missing keys: {sorted(missing)}.")
+        if p['mode'] not in VALID_MODES:
+            die(f"{rel_path}: grilled.passes[{i}].mode must be one of {sorted(VALID_MODES)}; got '{p['mode']}'.")
+        if not RESULT_RE.match(p['result']):
+            die(f"{rel_path}: grilled.passes[{i}].result must match resolved|parked-N|skipped|aborted|aborted-cascade; got '{p['result']}'.")
+        for numk in ('open', 'parked'):
+            try:
+                int(p[numk])
+            except (TypeError, ValueError):
+                die(f"{rel_path}: grilled.passes[{i}].{numk} must be an integer; got '{p[numk]}'.")
 
 
 def _load_schema() -> dict:
@@ -173,6 +315,10 @@ def main(argv: list[str]) -> int:
             )
     else:
         die(f"schema error: unknown allowed_targets '{allowed}' for type '{atype}'.")
+
+    grilled_block = _extract_grilled_block(text, header_kind)
+    if grilled_block is not None:
+        _validate_grilled(rel_path, grilled_block)
 
     return 0
 
