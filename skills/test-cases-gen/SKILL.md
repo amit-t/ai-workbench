@@ -19,6 +19,8 @@ All relevant BDDs for a PRD are approved; user wants detailed test cases.
 
 0. **Load steering.** Run `wb.steering artifact:test-cases` and `wb.steering topic:test-data`. Treat the merged rulesets as hard constraints on priority and automation flags, AC coverage, and test-data handling.
 
+0.5. **Precision check.** Resolve `PRECISION_MODE` — env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. If `on`, invoke `Skill("precision-mode")` and announce one line: `Precision mode on for this run.` Carry the resolved value into the test-cases frontmatter as `precision_mode: on|off` at write time. The directive applies for the rest of this host run (artifact body, grill pass, next-steps tail). See `.agents/skills/precision-mode/SKILL.md`.
+
 1. **Gather approved BDDs for the PRD.** Cross-reference `approved.json` entries with file paths in `qa/outputs/bdd/`. Copy `target_repos:` from the approved BDDs into the test-cases frontmatter (validated at `wb.publish` / `wb.approve`).
 
 2. **Expand each scenario into test cases.** Scenario Outline Examples rows become individual test cases.
@@ -34,6 +36,7 @@ All relevant BDDs for a PRD are approved; user wants detailed test cases.
    epic: {EPIC_ID}
    prd: PRD-{NNN}
    target_repos: [{automation-tests-repo}]
+   precision_mode: {on | off}
    source_features:
      - PRD-{NNN}-{capability-slug}.feature
    ---

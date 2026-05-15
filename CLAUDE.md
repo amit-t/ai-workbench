@@ -77,6 +77,8 @@ Every artifact you write starts at `status: draft`. State transitions happen onl
 
 Grilling substrate (per-artifact stance, scratch-block format, `grilled:` frontmatter schema) lives in `skills/grill-substrate.md`. Hosts read it before invoking the depth-aware generic grill skills (`.claude/skills/grill-me/`, `.claude/skills/domain-grill/`). Skipping a grill is permitted; `wb.publish` emits a warning and review-panel skills add a P2 finding when the receipt is missing or incomplete.
 
+**Precision mode (Step 0.5).** The same 9 hosts resolve `PRECISION_MODE` (env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`) right after steering load and, when `on`, invoke `Skill("precision-mode")` (installed at `.claude/skills/precision-mode/`). Effect: lead-with-answer, no filler, structure over prose — applied uniformly to artifact body, grill session, and next-steps tail. Resolved value carried into artifact frontmatter as `precision_mode: on|off` (Gherkin headers use `# precision_mode: on|off`). `wb.precision` prints the current resolved value + source. Review panels surface this as a P3 info hint; no enforcement.
+
 ## Context library routing
 
 | User asks about | Where to look |
