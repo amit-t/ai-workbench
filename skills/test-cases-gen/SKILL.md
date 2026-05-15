@@ -61,7 +61,23 @@ All relevant BDDs for a PRD are approved; user wants detailed test cases.
    - `Steps`: numbered, imperative, one action per step.
    - `Test data`: JSON or k/v; synthetic only.
 
-4. **Tell the user:**
+4. **Grill pass.** Read `skills/grill-substrate.md` (single source for stance, scratch-block format, and `grilled:` frontmatter schema). Then:
+
+   - **Mode (per repo, Resolution Z):** for each `repo` in the test-cases `target_repos`, use `/domain-grill` when `${WB_ROOT}/context/<repo>/CONTEXT.md` exists, otherwise fall back to `/grill-me` for that repo.
+   - **Prompt (Option-B with teeth, batched):**
+     ```
+     TC-set-{NNN} drafted at qa/outputs/test-cases/PRD-{NNN}-cases.md.
+     Targets: automation-repo (domain-grill or grill-me), ...
+     Prior grill: <none | YYYY-MM-DD depth (resolved N, parked M)>
+     Run grill now? Depth? [deep|standard|quick] (default: deep)
+     [Y/n/skip-this-session]
+     ```
+     Default Y on first run. Default n if `grilled.date` is current and artifact mtime less than or equal to `grilled.date`.
+   - **Execute sequentially.** On `Y`, for each target repo: pre-stage the `test-cases` stance from §1 of `grill-substrate.md` + the scratch-block format from §2, then invoke `Skill("domain-grill" | "grill-me", args=<depth>)` with `cwd=${WB_ROOT}/context/<repo>/` for domain-grill, or `cwd=${WB_ROOT}` for the fallback.
+   - **Record per pass.** Append scratch block + atomically extend `grilled.passes` (tempfile + rename). Per-pass durability.
+   - **Abort / skip / cascade-resume.** Per §4 cheat-sheet. Cascade prompt default Y. Never blocks.
+
+5. **Tell the user:**
 
    > Test cases drafted at `qa/outputs/test-cases/PRD-{NNN}-cases.md` (status: draft). Review, then:
    > ```

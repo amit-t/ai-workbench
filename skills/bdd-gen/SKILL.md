@@ -78,7 +78,24 @@ PRD is approved; user wants executable behavior specs.
 
 5. **Update `EPIC-PIPELINE.md`.** Set BDD column to a comma-joined list of BDD IDs or a single `BDD-{NNN}` if one feature file.
 
-6. **Tell the user:**
+6. **Grill pass.** Read `skills/grill-substrate.md` (single source for stance, scratch-block format, and `grilled:` frontmatter schema). Then:
+
+   - **Mode (per repo, Resolution Z):** for each `repo` in the BDD header's `target_repos:` (Gherkin `# target_repos:` line), use `/domain-grill` when `${WB_ROOT}/context/<repo>/CONTEXT.md` exists, otherwise fall back to `/grill-me` for that repo.
+   - **Per feature file:** one grill batch per `.feature` file (a BDD set may have several files; ask the user whether to grill all in sequence or only the most recent).
+   - **Prompt (Option-B with teeth, batched):**
+     ```
+     BDD-{NNN}-{cap} drafted at qa/outputs/bdd/PRD-{NNN}-{cap}.feature.
+     Targets: automation-repo (domain-grill or grill-me), ...
+     Prior grill: <none | YYYY-MM-DD depth (resolved N, parked M)>
+     Run grill now? Depth? [deep|standard|quick] (default: deep)
+     [Y/n/skip-this-session]
+     ```
+     Default Y on first run. Default n if `grilled.date` is current and artifact mtime less than or equal to `grilled.date`.
+   - **Execute sequentially.** On `Y`, for each target repo: pre-stage the `bdd` stance from §1 of `grill-substrate.md` + the scratch-block format from §2, then invoke `Skill("domain-grill" | "grill-me", args=<depth>)` with `cwd=${WB_ROOT}/context/<repo>/` for domain-grill, or `cwd=${WB_ROOT}` for the fallback.
+   - **Record per pass.** Gherkin files do not carry YAML frontmatter — record the `grilled:` block as additional `# grilled:` header comment lines (mirror the schema in `grill-substrate.md` §3, prefix each line with `# `). Append scratch block as Gherkin comments (`# - [resolved] ...`). Atomic write via tempfile + rename.
+   - **Abort / skip / cascade-resume.** Per §4 cheat-sheet. Cascade prompt default Y. Never blocks.
+
+7. **Tell the user:**
 
    > {N} feature files written at `qa/outputs/bdd/` (status: draft in headers). Review, then publish+approve each:
    > ```

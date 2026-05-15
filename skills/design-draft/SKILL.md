@@ -72,9 +72,25 @@ relevant_topics: []
    - [ ] {item with owner}
    ```
 
-9. **Resume support.** If the user passes `--from {step}` (brief / flow / wireframes / screens / review / handoff), jump to that step and only re-read prior outputs — do not regenerate them.
+9. **Step G — Grill pass.** Read `skills/grill-substrate.md` (single source for stance, scratch-block format, and `grilled:` frontmatter schema). Then:
 
-10. **Publish prompts.** At the end, print exactly:
+   - **Mode:** design artifacts always grill via `/grill-me`. No per-repo split (`repo: null`).
+   - **Target:** the design index at `design/outputs/screens/PRD-{NNN}/index.md` (primary artifact). If the handoff was also produced, prompt the user whether to grill the handoff in a second pass.
+   - **Prompt (Option-B with teeth):**
+     ```
+     DESIGN-PRD-{NNN} drafted at design/outputs/screens/PRD-{NNN}/index.md.
+     Prior grill: <none | YYYY-MM-DD depth (resolved N, parked M)>
+     Run /grill-me now? Depth? [deep|standard|quick] (default: deep)
+     [Y/n/skip-this-session]
+     ```
+     Default Y on first run. Default n if `grilled.date` is current and artifact mtime less than or equal to `grilled.date`.
+   - **Execute.** On `Y`: pre-stage the `design` stance from §1 of `grill-substrate.md` + the scratch-block format from §2, then invoke `Skill("grill-me", args=<depth>)`.
+   - **Record.** On pass end, append the scratch block to the index body (after frontmatter) and atomically update the `grilled:` frontmatter block per §3 (tempfile + rename).
+   - **Abort / skip / cascade-resume.** Follow §4 cheat-sheet. Never blocks; outcomes flow to `wb.publish` (warning) and `design-review` (P2 finding).
+
+10. **Resume support.** If the user passes `--from {step}` (brief / flow / wireframes / screens / review / handoff / grill), jump to that step and only re-read prior outputs — do not regenerate them.
+
+11. **Publish prompts.** At the end, print exactly:
 
     ```
     Design pass complete for PRD-{NNN}.
