@@ -42,6 +42,12 @@ rsync -a --exclude 'tests' --exclude '.git' --exclude 'node_modules' \
   "$TEMPLATE_ROOT/" "$TMP/wb-smoke/"
 cd "$TMP/wb-smoke"
 
+# 1a. Mimic init.wb's template-dev purge: drop every entry listed under
+# .workbench-manifest.json template_dev_only so the stamped fixture matches
+# the post-init state (no wb-root .ralph/, no SESSION-HANDOFF.md). The
+# ralph-enable-check stub guard relies on this invariant.
+rm -rf .ralph SESSION-HANDOFF.md
+
 # 2. Render templates
 python3 - <<'PYEOF'
 import pathlib
@@ -645,6 +651,47 @@ else
   echo "  ~ skipping join.prompt.md asserts (ai-devkit not on disk)"
 fi
 
+# 9o.s1. ralph-enable-check refuses stamped wb with wb-root .ralph/ stub
+# Restore the workspace state torn down by 9n so the new guard is reachable
+# (otherwise the earlier "workspace not enabled" guard would fire first).
+mkdir -p repos/.ralph
+echo "WORKSPACE_MODE=true" > repos/.ralphrc
+# Construct the trap: create $WB_ROOT/.ralph at smoke harness root while the
+# repos/.ralph workspace remains valid (so we isolate the new guard).
+mkdir -p .ralph
+touch .ralph/AGENT.md
+if ./scripts/ralph-enable-check.sh 2>/dev/null; then
+  rm -rf .ralph
+  fail "ralph-enable-check should refuse stamped wb with wb-root .ralph/ stub"
+fi
+# Verify the error message contains the heal hint
+err_out=$(./scripts/ralph-enable-check.sh 2>&1 || true)
+echo "$err_out" | grep -q 'stale .ralph/' || { rm -rf .ralph; fail "stale-stub error missing 'stale .ralph/' marker: $err_out"; }
+echo "$err_out" | grep -q 'wb.upgrade'    || { rm -rf .ralph; fail "stale-stub error missing wb.upgrade heal hint: $err_out"; }
+echo "$err_out" | grep -q '.ralph.purged' || { rm -rf .ralph; fail "stale-stub error missing manual purge hint: $err_out"; }
+rm -rf .ralph
+pass "ralph-enable-check refuses wb-root .ralph/ stub in stamped wb"
+
+# 9o.s2. ralph-enable-check stub guard does NOT fire when project.conf is absent
+# (template-dev mode: the template repo itself is allowed to have wb-root .ralph/).
+mv project.conf project.conf.away
+mkdir -p .ralph
+touch .ralph/AGENT.md
+err_out=$(./scripts/ralph-enable-check.sh 2>&1 || true)
+if echo "$err_out" | grep -q 'stale .ralph/' ; then
+  rm -rf .ralph
+  mv project.conf.away project.conf
+  fail "ralph-enable-check should NOT fire stub guard without project.conf (template-dev mode): $err_out"
+fi
+rm -rf .ralph
+mv project.conf.away project.conf
+pass "ralph-enable-check stub guard fires only in stamped wb (project.conf present)"
+
+# 9o.s3. ralph-enable-check passes cleanly when wb-root has no .ralph/ stub
+# (sanity: confirm previous tests cleaned up the trap and the baseline path is green)
+./scripts/ralph-enable-check.sh >/dev/null 2>&1 || fail "ralph-enable-check should pass in clean stamped wb"
+pass "ralph-enable-check baseline pass: clean stamped wb"
+
 # 9o2. README documents the bootstrap (F2)
 README_FILE="$TEMPLATE_ROOT/README.md"
 grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$README_FILE" || fail "README.md missing F2 bootstrap command"
@@ -671,7 +718,7 @@ errs = []
 if ".ralph/**" not in m.get("user_owned", []):
     errs.append(".workbench-manifest.json user_owned missing .ralph/**")
 tdo = m.get("template_dev_only", [])
-for must in ("SESSION-HANDOFF.md", ".ralph/PROMPT.md", ".ralph/fix_plan.md"):
+for must in ("SESSION-HANDOFF.md", ".ralph/**"):
     if must not in tdo:
         errs.append(f".workbench-manifest.json template_dev_only missing {must}")
 if errs:
