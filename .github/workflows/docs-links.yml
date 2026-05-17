@@ -66,14 +66,26 @@ jobs:
             echo "FAIL: default build missing amit-t/ai-workbench in $html" >&2
             exit 1
           fi
+          # All leak-guard greps below exclude the rendered superpowers/{plans,specs}
+          # subdirs — those are internal dev artifacts where hardcoded URLs are
+          # intentional. Matches the source-side allowlist in
+          # scripts/check-docs-links.sh.
           # No unresolved Liquid / placeholders in any rendered page.
-          if grep -REn '\{\{[^}]+\}\}|\{%[^%]+%\}' _site_default --include='*.html'; then
+          if grep -REn '\{\{[^}]+\}\}|\{%[^%]+%\}' _site_default --include='*.html' --exclude-dir=plans --exclude-dir=specs; then
             echo "FAIL: unresolved Liquid in default build" >&2
             exit 1
           fi
-          # Cross-owner leak guard.
-          if grep -REn 'Invenco-Cloud-Systems-ICS' _site_default --include='*.html'; then
-            echo "FAIL: default build contains Invenco-Cloud-Systems-ICS references" >&2
+          # Cross-owner leak guard. URL-only (mirrors the inv-build check below):
+          # forbids github.com/Invenco-Cloud-Systems-ICS/<repo> and
+          # Invenco-Cloud-Systems-ICS.github.io/<repo> in the rendered output.
+          # Bare org-name mentions are allowed (legit in onboarding docs that
+          # name the org as an example, e.g. docs/steering/setup.md).
+          if grep -REn 'github\.com/Invenco-Cloud-Systems-ICS/' _site_default --include='*.html' --exclude-dir=plans --exclude-dir=specs; then
+            echo "FAIL: default build leaks github.com/Invenco-Cloud-Systems-ICS/ URLs" >&2
+            exit 1
+          fi
+          if grep -REn 'Invenco-Cloud-Systems-ICS\.github\.io' _site_default --include='*.html' --exclude-dir=plans --exclude-dir=specs; then
+            echo "FAIL: default build leaks Invenco-Cloud-Systems-ICS.github.io URLs" >&2
             exit 1
           fi
           echo "default build OK"
@@ -94,15 +106,17 @@ jobs:
             echo "FAIL: inv build missing Invenco-Cloud-Systems-ICS/ai-workbench in $html" >&2
             exit 1
           fi
-          if grep -REn 'github\.com/amit-t/' _site_inv --include='*.html'; then
+          # Same allowlist as the default build: superpowers/{plans,specs} are
+          # internal dev artifacts; hardcoded URLs there are intentional.
+          if grep -REn 'github\.com/amit-t/' _site_inv --include='*.html' --exclude-dir=plans --exclude-dir=specs; then
             echo "FAIL: inv build leaks github.com/amit-t/ URLs" >&2
             exit 1
           fi
-          if grep -REn 'amit-t\.github\.io' _site_inv --include='*.html'; then
+          if grep -REn 'amit-t\.github\.io' _site_inv --include='*.html' --exclude-dir=plans --exclude-dir=specs; then
             echo "FAIL: inv build leaks amit-t.github.io URLs" >&2
             exit 1
           fi
-          if grep -REn '\{\{[^}]+\}\}|\{%[^%]+%\}' _site_inv --include='*.html'; then
+          if grep -REn '\{\{[^}]+\}\}|\{%[^%]+%\}' _site_inv --include='*.html' --exclude-dir=plans --exclude-dir=specs; then
             echo "FAIL: unresolved Liquid in inv build" >&2
             exit 1
           fi

@@ -249,6 +249,21 @@ wb.precision() {
   echo "PRECISION_MODE=$value  ($source)"
 }
 
+# ── What-to-do (WTD) ─────────────────────────────────────────────────────────
+# Single-shot next-action recommender. Reads .workbench-state/, project.conf,
+# and artifact frontmatter, walks the per-epic precondition chain, and prints
+# the first gap as one concrete command per epic.
+#
+#   wb.wtd            # text report
+#   wb.wtd --json     # machine-readable
+wb.wtd() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  python3 "$WB_ROOT/scripts/wtd.py" "$@"
+}
+
 # ── Steering ──────────────────────────────────────────────────────────────────
 # Loads merged steering rules (template + team overlay) for a scope, or all
 # scopes. Agents are expected to invoke this at the invocation points declared
