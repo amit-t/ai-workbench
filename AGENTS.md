@@ -42,6 +42,8 @@ draft  ──(wb.publish)──▶  published  ──(wb.approve)──▶  appr
 
 Each draft-producing skill (`prd-draft`, `design-draft`, `eng-spec`, `tdd`, `erd`, `adr`, `bdd-gen`, `test-cases-gen`, `test-spec`) prompts for a grill pass between writing the artifact and printing its "next steps" tail. Product and design hosts use `/grill-me`. Engineering hosts default to `/domain-grill` per `target_repo` (falling back to `/grill-me` per repo when `${WB_ROOT}/context/<repo>/CONTEXT.md` is absent). Outcomes are recorded in a `grilled:` frontmatter block per `skills/grill-substrate.md`. Skipping is allowed and never blocks `wb.publish`; reviewers see a P2 finding when the receipt is missing or incomplete.
 
+The same 9 hosts run a **precision check** at Step 0.5 (right after steering load): resolve `PRECISION_MODE` (env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`) and, when `on`, invoke `Skill("precision-mode")` so artifact bodies are dense (lead with the answer, no filler, structure over prose). The resolved value is carried into the artifact frontmatter as `precision_mode: on|off` (Gherkin headers use `# precision_mode: on|off`). `wb.precision` prints the resolved value + source. Review panels surface this as a P3 info hint — never a finding. Off only if reviewers need narrative drafts.
+
 ## Ralph rules
 
 - Never generate a fix_plan entry without an approved PRD (for automation repos: plus approved test spec; for service repos: plus approved engineering spec).

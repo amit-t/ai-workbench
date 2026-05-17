@@ -33,6 +33,7 @@ REPOS_LINE_RE = re.compile(r'^\s*"name=([^;]+);')
 
 VALID_DEPTHS = {'deep', 'standard', 'quick', 'null', ''}
 VALID_MODES = {'grill-me', 'domain-grill', 'skipped'}
+VALID_PRECISION = {'on', 'off'}
 RESULT_RE = re.compile(r'^(resolved|skipped|aborted|aborted-cascade|parked-\d+)$')
 PASS_LEAD_RE = re.compile(r'^\s*-\s*(?:\{?\s*)?mode\s*:')
 KEY_DEPTH_RE = re.compile(r'^\s*depth\s*:')
@@ -319,6 +320,13 @@ def main(argv: list[str]) -> int:
     grilled_block = _extract_grilled_block(text, header_kind)
     if grilled_block is not None:
         _validate_grilled(rel_path, grilled_block)
+
+    pm = fields.get('precision_mode')
+    if pm is not None and pm != '' and pm not in VALID_PRECISION:
+        die(
+            f"{rel_path}: precision_mode must be one of {sorted(VALID_PRECISION)} "
+            f"or absent; got '{pm}'."
+        )
 
     return 0
 

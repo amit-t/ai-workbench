@@ -232,6 +232,32 @@ wb.rejected() {
   python3 "$WB_ROOT/scripts/lifecycle.py" list rejected
 }
 
+# ── Precision ────────────────────────────────────────────────────────────────
+# Resolves PRECISION_MODE for the current workbench and prints the value + source.
+# Resolution order: env WB_PRECISION_MODE > project.conf PRECISION_MODE > default "on".
+# Read-only; no setter. To change, edit project.conf or `export WB_PRECISION_MODE=off`.
+wb.precision() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  local value="" source=""
+  if [[ -n "${WB_PRECISION_MODE:-}" ]]; then
+    value="$WB_PRECISION_MODE"
+    source="env (WB_PRECISION_MODE)"
+  else
+    local pc_value
+    pc_value=$(grep -E '^PRECISION_MODE=' "$WB_ROOT/project.conf" 2>/dev/null \
+               | sed -E 's/^PRECISION_MODE="?([^"]*)"?$/\1/' | head -1)
+    if [[ -n "$pc_value" ]]; then
+      value="$pc_value"
+      source="project.conf"
+    else
+      value="on"
+      source="default"
+    fi
+  fi
+  echo "PRECISION_MODE=$value  ($source)"
+}
+
 # ── Steering ──────────────────────────────────────────────────────────────────
 # Loads merged steering rules (template + team overlay) for a scope, or all
 # scopes. Agents are expected to invoke this at the invocation points declared

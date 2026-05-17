@@ -63,3 +63,11 @@ WB_RALPH_MAX_TASKS=""          # M — total attempts; engages continuous mode w
 WB_RALPH_MAX_TASK_ATTEMPTS=""  # K — per-task retry cap (ralph default: 1)
 WB_RALPH_RESPAWN_DELAY=""      # SEC — cooldown between worker respawns (default: 0)
 WB_RALPH_DISABLE_TABS=""       # set to "true" to force single-pane orchestrator
+
+# Precision mode for draft-producing skills (prd-draft, design-draft, eng-spec,
+# tdd, erd, adr, bdd-gen, test-cases-gen, test-spec). When "on", each host
+# invokes Skill("precision-mode") at Step 0.5 so artifact bodies are dense
+# (lead-with-answer, no filler, structure over prose). Resolved as:
+#   env WB_PRECISION_MODE > project.conf PRECISION_MODE > default "on".
+# Off only if reviewers explicitly need narrative-heavy drafts.
+PRECISION_MODE="on"

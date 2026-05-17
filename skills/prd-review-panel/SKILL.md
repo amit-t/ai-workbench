@@ -34,6 +34,13 @@ relevant_topics: []
 
 2. **Determine focus.** PRD frontmatter may carry `stage: {kickoff | planning | xfn | solution | launch}` — adjust reviewer emphasis. If no stage given, default to `planning`.
 
+2.4. **Precision receipt (info only, P3).** Read the PRD's `precision_mode:` frontmatter field. Three states:
+   - `on`  — surface as `P3 — Authored with precision_mode: on (dense by default).`
+   - `off` — surface as `P3 — Authored with precision_mode: off (narrative voice).`
+   - absent — surface as `P3 — Authored with precision_mode: legacy (predates Phase 3).`
+
+   P3 is informational only — no severity, no blocking. Helps reviewers calibrate expectations about prose density.
+
 2.5. **Grill receipt check.** Read the PRD's `grilled:` frontmatter block (per `skills/grill-substrate.md` §3). Compute:
    - `grill_status: ungrilled` — block absent.
    - `grill_status: incomplete` — any `passes[].result` is not `resolved` (includes `skipped`, `aborted`, `aborted-cascade`, `parked-N`).

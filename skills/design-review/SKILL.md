@@ -28,6 +28,13 @@ relevant_topics: []
    - `design/context-library/brand/*` if present
    - `design/context-library/personas/*` if present
 
+1.4. **Precision receipt (info only, P3).** Read the design index's `precision_mode:` frontmatter field. Three states:
+   - `on`  — surface as `P3 — Authored with precision_mode: on (dense by default).`
+   - `off` — surface as `P3 — Authored with precision_mode: off (narrative voice).`
+   - absent — surface as `P3 — Authored with precision_mode: legacy (predates Phase 3).`
+
+   P3 is informational only — no severity, no blocking. Helps reviewers calibrate expectations.
+
 1.5. **Grill receipt check.** Read the design index's `grilled:` frontmatter block (per `skills/grill-substrate.md` §3). Compute:
    - `grill_status: ungrilled` — block absent.
    - `grill_status: incomplete` — any `passes[].result` is not `resolved`.
