@@ -71,9 +71,17 @@ jobs:
             echo "FAIL: unresolved Liquid in default build" >&2
             exit 1
           fi
-          # Cross-owner leak guard.
-          if grep -REn 'Invenco-Cloud-Systems-ICS' _site_default --include='*.html'; then
-            echo "FAIL: default build contains Invenco-Cloud-Systems-ICS references" >&2
+          # Cross-owner leak guard. URL-only (mirrors the inv-build check below):
+          # forbids github.com/Invenco-Cloud-Systems-ICS/<repo> and
+          # Invenco-Cloud-Systems-ICS.github.io/<repo> in the rendered output.
+          # Bare org-name mentions are allowed (legit in onboarding docs that
+          # name the org as an example, e.g. docs/steering/setup.md).
+          if grep -REn 'github\.com/Invenco-Cloud-Systems-ICS/' _site_default --include='*.html'; then
+            echo "FAIL: default build leaks github.com/Invenco-Cloud-Systems-ICS/ URLs" >&2
+            exit 1
+          fi
+          if grep -REn 'Invenco-Cloud-Systems-ICS\.github\.io' _site_default --include='*.html'; then
+            echo "FAIL: default build leaks Invenco-Cloud-Systems-ICS.github.io URLs" >&2
             exit 1
           fi
           echo "default build OK"
