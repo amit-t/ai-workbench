@@ -118,6 +118,7 @@ wb.ralph-dispatch --repos a,b         # subset run: only these registered repos
 wb.ralph-dispatch --exclude c         # subset run: every repo except these (mutually exclusive with --repos)
 wb.ralph-dispatch --parallel 3 --max-tasks 30   # continuous mode: keep 3 workers saturated until 30 attempts
 wb.ralph-dispatch --parallel 3 30     # same, positional form (mirrors ralph's `--parallel N M`)
+wb.ralph-dispatch --engine devin       # route to ralph-devin (vs --engine claude for ralph)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
 wb.register-repo <name> <url> <role>  # add code repo
 wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
@@ -154,6 +155,7 @@ Edge cases: an invalid `WB_PIN` errors loudly (never silently falls through to c
 - `wb.ralph-dispatch` = `(cd $WB_ROOT/repos && ralph --workspace --parallel N)`. Default `N = min(len(REPOS), 4)`. Override with `--parallel`, env `WB_RALPH_PARALLEL`, or `project.conf WB_RALPH_PARALLEL`.
 - `wb.ralph-dispatch --repos <list>` / `--exclude <list>` narrows a workspace run to a subset of registered repos (forwarded to `ralph --workspace --repos`/`--exclude`). Mutually exclusive. Names are validated against `project.conf REPOS` before pass-through, so a typo fails inside the wrapper. Resolution: CLI > env (`WB_RALPH_DISPATCH_REPOS` / `WB_RALPH_DISPATCH_EXCLUDE`) > `project.conf` > unset (run all). Cross-repo tasks are skipped under any filter.
 - `wb.ralph-dispatch --max-tasks M` (or positional `--parallel N M`) engages ralph's **continuous mode**: workers stay saturated up to N concurrent until M attempts have been spent. Tuning knobs: `--max-task-attempts K` (per-task retry cap), `--respawn-delay SEC`, `--no-tabs` (force single-pane). Resolution: CLI > env (`WB_RALPH_MAX_TASKS` / `WB_RALPH_MAX_TASK_ATTEMPTS` / `WB_RALPH_RESPAWN_DELAY` / `WB_RALPH_DISABLE_TABS`) > `project.conf` > unset (batch mode). Capability-gated: dispatch fails fast if the installed ralph predates `--parallel N M`.
+- Execution engine: `--engine` > `WB_RALPH_ENGINE` > `RALPH_EXECUTION_ENGINE` > `RALPH_PLAN_ENGINE` > `devin`. Engine maps to binary: claude → `ralph`, devin → `ralph-devin`, codex → `ralph-codex`. Plan and execution engines are independent (set both to mix, e.g. plan=claude, exec=devin).
 - Single-repo debugging is a one-liner: `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Do not add a wb wrapper for this.
 - **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.
 - **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph appends it to every PR body via the upstream `pr-footer-append` support.

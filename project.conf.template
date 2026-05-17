@@ -64,6 +64,14 @@ WB_RALPH_MAX_TASK_ATTEMPTS=""  # K — per-task retry cap (ralph default: 1)
 WB_RALPH_RESPAWN_DELAY=""      # SEC — cooldown between worker respawns (default: 0)
 WB_RALPH_DISABLE_TABS=""       # set to "true" to force single-pane orchestrator
 
+# Execution engine for wb.ralph-dispatch (loop / execute phase).
+# Independent of RALPH_PLAN_ENGINE (planning phase). Lets you plan with one
+# engine (e.g. claude for richer fix_plan) and execute with another (e.g.
+# devin for cheap parallel workers). When unset, dispatch falls back to
+# RALPH_PLAN_ENGINE, then "devin".
+# Valid: claude | devin | codex
+RALPH_EXECUTION_ENGINE="devin"
+
 # Precision mode for draft-producing skills (prd-draft, design-draft, eng-spec,
 # tdd, erd, adr, bdd-gen, test-cases-gen, test-spec). When "on", each host
 # invokes Skill("precision-mode") at Step 0.5 so artifact bodies are dense

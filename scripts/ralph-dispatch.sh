@@ -12,10 +12,22 @@
 #   3. project.conf:  WB_RALPH_PARALLEL
 #   4. Default:       min(len(REPOS), 4)
 #
-# Engine resolution order:
+# Execution engine resolution order:
 #   1. CLI flag:      --engine
 #   2. Env var:       WB_RALPH_ENGINE
-#   3. project.conf:  WB_RALPH_ENGINE (falls back to RALPH_PLAN_ENGINE, then devin)
+#   3. project.conf:  RALPH_EXECUTION_ENGINE
+#   4. project.conf:  RALPH_PLAN_ENGINE (back-compat fallback)
+#   5. Default:       devin
+#
+# Engine -> binary map:
+#   claude -> ralph
+#   devin  -> ralph-devin
+#   codex  -> ralph-codex
+#
+# Plan engine (RALPH_PLAN_ENGINE, consumed by wb.ralph-plan) and execution
+# engine (RALPH_EXECUTION_ENGINE, consumed by wb.ralph-dispatch) are
+# independent. You can plan with claude (richer fix_plan) and execute with
+# devin (cheap parallel workers) without conflict.
 #
 # Repo-subset filter (forwarded to ralph --workspace --repos / --exclude):
 #   1. CLI flag:      --repos a,b   |  --exclude c
@@ -126,7 +138,7 @@ while [[ $# -gt 0 ]]; do
     --exclude)  CLI_EXCLUDE="${2:-}"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
     --status)   STATUS_MODE=true; shift ;;
-    --help|-h)  sed -n '2,59p' "$0"; exit 0 ;;
+    --help|-h)  sed -n '2,71p' "$0"; exit 0 ;;
     *)          EXTRA_ARGS+=("$1"); shift ;;
   esac
 done
@@ -195,7 +207,29 @@ if [[ -z "$PARALLEL" ]]; then
   PARALLEL="$(_default_parallel)"
 fi
 
-ENGINE="${CLI_ENGINE:-${WB_RALPH_ENGINE:-${RALPH_PLAN_ENGINE:-devin}}}"
+ENGINE="${CLI_ENGINE:-${WB_RALPH_ENGINE:-${RALPH_EXECUTION_ENGINE:-${RALPH_PLAN_ENGINE:-devin}}}}"
+
+case "$ENGINE" in
+  claude) BIN="ralph" ;;
+  devin)  BIN="ralph-devin" ;;
+  codex)  BIN="ralph-codex" ;;
+  *)
+    echo "ERROR: unknown execution engine '$ENGINE' (expected: claude | devin | codex)" >&2
+    exit 1
+    ;;
+esac
+
+if ! command -v "$BIN" >/dev/null 2>&1; then
+  echo "ERROR: execution engine '$ENGINE' selected but '$BIN' not on PATH. Install ai-ralph: https://github.com/Invenco-Cloud-Systems-ICS/ai-ralph" >&2
+  exit 1
+fi
+
+# Soft note for Devin: known upstream workspace_plan --prompt-file relative-path
+# issue (see notes/upstream-ralph-prompt-file-bug.md). No hard block: a fixed
+# ai-ralph install will proceed cleanly; only stale installs trip the bug.
+if [[ "$ENGINE" == "devin" ]]; then
+  echo "[wb.ralph-dispatch] note: Devin engine in workspace mode requires ai-ralph with the workspace_plan --prompt-file fix. If plan stage errors with 'prompt file not found' for the first repo, upgrade ai-ralph (ralph.upgrade) and retry. See notes/upstream-ralph-prompt-file-bug.md." >&2
+fi
 
 # Resolve repo-subset filter: CLI > env > project.conf. Mutually exclusive.
 REPOS_FILTER="${CLI_REPOS:-${WB_RALPH_DISPATCH_REPOS:-}}"
@@ -271,19 +305,14 @@ fi
 
 echo "[wb.ralph-dispatch] mode=$MODE parallel=$PARALLEL max_tasks=${MAX_TASKS:-<unset>} max_task_attempts=${MAX_TASK_ATTEMPTS:-<unset>} respawn_delay=${RESPAWN_DELAY:-<unset>} tabs=$([[ "$NO_TABS" == true ]] && echo off || echo on) engine=$ENGINE repos=${REPOS_FILTER:-<all>} exclude=${EXCLUDE_FILTER:-<none>}"
 
-cmd=(ralph --workspace --parallel "$PARALLEL")
-# Continuous mode: forward M as the second positional arg to --parallel and
-# any tuning knobs as separate flags. Capability-gated against `ralph --help`
-# so older ralph fails loudly instead of running batch-when-you-asked-for-
-# continuous. Tuning knobs without M are inert; ralph accepts them but they
-# only matter in continuous mode (we still forward them for parity).
-_ralph_help=""
+cmd=("$BIN" --workspace --parallel "$PARALLEL")
+# Capability gates probe the SELECTED binary's --help (not always `ralph`),
+# so engine routing and gate decisions stay consistent. Captured once and
+# reused for continuous-mode knobs, --repos, and --exclude gates.
+_bin_help="$($BIN --help 2>&1 || true)"
 _has_continuous=false
-if [[ -n "$MAX_TASKS" || -n "$MAX_TASK_ATTEMPTS" || -n "$RESPAWN_DELAY" || "$NO_TABS" == true ]]; then
-  _ralph_help="$(ralph --help 2>&1 || true)"
-  if echo "$_ralph_help" | grep -Eq -- '--parallel N M|Continuous Parallel Execution|--max-task-attempts'; then
-    _has_continuous=true
-  fi
+if echo "$_bin_help" | grep -Eq -- '--parallel N M|Continuous Parallel Execution|--max-task-attempts'; then
+  _has_continuous=true
 fi
 
 if [[ -n "$MAX_TASKS" ]]; then
@@ -295,44 +324,39 @@ if [[ -n "$MAX_TASKS" ]]; then
   fi
 fi
 if [[ -n "$MAX_TASK_ATTEMPTS" ]]; then
-  if echo "${_ralph_help}" | grep -q -- '--max-task-attempts'; then
+  if echo "$_bin_help" | grep -q -- '--max-task-attempts'; then
     cmd+=(--max-task-attempts "$MAX_TASK_ATTEMPTS")
   else
     echo "WARN: installed ralph does not support --max-task-attempts; ignoring." >&2
   fi
 fi
 if [[ -n "$RESPAWN_DELAY" ]]; then
-  if echo "${_ralph_help}" | grep -q -- '--respawn-delay'; then
+  if echo "$_bin_help" | grep -q -- '--respawn-delay'; then
     cmd+=(--respawn-delay "$RESPAWN_DELAY")
   else
     echo "WARN: installed ralph does not support --respawn-delay; ignoring." >&2
   fi
 fi
 if [[ "$NO_TABS" == true ]]; then
-  if echo "${_ralph_help}" | grep -q -- '--no-tabs'; then
+  if echo "$_bin_help" | grep -q -- '--no-tabs'; then
     cmd+=(--no-tabs)
   else
     echo "WARN: installed ralph does not support --no-tabs; ignoring." >&2
   fi
 fi
 
-# Engine flag passthrough: ralph takes --engine for some binaries; for others
-# engine selection happens at install time (ralph-devin / ralph-codex). Only
-# pass --engine when the flag is recognized.
-if ralph --help 2>&1 | grep -q -- '--engine'; then
-  cmd+=(--engine "$ENGINE")
-fi
-# Repo-subset passthrough (only when ralph supports the flags; older ralph
-# silently rejects unknown flags so we do not pass through if unsupported).
+# Repo-subset passthrough (only when the selected binary supports the flags;
+# older ralph silently rejects unknown flags so we do not pass through if
+# unsupported).
 if [[ -n "$REPOS_FILTER" ]]; then
-  if ralph --help 2>&1 | grep -q -- '--repos'; then
+  if echo "$_bin_help" | grep -q -- '--repos'; then
     cmd+=(--repos "$REPOS_FILTER")
   else
     echo "WARN: installed ralph does not support --repos; ignoring filter" >&2
   fi
 fi
 if [[ -n "$EXCLUDE_FILTER" ]]; then
-  if ralph --help 2>&1 | grep -q -- '--exclude'; then
+  if echo "$_bin_help" | grep -q -- '--exclude'; then
     cmd+=(--exclude "$EXCLUDE_FILTER")
   else
     echo "WARN: installed ralph does not support --exclude; ignoring filter" >&2

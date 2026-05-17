@@ -134,6 +134,10 @@ wb.sync-context() {
 # Without M (--max-tasks / WB_RALPH_MAX_TASKS / project.conf), dispatch runs
 # in V1 batch mode (byte-identical to prior behavior). Capability-gated: the
 # wrapper fails fast if the installed ralph predates continuous mode.
+#
+# Execution engine resolution (independent of plan engine):
+#   CLI --engine > WB_RALPH_ENGINE > RALPH_EXECUTION_ENGINE > RALPH_PLAN_ENGINE > devin
+#   Engine -> binary: claude -> ralph, devin -> ralph-devin, codex -> ralph-codex
 wb.ralph-enable-check() {
   _wb_resolve_root || return 1
   local WB_ROOT="$__WB_ROOT_OUT"
