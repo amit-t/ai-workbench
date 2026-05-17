@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ralph-dispatch.sh — Thin workbench wrapper for `ralph --workspace [--parallel N]`.
+# ralph-dispatch.sh — Thin workbench wrapper for `ralph --workspace [--parallel N [M]]`.
 #
 # Workbench wraps; ralph owns the core. Parallelism is handled by ralph itself
 # via --parallel. Single-repo debugging is a one-liner:
@@ -24,12 +24,37 @@
 #   4. Default:       unset (run all repos, V1 behavior)
 # --repos and --exclude are mutually exclusive.
 #
+# Continuous mode (opt-in; ralph keeps N workers saturated until M attempts):
+#   Engaged by setting M (the total-attempts cap). Two ways:
+#     --max-tasks M               named form (preferred; pairs cleanly with project.conf)
+#     --parallel N M              positional form (byte-identical to `ralph --parallel N M`)
+#   Without M, the wrapper runs ralph in batch mode (V1 behavior).
+#
+#   Resolution order for M:
+#     1. CLI:           --max-tasks M  OR positional second arg to --parallel
+#     2. Env:           WB_RALPH_MAX_TASKS
+#     3. project.conf:  WB_RALPH_MAX_TASKS
+#     4. Default:       unset (batch mode)
+#
+#   Continuous-mode tuning knobs (only meaningful when M is set):
+#     --max-task-attempts K       per-task retry cap (env: WB_RALPH_MAX_TASK_ATTEMPTS)
+#     --respawn-delay SEC         cooldown between worker respawns (env: WB_RALPH_RESPAWN_DELAY)
+#     --no-tabs                   force single-pane orchestrator (env: WB_RALPH_DISABLE_TABS=true)
+#
+#   Capability-gated: only forwarded when `ralph --help` advertises the
+#   continuous-mode surface. Older ralph silently dropping unknown flags
+#   would lead to confusing "batch ran instead of continuous" surprises,
+#   so the wrapper fails fast instead.
+#
 # Usage:
 #   ./scripts/ralph-dispatch.sh                     # run workspace mode with resolved N
 #   ./scripts/ralph-dispatch.sh --parallel 2
 #   ./scripts/ralph-dispatch.sh --engine claude
 #   ./scripts/ralph-dispatch.sh --repos api,worker  # subset to two registered repos
 #   ./scripts/ralph-dispatch.sh --exclude web       # everything except web
+#   ./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 30   # continuous, 30 attempts
+#   ./scripts/ralph-dispatch.sh --parallel 3 30               # same, positional form
+#   ./scripts/ralph-dispatch.sh --parallel 3 30 --no-tabs --respawn-delay 5
 #   ./scripts/ralph-dispatch.sh --status            # show open ralph-authored PRs + tail logs
 #   ./scripts/ralph-dispatch.sh --dry-run           # echo the ralph command, do not run
 
@@ -46,6 +71,10 @@ _env_WB_RALPH_PARALLEL="${WB_RALPH_PARALLEL:-}"
 _env_WB_RALPH_ENGINE="${WB_RALPH_ENGINE:-}"
 _env_WB_RALPH_DISPATCH_REPOS="${WB_RALPH_DISPATCH_REPOS:-}"
 _env_WB_RALPH_DISPATCH_EXCLUDE="${WB_RALPH_DISPATCH_EXCLUDE:-}"
+_env_WB_RALPH_MAX_TASKS="${WB_RALPH_MAX_TASKS:-}"
+_env_WB_RALPH_MAX_TASK_ATTEMPTS="${WB_RALPH_MAX_TASK_ATTEMPTS:-}"
+_env_WB_RALPH_RESPAWN_DELAY="${WB_RALPH_RESPAWN_DELAY:-}"
+_env_WB_RALPH_DISABLE_TABS="${WB_RALPH_DISABLE_TABS:-}"
 
 # shellcheck disable=SC1091
 source "$WB_ROOT/project.conf"
@@ -55,23 +84,49 @@ source "$WB_ROOT/project.conf"
 [[ -n "$_env_WB_RALPH_ENGINE"            ]] && WB_RALPH_ENGINE="$_env_WB_RALPH_ENGINE"
 [[ -n "$_env_WB_RALPH_DISPATCH_REPOS"    ]] && WB_RALPH_DISPATCH_REPOS="$_env_WB_RALPH_DISPATCH_REPOS"
 [[ -n "$_env_WB_RALPH_DISPATCH_EXCLUDE"  ]] && WB_RALPH_DISPATCH_EXCLUDE="$_env_WB_RALPH_DISPATCH_EXCLUDE"
+[[ -n "$_env_WB_RALPH_MAX_TASKS"         ]] && WB_RALPH_MAX_TASKS="$_env_WB_RALPH_MAX_TASKS"
+[[ -n "$_env_WB_RALPH_MAX_TASK_ATTEMPTS" ]] && WB_RALPH_MAX_TASK_ATTEMPTS="$_env_WB_RALPH_MAX_TASK_ATTEMPTS"
+[[ -n "$_env_WB_RALPH_RESPAWN_DELAY"     ]] && WB_RALPH_RESPAWN_DELAY="$_env_WB_RALPH_RESPAWN_DELAY"
+[[ -n "$_env_WB_RALPH_DISABLE_TABS"      ]] && WB_RALPH_DISABLE_TABS="$_env_WB_RALPH_DISABLE_TABS"
 
 CLI_PARALLEL=""
 CLI_ENGINE=""
 CLI_REPOS=""
 CLI_EXCLUDE=""
+CLI_MAX_TASKS=""
+CLI_MAX_TASK_ATTEMPTS=""
+CLI_RESPAWN_DELAY=""
+CLI_NO_TABS=""
 DRY_RUN=false
 STATUS_MODE=false
 EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --parallel) CLI_PARALLEL="${2:-}"; shift 2 ;;
+    --parallel)
+      CLI_PARALLEL="${2:-}"
+      shift 2
+      # Optional positional second arg = M (continuous mode). Mirrors ralph's
+      # `--parallel N M` shape; only consumed when it looks like an integer.
+      # A non-integer next arg falls through to EXTRA_ARGS (pass-through).
+      if [[ $# -gt 0 && "$1" =~ ^[0-9]+$ ]]; then
+        if [[ ! "$1" =~ ^[1-9][0-9]*$ ]]; then
+          echo "ERROR: continuous-mode M (second --parallel argument) must be a positive integer >= 1 (got: '$1')" >&2
+          exit 1
+        fi
+        CLI_MAX_TASKS="$1"
+        shift
+      fi
+      ;;
+    --max-tasks)         CLI_MAX_TASKS="${2:-}"; shift 2 ;;
+    --max-task-attempts) CLI_MAX_TASK_ATTEMPTS="${2:-}"; shift 2 ;;
+    --respawn-delay)     CLI_RESPAWN_DELAY="${2:-}"; shift 2 ;;
+    --no-tabs)           CLI_NO_TABS=true; shift ;;
     --engine)   CLI_ENGINE="${2:-}"; shift 2 ;;
     --repos)    CLI_REPOS="${2:-}"; shift 2 ;;
     --exclude)  CLI_EXCLUDE="${2:-}"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
     --status)   STATUS_MODE=true; shift ;;
-    --help|-h)  sed -n '2,33p' "$0"; exit 0 ;;
+    --help|-h)  sed -n '2,59p' "$0"; exit 0 ;;
     *)          EXTRA_ARGS+=("$1"); shift ;;
   esac
 done
@@ -178,9 +233,89 @@ _validate_filter_against_registered() {
 _validate_filter_against_registered "$REPOS_FILTER"   "--repos / WB_RALPH_DISPATCH_REPOS"
 _validate_filter_against_registered "$EXCLUDE_FILTER" "--exclude / WB_RALPH_DISPATCH_EXCLUDE"
 
-echo "[wb.ralph-dispatch] parallel=$PARALLEL engine=$ENGINE repos=${REPOS_FILTER:-<all>} exclude=${EXCLUDE_FILTER:-<none>}"
+# Resolve continuous-mode knobs: CLI > env > project.conf > unset.
+# M (max-tasks) is the engagement signal — setting it flips ralph into
+# continuous mode. The tuning knobs (K, SEC, --no-tabs) are inert without M.
+MAX_TASKS="${CLI_MAX_TASKS:-${WB_RALPH_MAX_TASKS:-}}"
+MAX_TASK_ATTEMPTS="${CLI_MAX_TASK_ATTEMPTS:-${WB_RALPH_MAX_TASK_ATTEMPTS:-}}"
+RESPAWN_DELAY="${CLI_RESPAWN_DELAY:-${WB_RALPH_RESPAWN_DELAY:-}}"
+# --no-tabs is a flag (no value). CLI flag wins; otherwise truthy env value.
+if [[ -n "$CLI_NO_TABS" ]]; then
+  NO_TABS=true
+elif [[ "${WB_RALPH_DISABLE_TABS:-}" == "true" ]]; then
+  NO_TABS=true
+else
+  NO_TABS=false
+fi
+
+# Validate continuous-mode knobs (loud failure when set with bad values).
+if [[ -n "$MAX_TASKS" ]] && [[ ! "$MAX_TASKS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "ERROR: --max-tasks / WB_RALPH_MAX_TASKS must be a positive integer >= 1 (got: '$MAX_TASKS')" >&2
+  exit 1
+fi
+if [[ -n "$MAX_TASK_ATTEMPTS" ]] && [[ ! "$MAX_TASK_ATTEMPTS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "ERROR: --max-task-attempts / WB_RALPH_MAX_TASK_ATTEMPTS must be a positive integer >= 1 (got: '$MAX_TASK_ATTEMPTS')" >&2
+  exit 1
+fi
+if [[ -n "$RESPAWN_DELAY" ]] && [[ ! "$RESPAWN_DELAY" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+  echo "ERROR: --respawn-delay / WB_RALPH_RESPAWN_DELAY must be a non-negative number (got: '$RESPAWN_DELAY')" >&2
+  exit 1
+fi
+
+# Mode label for the banner.
+if [[ -n "$MAX_TASKS" ]]; then
+  MODE="continuous"
+else
+  MODE="batch"
+fi
+
+echo "[wb.ralph-dispatch] mode=$MODE parallel=$PARALLEL max_tasks=${MAX_TASKS:-<unset>} max_task_attempts=${MAX_TASK_ATTEMPTS:-<unset>} respawn_delay=${RESPAWN_DELAY:-<unset>} tabs=$([[ "$NO_TABS" == true ]] && echo off || echo on) engine=$ENGINE repos=${REPOS_FILTER:-<all>} exclude=${EXCLUDE_FILTER:-<none>}"
 
 cmd=(ralph --workspace --parallel "$PARALLEL")
+# Continuous mode: forward M as the second positional arg to --parallel and
+# any tuning knobs as separate flags. Capability-gated against `ralph --help`
+# so older ralph fails loudly instead of running batch-when-you-asked-for-
+# continuous. Tuning knobs without M are inert; ralph accepts them but they
+# only matter in continuous mode (we still forward them for parity).
+_ralph_help=""
+_has_continuous=false
+if [[ -n "$MAX_TASKS" || -n "$MAX_TASK_ATTEMPTS" || -n "$RESPAWN_DELAY" || "$NO_TABS" == true ]]; then
+  _ralph_help="$(ralph --help 2>&1 || true)"
+  if echo "$_ralph_help" | grep -Eq -- '--parallel N M|Continuous Parallel Execution|--max-task-attempts'; then
+    _has_continuous=true
+  fi
+fi
+
+if [[ -n "$MAX_TASKS" ]]; then
+  if [[ "$_has_continuous" == true ]]; then
+    cmd+=("$MAX_TASKS")
+  else
+    echo "ERROR: installed ralph does not advertise continuous mode (--parallel N M); cannot honor --max-tasks $MAX_TASKS. Upgrade ai-ralph or drop the flag." >&2
+    exit 1
+  fi
+fi
+if [[ -n "$MAX_TASK_ATTEMPTS" ]]; then
+  if echo "${_ralph_help}" | grep -q -- '--max-task-attempts'; then
+    cmd+=(--max-task-attempts "$MAX_TASK_ATTEMPTS")
+  else
+    echo "WARN: installed ralph does not support --max-task-attempts; ignoring." >&2
+  fi
+fi
+if [[ -n "$RESPAWN_DELAY" ]]; then
+  if echo "${_ralph_help}" | grep -q -- '--respawn-delay'; then
+    cmd+=(--respawn-delay "$RESPAWN_DELAY")
+  else
+    echo "WARN: installed ralph does not support --respawn-delay; ignoring." >&2
+  fi
+fi
+if [[ "$NO_TABS" == true ]]; then
+  if echo "${_ralph_help}" | grep -q -- '--no-tabs'; then
+    cmd+=(--no-tabs)
+  else
+    echo "WARN: installed ralph does not support --no-tabs; ignoring." >&2
+  fi
+fi
+
 # Engine flag passthrough: ralph takes --engine for some binaries; for others
 # engine selection happens at install time (ralph-devin / ralph-codex). Only
 # pass --engine when the flag is recognized.

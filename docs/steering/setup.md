@@ -28,7 +28,7 @@ The action needs org-wide read-only access to repos matching the `ai-workbench` 
 
 2. **Install the App on the org.**
    - After creation, click "Install App" in the app's settings sidebar.
-   - Choose the org (e.g. `Invenco-Cloud-Systems-ICS`).
+   - Choose the org that hosts your template repo.
    - **Repository access:** "Only select repositories" → include this template repo (for issue write) and every `wb-*` repo matching the `ai-workbench` topic (for content read).
    - If you prefer one-shot setup: "All repositories" is acceptable since all permissions are read-only except on this template's issues.
    - Confirm install.
