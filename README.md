@@ -69,7 +69,9 @@ See `DESIGN.md` in the harness root for the full tree and the `template_owned` /
 
 ## Skills catalogue
 
-18 skills ship with every workbench, grouped by hat. All outputs land at `status: draft`; promotion is human-driven via `wb.publish` / `wb.approve`.
+19 skills ship with every workbench, grouped by hat. All outputs land at `status: draft`; promotion is human-driven via `wb.publish` / `wb.approve`.
+
+Not sure where you are in the pipeline? Run `wb.wtd` for the next concrete command, or read the [Workflows](https://amit-t.github.io/ai-workbench/workflows.html) if-this-then-that page.
 
 | Skill | Hat | Short purpose |
 |-------|-----|---------------|
@@ -91,6 +93,7 @@ See `DESIGN.md` in the harness root for the full tree and the `template_owned` /
 | `/ralph-dispatch` | Orchestrator | Parallel ralph loops across workbench repos. |
 | `/grill-me` | Cross-cutting | Relentless interview to stress-test any draft. |
 | `/pmo-status` | Cross-cutting | Workbench status rollup from `.workbench-state/`. |
+| `/wtd` | Cross-cutting | What-To-Do — one next-action command per epic. Trimmer cousin of pmo-status. |
 
 Deep dives — inputs, outputs, lifecycle gates, frontmatter, examples — live at **[docs/skills](https://amit-t.github.io/ai-workbench/skills.html)** with one page per skill. Skill source lives under `skills/<name>/SKILL.md`.
 

@@ -24,6 +24,7 @@ layout: default
 ## Quick Paths
 
 - **New to this?** Start at [Getting started](./getting-started.html).
+- **Don't know what step you're on?** Read [Workflows](./workflows.html) or run `wb.wtd` ([reference](./skills/wtd.html)).
 - **Want the architecture?** [Architecture](./architecture.html).
 - **Want to understand state transitions?** [Artifact lifecycle](./lifecycle.html).
 - **Looking for a specific skill?** [Skills reference](./skills.html).

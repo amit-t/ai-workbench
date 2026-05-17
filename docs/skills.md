@@ -2,7 +2,7 @@
 title: Skills Reference
 layout: default
 eyebrow: Skills
-subtitle: "18 skills, one collapsible panel per role hat. Pick a hat, scan its skills, open any row for the deep dive."
+subtitle: "19 skills, one collapsible panel per role hat. Pick a hat, scan its skills, open any row for the deep dive. Don't know what step you're on? Run `wb.wtd` ([reference](skills/wtd.html)) or read [Workflows](workflows.html)."
 ---
 
 ## Lifecycle at a Glance
@@ -76,12 +76,13 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 </details>
 
 <details markdown="1">
-<summary><strong>Cross-Cutting</strong> — 2 skills · grill-me interview, PMO status rollup</summary>
+<summary><strong>Cross-Cutting</strong> — 3 skills · grill-me interview, PMO status rollup, WTD next-action</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
 | [`/grill-me`](skills/grill-me.html) | Relentless decision-tree interview on any draft before publish | any draft artifact |
 | [`/pmo-status`](skills/pmo-status.html) | Terminal rollup of epics, PRDs, specs, TDDs, BDDs, fix_plan coverage, dispatch state | none (read-only) |
+| [`/wtd`](skills/wtd.html) | What-To-Do — single next command per epic; the trimmer cousin of pmo-status | none (read-only) |
 
 </details>
 
@@ -96,4 +97,4 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 | Engineering | `/eng-spec`, `/tdd`, `/erd`, `/adr` |
 | QA | `/bdd-gen`, `/test-cases-gen`, `/test-spec` |
 | Orchestrator | `/ralph-workspace-plan`, `/ralph-dispatch` |
-| Cross-cutting | `/grill-me`, `/pmo-status` |
+| Cross-cutting | `/grill-me`, `/pmo-status`, `/wtd` |
