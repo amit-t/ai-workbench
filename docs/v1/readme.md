@@ -3,8 +3,10 @@ title: README (V1)
 layout: default
 ---
 
+{% include links.html %}
+
 > **V1 long-form archive.** Pre-precision-pass version, preserved for engineers who prefer the dense narrative.
-> New (V2) version: [https://github.com/amit-t/ai-workbench/blob/main/README.md](https://github.com/amit-t/ai-workbench/blob/main/README.md).
+> New (V2) version: [{{ links.ai_workbench_repo }}/blob/main/README.md]({{ links.ai_workbench_repo }}/blob/main/README.md).
 
 # ai-workbench (template)
 
@@ -100,7 +102,7 @@ See `DESIGN.md` in the harness root for the full tree and the `template_owned` /
 | `/grill-me` | Cross-cutting | Relentless interview to stress-test any draft. |
 | `/pmo-status` | Cross-cutting | Workbench status rollup from `.workbench-state/`. |
 
-Deep dives — inputs, outputs, lifecycle gates, frontmatter, examples — live at **[docs/skills](https://amit-t.github.io/ai-workbench/skills.html)** with one page per skill. Skill source lives under `skills/<name>/SKILL.md`.
+Deep dives — inputs, outputs, lifecycle gates, frontmatter, examples — live at **[docs/skills]({{ links.ai_workbench_pages }}skills.html)** with one page per skill. Skill source lives under `skills/<name>/SKILL.md`.
 
 ## Artifact lifecycle
 
@@ -209,7 +211,7 @@ Agents write `status: draft` only. They never set `published` or `approved`. Tho
 
 ## Steering workflow
 
-Golden principles, role-specific rules, and artifact-specific rules that the AI agents inside a workbench must follow. Authored by senior engineers and architects; consumed by every session, every role, every skill. The full system lives under `steering/` in each stamped workbench. Details: [docs/steering](https://amit-t.github.io/ai-workbench/steering/).
+Golden principles, role-specific rules, and artifact-specific rules that the AI agents inside a workbench must follow. Authored by senior engineers and architects; consumed by every session, every role, every skill. The full system lives under `steering/` in each stamped workbench. Details: [docs/steering]({{ links.ai_workbench_pages }}steering/).
 
 The system uses progressive disclosure: only a small "Layer 0" is always loaded, and role / artifact / topic steering is loaded on demand. This keeps context windows lean while letting the agent apply precise, opinionated rules when they are relevant.
 
@@ -273,7 +275,7 @@ Every stamped wb ships `.github/workflows/wb-ci.yml`, seeded from the template v
 
 ## Multi-repo execution with ralph
 
-The workbench wraps [ai-ralph](https://github.com/Invenco-Cloud-Systems-ICS/ai-ralph). Ralph owns the planner, the workspace loop, parallelism, and PR creation. Workbench only wraps, routes approved artifacts, and ships team steering.
+The workbench wraps [ai-ralph]({{ links.ai_ralph_repo }}). Ralph owns the planner, the workspace loop, parallelism, and PR creation. Workbench only wraps, routes approved artifacts, and ships team steering.
 
 ### One-time bootstrap
 
@@ -399,7 +401,7 @@ ai-workbench (template) ships under semver. Stamped workbenches inherit the vers
 
 Notification banners fire automatically on `wb.publish`, `wb.approve`, `wb.ralph-plan`, etc., when the upstream template has a newer version than this wb. The check is throttled to one network call per 12h.
 
-Full system documented in [ai-devkit/docs/versioning.md](https://github.com/amit-t/ai-devkit/blob/main/docs/versioning.md).
+Full system documented in [ai-devkit/docs/versioning.md]({{ links.ai_devkit_repo }}/blob/main/docs/versioning.md).
 
 ## Running on WSL2
 
