@@ -4,35 +4,37 @@ layout: default
 eyebrow: Ralph
 ---
 
-## What ai-ralph Is
+*Prefer the old long-form? See [V1 archive](./v1/ralph.html).*
 
-**ai-ralph** is a multi-engine autonomous AI development loop: given a `fix_plan.md` inside a code repo, it drives a Claude / Devin / Codex agent in a controlled loop, committing incrementally, until the plan is done. The workbench points at an `ai-ralph` fork under your org — e.g. `<your-org>/ai-ralph` — but any ai-ralph-compatible CLI with a `plan` + `int` surface works.
+## What ai-ralph is
 
-## What the Workbench Adds
+Multi-engine autonomous AI dev loop. Given a `fix_plan.md` inside a code repo, drives Claude / Devin / Codex in a controlled loop, committing incrementally, until done. Workbench points at an `ai-ralph` fork under your org (e.g. `<your-org>/ai-ralph`); any ai-ralph-compatible CLI with a `plan` + `int` surface works.
 
-ai-ralph natively operates on a single repo. The workbench layers three things on top:
+## What the workbench adds
 
-1. **Context routing** (`scripts/sync-context.sh`) reads `.workbench-state/approved.json`, honors each artifact's `target_repos:` frontmatter, and copies the artifact only into the listed `repos/{name}/ai/` directories. The repo's role still filters by type (service repos see PRDs + specs + TDDs + ERD + ADRs; automation repos see PRDs + BDDs + test cases + test spec; shared-lib repos see specs + TDDs + ADRs; infra repos see ADRs only).
-2. **Workspace-mode planning** (`scripts/ralph-plan.sh`) wraps `ralph-plan --workspace` invoked at `repos/`, which writes per-repo `.ralph/fix_plan.md` sections from a single workbench-aware planning pass. Per-repo mode is kept as a fallback for older ralph installs.
-3. **Cross-repo parallel dispatch** (`scripts/ralph-dispatch.sh`) wraps `ralph --workspace --parallel N` invoked at `repos/` (default `N = min(len(REPOS), 4)`). Ralph itself owns the loop, worktrees, commits, pushes, and PRs. `--status` shells out to `gh pr list` plus a tail of each repo's worker log.
+ai-ralph runs one repo natively. Workbench adds three things:
 
-This gives you "one plan, multiple repos, dispatch them in parallel" without re-implementing any ralph internals.
+1. **Context routing** (`scripts/sync-context.sh`): reads `.workbench-state/approved.json`, honours each artifact's `target_repos:`, copies into matching `repos/{name}/ai/`. Repo role filters too: service → PRDs+specs+TDDs+ERD+ADRs; automation → PRDs+BDDs+test cases+test spec; shared-lib → specs+TDDs+ADRs; infra → ADRs only.
+2. **Workspace-mode planning** (`scripts/ralph-plan.sh`): wraps `ralph-plan --workspace` at `repos/`, writes per-repo `.ralph/fix_plan.md` sections in one pass. Per-repo loop is fallback.
+3. **Cross-repo parallel dispatch** (`scripts/ralph-dispatch.sh`): wraps `ralph --workspace --parallel N` at `repos/` (default `N = min(len(REPOS), 4)`). Ralph owns loop, worktrees, commits, pushes, PRs. `--status` shells `gh pr list` + tail of each worker log.
 
-## Workspace-Mode Planning
+One plan, multiple repos, parallel dispatch. No re-implementation of ralph internals.
 
-`wb.ralph-plan` defaults to workspace mode: a single `ralph-plan --workspace` call at `$WB_ROOT/repos/` aggregates all approved workbench context, scans `repos/*`, and writes per-repo `## <repo-name>` sections into `repos/.ralph/fix_plan.md`. The mode resolver is `CLI flag > env (WB_RALPH_PLAN_MODE) > project.conf RALPH_PLAN_MODE > auto`. Auto picks workspace when the installed `ralph-plan` advertises `--workspace`, otherwise it loops `project.conf REPOS` per-repo.
+## Workspace-mode planning
 
-Override with `wb.ralph-plan --mode per-repo`, `WB_RALPH_PLAN_MODE=per-repo`, or `RALPH_PLAN_MODE=per-repo` in `project.conf`.
+`wb.ralph-plan` defaults to workspace mode: single `ralph-plan --workspace` at `$WB_ROOT/repos/` aggregates approved context, scans `repos/*`, writes per-repo `## <repo-name>` sections into `repos/.ralph/fix_plan.md`.
 
-## `target_repos:` Routing
+Mode resolver: `CLI flag > WB_RALPH_PLAN_MODE > project.conf RALPH_PLAN_MODE > auto`. Auto picks workspace when the installed `ralph-plan` advertises `--workspace`, else loops `project.conf REPOS` per-repo. Override: `wb.ralph-plan --mode per-repo`, env, or `project.conf`.
 
-Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, and test-erd carries a `target_repos: [...]` field naming repos from `project.conf REPOS`. `wb.publish` and `wb.approve` both call `scripts/validate-artifact.py`, which rejects missing, empty, or unregistered values. The list flows into `sync-context.sh` (only listed repos receive the artifact) and into `ralph-plan`'s `## <repo-name>` section routing. ADRs and epic-context files are exempt and pass through.
+## `target_repos:` routing
 
-## Steering Drift Footer (M4)
+Every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd carries `target_repos: [...]` naming repos from `project.conf REPOS`. `wb.publish` / `wb.approve` call `scripts/validate-artifact.py`, which rejects missing, empty, or unregistered values. Flows into `sync-context.sh` and `ralph-plan` section routing. ADRs + epic-context exempt.
 
-When the team has overlays under `steering.local/`, `sync-context.sh` writes a markdown footer (classifying every entry as ADD / SUPERSEDE / REMOVE) to `$WB_ROOT/repos/.ralph/pr_footer.md`. Ralph appends that file to every PR body via the upstream `pr-footer-append` support in `pr_manager.sh`. The footer file is removed when the overlay set empties.
+## Steering drift footer (M4)
 
-## Adapter Scripts
+When `steering.local/` is non-empty, `sync-context.sh` writes a markdown footer (entries tagged ADD / SUPERSEDE / REMOVE) to `$WB_ROOT/repos/.ralph/pr_footer.md`. Ralph appends it to every PR body via upstream `pr-footer-append`. Footer is removed when overlays empty.
+
+## Adapter scripts
 
 ```
 scripts/sync-context.sh
@@ -44,8 +46,8 @@ scripts/ralph-context.sh
   # Internal alias for sync-context.sh used by ralph-plan.sh.
 
 scripts/ralph-plan.sh [--mode workspace|per-repo|auto] [--engine ...] [--thinking ...] [--dry-run]
-  # Resolver order: CLI flag > env WB_RALPH_PLAN_MODE > project.conf RALPH_PLAN_MODE > auto.
-  # Workspace mode: (cd repos && ralph-plan --workspace --engine $E --thinking $T)
+  # Resolver: CLI flag > env WB_RALPH_PLAN_MODE > project.conf RALPH_PLAN_MODE > auto.
+  # Workspace: (cd repos && ralph-plan --workspace --engine $E --thinking $T)
   # Per-repo fallback: loops project.conf REPOS, runs ralph-plan inside each.
 
 scripts/ralph-dispatch.sh [--parallel N [M]] [--max-tasks M] [--max-task-attempts K] [--respawn-delay SEC] [--no-tabs] [--engine ...] [--repos a,b] [--exclude c] [--status] [--dry-run]
@@ -64,22 +66,22 @@ scripts/validate-artifact.py
   # at both publish and approve. Pass-through for adr and epic-context types.
 ```
 
-Single-repo debugging is a one-liner; the workbench does not wrap it:
+Single-repo debugging (workbench does not wrap this):
 
 ```bash
 (cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)
 ```
 
-## Continuous Dispatch
+## Continuous dispatch
 
-`wb.ralph-dispatch` defaults to **batch mode**: spawn N agents, each runs the workspace loop, wrapper exits when all N have stopped. That is a one-shot fan-out.
+`wb.ralph-dispatch` defaults to **batch mode**: spawn N agents, each runs the workspace loop, wrapper exits when all N stop. One-shot fan-out.
 
-**Continuous mode** keeps N workers saturated until M total task attempts have been spent (success or failure both count), or the queue drains. It is the right shape for long unattended runs over a deep workspace fix_plan.
+**Continuous mode** keeps N workers saturated until M total task attempts (success + failure both count) or queue drains. Right shape for long unattended runs over a deep workspace fix_plan.
 
-Engagement is opt-in. Setting M flips the mode:
+Opt-in. Setting M flips the mode:
 
 ```bash
-# Named form (preferred — pairs cleanly with project.conf)
+# Named form (preferred; pairs cleanly with project.conf)
 wb.ralph-dispatch --parallel 3 --max-tasks 30
 
 # Positional form (mirrors ralph's `--parallel N M` shape byte-identically)
@@ -99,11 +101,11 @@ Tuning knobs (inert without M; ralph accepts them in batch mode but they only ma
 | `--respawn-delay SEC` | `WB_RALPH_RESPAWN_DELAY` | `WB_RALPH_RESPAWN_DELAY` | 0 (ralph) | Cooldown between worker respawns. |
 | `--no-tabs` | `WB_RALPH_DISABLE_TABS=true` | `WB_RALPH_DISABLE_TABS` | (off) | Force single-pane orchestrator. |
 
-The wrapper capability-gates the forwarding: continuous-mode flags are only passed through when `ralph --help` advertises the `--parallel N M` surface. An older ralph that does not understand continuous mode causes `wb.ralph-dispatch --max-tasks` to fail fast with a clear error instead of silently running batch.
+Wrapper capability-gates the forwarding: continuous-mode flags pass through only when `ralph --help` advertises the `--parallel N M` surface. Older ralph causes `wb.ralph-dispatch --max-tasks` to fail fast with a clear error, not silent fallback to batch.
 
-## Hard Rules
+## Hard rules
 
-- **Never generate a fix_plan entry for a repo without an approved PRD** and, for service repos, an approved engineering spec.
-- **Ralph always runs from a code repo's cwd**, never from the workbench root.
-- **`.workbench-state/approved.json` is the only gate.** Frontmatter is not inspected at sync time — the JSON is the contract.
-- **Never write into `repos/*` from a workbench Claude/Devin session.** That is ralph's job.
+- No fix_plan entry for a repo without an approved PRD (and, for service repos, an approved eng-spec).
+- Ralph runs from a code repo's cwd, never from workbench root.
+- `.workbench-state/approved.json` is the only gate. Frontmatter is not inspected at sync time; the JSON is the contract.
+- Never write into `repos/*` from a workbench Claude/Devin session. That is ralph's job.
