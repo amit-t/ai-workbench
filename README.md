@@ -49,7 +49,7 @@ wb.unswitch                         # release pin
 
 No re-sourcing needed when switching wbs.
 
-## Skills catalogue (19)
+## Skills catalogue (20)
 
 Outputs land at `status: draft`. Promotion is human-driven via `wb.publish` / `wb.approve`. Lost in the pipeline? Run `wb.wtd` for the next concrete command, or read [Workflows](https://amit-t.github.io/ai-workbench/workflows.html) (if-this-then-that page).
 
@@ -74,6 +74,7 @@ Outputs land at `status: draft`. Promotion is human-driven via `wb.publish` / `w
 | `/grill-me` | Cross | Relentless interview to stress-test a draft. |
 | `/pmo-status` | Cross | Workbench status rollup. |
 | `/wtd` | Cross | What-To-Do: one next-action command per epic. Trimmer cousin of `/pmo-status`. |
+| `/precise-readme` | Cross | Precision-mode pass on README + docs/; archives originals under `docs/v1/` with cross-banners. |
 
 Per-skill deep dive: [docs/skills](https://amit-t.github.io/ai-workbench/skills.html). Source under `skills/<name>/SKILL.md`. Skills attach via symlinks: at `init.wb` time, `.claude/skills`, `.agents/skills`, `.devin/skills` all point at one `skills/`, so every agent sees the same set.
 
