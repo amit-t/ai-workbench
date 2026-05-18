@@ -27,6 +27,7 @@
   <nav class="container site-nav" aria-label="Primary">
     <a class="site-nav-brand" href="{{ '/' | relative_url }}">AI Workbench</a>
     <a href="{{ '/getting-started.html' | relative_url }}">Getting Started</a>
+    <a href="{{ '/workflows.html' | relative_url }}">Workflows</a>
     <a href="{{ '/architecture.html' | relative_url }}">Architecture</a>
     <a href="{{ '/lifecycle.html' | relative_url }}">Lifecycle</a>
     <a href="{{ '/skills.html' | relative_url }}">Skills</a>
@@ -49,7 +50,7 @@
         {% for seg in segments %}
           {% assign in_skills = false %}
           {% if segments[0] == 'skills' and seg != 'skills' %}{% assign in_skills = true %}{% endif %}
-          {% capture crumb %}{% if seg == 'skills' %}Skills{% elsif seg == 'getting-started' %}Getting Started{% elsif seg == 'lifecycle' %}Artifact Lifecycle{% elsif seg == 'architecture' %}Architecture{% elsif seg == 'ralph' %}Ralph Integration{% elsif seg == 'versioning' %}Versioning{% elsif seg == 'faq' %}FAQ{% elsif in_skills %}/{{ seg }}{% else %}{{ seg }}{% endif %}{% endcapture %}
+          {% capture crumb %}{% if seg == 'skills' %}Skills{% elsif seg == 'getting-started' %}Getting Started{% elsif seg == 'workflows' %}Workflows{% elsif seg == 'lifecycle' %}Artifact Lifecycle{% elsif seg == 'architecture' %}Architecture{% elsif seg == 'ralph' %}Ralph Integration{% elsif seg == 'versioning' %}Versioning{% elsif seg == 'faq' %}FAQ{% elsif in_skills %}/{{ seg }}{% else %}{{ seg }}{% endif %}{% endcapture %}
           {% if seg == last %}
             <li aria-current="page">{{ crumb | strip }}</li>
           {% else %}
@@ -74,7 +75,8 @@
         </p>
         <div class="hero-actions">
           <a class="neo-btn neo-btn-primary" href="{{ '/getting-started.html' | relative_url }}">Start Here</a>
-          <a class="neo-btn" href="{{ '/skills.html' | relative_url }}">Browse 18 Skills</a>
+          <a class="neo-btn" href="{{ '/workflows.html' | relative_url }}">Workflows</a>
+          <a class="neo-btn" href="{{ '/skills.html' | relative_url }}">Browse 19 Skills</a>
           <a class="neo-btn" href="{{ links.ai_workbench_repo }}" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
