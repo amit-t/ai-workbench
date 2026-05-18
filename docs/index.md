@@ -30,7 +30,7 @@ A per-bundle workbench: one private repo where a dev + QA pair carry one or more
 - New here → [Getting started](./getting-started.html)
 - Architecture / tree / manifests → [Architecture](./architecture.html)
 - State transitions → [Artifact lifecycle](./lifecycle.html)
-- Skills (18) → [Skills reference](./skills.html)
+- Skills (19) → [Skills reference](./skills.html)
 - Ralph integration → [Ralph](./ralph.html)
 - Steering (golden / role / overlays) → [Steering workflow](./steering/)
 - Upgrades + notifications → [Versioning](./versioning.html)
