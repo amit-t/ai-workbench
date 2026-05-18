@@ -1,34 +1,32 @@
 ---
-title: Architecture
+title: Architecture (V1)
 layout: default
 eyebrow: Architecture
 ---
 
-*Prefer the old long-form? See [V1 archive](./v1/architecture.html).*
+> **V1 long-form archive.** Pre-precision-pass version, preserved for engineers who prefer the dense narrative.
+> New (V2) version: [../architecture.html](../architecture.html).
 
 {% include links.html %}
 
-## Why
+## Problem and Motivation
 
-IC engineers and QAs split work across Jira, Confluence, service repos, automation repos, ad-hoc prompts. The workbench collapses that into one per-bundle harness:
+Individual-contributor engineers and QAs currently split work across Jira, Confluence, service repos, automation repos, and ad-hoc prompts. They want a single harness to take one or more Jira epics, generate a PRD, engineering spec, TDD, ERD, ADRs, BDDs, test cases, and a test spec; wear PM / architect / staff-engineer / UX hats without switching tools; share generated drafts with the counterpart (dev ↔ QA) via git for review and approval; plan code changes across multiple service repos in a single ralph workspace-mode session; dispatch parallel autonomous ralph loops; and keep the workbench private, per-bundle, and disposable — not a long-running OS.
 
-- One or more Jira epics → PRD, eng-spec, TDD, ERD, ADRs, BDDs, test cases, test spec.
-- PM / architect / staff-eng / UX / QA hats, no tool-switching.
-- Dev + QA share drafts via git with explicit review + approval.
-- Plan changes across multiple service repos in one ralph workspace-mode pass.
-- Dispatch parallel autonomous ralph loops.
-- **Private, per-bundle, disposable.** Not a long-running team OS.
+## Two-Repo Shape
 
-## Two-repo shape
+The harness is two GitHub repos, independent, published under `<your-org>` (defaults to your GitHub login).
 
-| Repo | Role | Location |
+| Repo | Role | Lives at |
 |------|------|----------|
-| `ai-workbench` | Template, cloned per bundle. Ships skills, scripts, lifecycle aliases, config templates. | `{{ links.ai_workbench_repo }}` |
-| `ai-devkit` | Global CLI: `init.wb`, `join.wb`, `wb.upgrade`. | `{{ links.ai_devkit_repo }}` |
+| `ai-workbench` | Template. Cloned per work-bundle. Ships skills, scripts, lifecycle aliases, config templates. | `{{ links.ai_workbench_repo }}` |
+| `ai-devkit` | Global CLI. Installs `init.wb`, `join.wb`, `update.wb`. | `{{ links.ai_devkit_repo }}` |
 
-Never clone `ai-workbench` directly: `init.wb` stamps a private instance via `gh repo create --template`.
+You never clone `ai-workbench` directly — `init.wb` stamps private instances from it via `gh repo create --template`.
 
-## Workbench tree
+## Workbench Directory Tree
+
+A stamped workbench (`wb-<label>`) looks like this:
 
 ```
 wb-<label>/
@@ -121,9 +119,9 @@ wb-<label>/
     └── pmo-status/SKILL.md
 ```
 
-## `project.conf` (per-workbench manifest)
+## `project.conf` — The Per-Workbench Manifest
 
-Committed shell file. Written by `init.wb`, extended by `join.wb`. Sourced by aliases and scripts.
+`project.conf` is a committed shell file written by `init.wb` and extended by `join.wb`. Aliases and scripts source it.
 
 ```bash
 #!/usr/bin/env bash
@@ -147,9 +145,9 @@ REPOS=(
 )
 ```
 
-## `.workbench-manifest.json` (template vs user)
+## `.workbench-manifest.json` — Template-Owned vs User-Owned
 
-Only paths under `template_owned` are rewritten by `wb.upgrade`. Everything else (PRDs, specs, BDDs, test cases, repos, lifecycle state) is `user_owned` and untouched.
+Only paths in `template_owned` are touched by `update.wb`. Everything else (your PRDs, specs, BDDs, test cases, code repos, lifecycle state) is `user_owned` and never overwritten.
 
 ```json
 {
@@ -190,28 +188,29 @@ Only paths under `template_owned` are rewritten by `wb.upgrade`. Everything else
 
 Rules:
 
-- Every tracked path lives in exactly one list.
-- `wb.upgrade` only pulls `template_owned`.
-- Never hand-edit a `template_owned` path. PR upstream to `ai-workbench` instead.
+- Every tracked path must appear in exactly one of the two lists.
+- `update.wb` only pulls `template_owned`.
+- Do not hand-edit template-owned paths in an instance — propose a PR to `ai-workbench` upstream instead.
 
 ## Lifecycle
 
-Every artifact flows `draft → published → approved`. Full state machine + downstream gates: [Artifact lifecycle](./lifecycle.html).
+Every generated artifact (PRD, spec, TDD, ERD, ADR, BDD, test cases, test spec) flows through `draft → published → approved`. See [Artifact lifecycle](./lifecycle.html) for the full state machine, downstream preconditions, and lifecycle commands.
 
-## Version notifications
+## Version Notifications
 
-Meaningful `wb.*` commands (publish, approve, reject, sync-context, ralph-plan, ralph-dispatch, register-repo, steering*) fire a one-shot version check per 12h window. Newer upstream → banner; offline/rate-limited/missing `gh` → silent (fail-open). List aliases (`wb.published`, `wb.approved`, `wb.rejected`) skip the check. Details: [Versioning + upgrades](./versioning.html).
+Meaningful `wb.*` commands (publish, approve, reject, sync-context, ralph-plan, ralph-dispatch, register-repo, steering*) fire a one-shot version check on the first call per 12-hour window. If a newer `ai-workbench` template is available upstream, a one-line banner is printed before the command runs; the check is fail-open, so offline runs are silent. Trivial list aliases (`wb.published`, `wb.approved`, `wb.rejected`) skip the check. See [Versioning + upgrades](./versioning.html) for the full mapping and the `wb.upgrade` flow.
 
-## Security
+## Security Model
 
-- Workbench repos are **private**. Only CODEOWNERS push.
-- MCP tokens stay in env vars per collaborator, never committed.
-- `.mcp.json.template` committed; `.mcp.json` gitignored.
-- `gh auth status` is checked before any GitHub-touching command. HTTPS or SSH (custom hostname alias) both work.
-- No force-push, no hook bypass, no branch-protection bypass.
+- Workbench repos are **private**. Only CODEOWNERS-listed accounts have push access.
+- MCP tokens stay in env vars per collaborator; never committed.
+- `.mcp.json.template` documents the agreed MCP server set; `.mcp.json` itself is gitignored.
+- `gh auth status` is inspected before every command that touches GitHub. HTTPS or SSH (with custom hostname alias) is respected.
+- No force-push anywhere. No bypass of hooks or branch protections.
 
-## Naming
+## Naming Rules
 
-- Repo name: `^wb-[a-z0-9][a-z0-9-]*$`, max 60 chars.
-- `init.wb` normalises and rejects duplicates.
-- Fallback: `wb-<primary-epic-id-lowercased>-YYYYMMDD`.
+- Workbench repo name must match `^wb-[a-z0-9][a-z0-9-]*$`.
+- Max length 60 chars.
+- `init.wb` normalises input and rejects duplicates.
+- Fallback label: `wb-<primary-epic-id-lowercased>-YYYYMMDD`.

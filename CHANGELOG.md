@@ -2,6 +2,25 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.4.0](https://github.com/amit-t/ai-workbench/compare/v1.3.0...v1.4.0) (2026-05-15)
+
+
+### Features
+
+* **skills:** install precision-mode skill ([bbacea5](https://github.com/amit-t/ai-workbench/commit/bbacea593eeef73ea44d1e5e35cde6111acccd1b))
+* **skills:** wire precision-mode into 9 draft hosts (Phase 3) ([5e0ca31](https://github.com/amit-t/ai-workbench/commit/5e0ca318ea3c90b4e0635f11cffdd3bf5be9c340))
+* **skills:** wire precision-mode into 9 draft hosts (Phase 3) ([57e51af](https://github.com/amit-t/ai-workbench/commit/57e51afafa3f27a31c0b42c2b1e4430879b27d47))
+
+## [1.3.0](https://github.com/amit-t/ai-workbench/compare/v1.2.1...v1.3.0) (2026-05-15)
+
+
+### Features
+
+* **skills:** add shared grill workflows for specs and plans ([dc1ed77](https://github.com/amit-t/ai-workbench/commit/dc1ed7791243517b71a56864e7da4a35473668d0))
+* **skills:** package domain grilling workflows ([28b8b4e](https://github.com/amit-t/ai-workbench/commit/28b8b4e9c8fe3774259196e29e05dd3441bcef2d))
+* **skills:** wire implicit grill into 9 draft skills ([54fad78](https://github.com/amit-t/ai-workbench/commit/54fad789e01d852543659811618d0584b34b8392))
+* **skills:** wire implicit grill step into 9 draft-producing skills ([34e880d](https://github.com/amit-t/ai-workbench/commit/34e880d956ef998f83b324f7cd66c8b59dc5366f))
+
 ## [1.2.1](https://github.com/amit-t/ai-workbench/compare/v1.2.0...v1.2.1) (2026-05-14)
 
 
