@@ -4,9 +4,11 @@ layout: default
 eyebrow: Start Here
 ---
 
+*Prefer the old long-form? See [V1 archive](./v1/getting-started.html).*
+
 {% include links.html %}
 
-## Install the Devkit (Once per Machine)
+## Install the devkit (once per machine)
 
 ```zsh
 git clone {{ links.ai_devkit_repo }} ~/Projects/Tools-Utilities/ai-devkit
@@ -15,49 +17,47 @@ cd ~/Projects/Tools-Utilities/ai-devkit
 source ~/.zshrc
 ```
 
-You now have three global commands: `init.wb`, `join.wb`, `update.wb` (plus `.dev` and `.cly` variants to force Devin or Claude).
+Adds three globals: `init.wb`, `join.wb`, `wb.upgrade`. `.dev` / `.cly` variants force Devin / Claude.
 
 ## Requirements
 
-- `gh` CLI authenticated against GitHub (HTTPS or SSH with custom hostname — both supported).
+- `gh` CLI authenticated (HTTPS or SSH-with-custom-hostname).
 - `git`, `rsync`, `python3`, `zsh`.
-- `devin` CLI (default). `claude` CLI as fallback.
+- `devin` CLI (default) or `claude` CLI.
 
-## Initiate a Workbench (First Collaborator, E.g. QA)
+## Stamp (initiator, often QA)
 
 ```zsh
 mkdir ~/workbenches/wb-example && cd ~/workbenches/wb-example
 init.wb
 ```
 
-Devin asks: workspace label, epics in scope, repos to clone, roles, figma refs, optional MCPs, target GitHub org (defaults to your login). It creates a **private** repo from the `ai-workbench` template under your org, clones your service + automation repos into `repos/`, seeds `project.conf` and `EPIC-PIPELINE.md`, writes `.github/CODEOWNERS` with you listed, commits and pushes.
+Devin prompts for label, epics, repos, roles, Figma refs, optional MCPs, target org (defaults to your login). Creates a **private** repo from the template, clones service + automation repos into `repos/`, seeds `project.conf` + `EPIC-PIPELINE.md`, writes `.github/CODEOWNERS` with you listed, commits, pushes. Share the resulting URL.
 
-Share the resulting URL with your counterpart.
-
-## Join an Existing Workbench (Second Collaborator, E.g. Dev)
+## Join (collaborator, often dev)
 
 ```zsh
 cd ~/workbenches
 join.wb https://github.com/<your-org>/wb-example
 ```
 
-Devin asks what additional repos you want cloned for your part of the work, appends them to `project.conf`, adds you to `.github/CODEOWNERS`, commits, pushes.
+Devin asks what extra repos you want cloned, appends to `project.conf`, adds you to CODEOWNERS, commits, pushes.
 
-## Pull Template Updates Later
+## Pull template updates
 
 ```zsh
 cd ~/workbenches/wb-example
-update.wb
+wb.upgrade
 ```
 
-One-way sync: fetches only template-owned paths (skills, scripts, CLAUDE.md, AGENTS.md, aliases.sh) from the `ai-workbench` upstream. Never touches your PRDs, specs, BDDs, etc.
+One-way sync of `template_owned` paths only (skills, scripts, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`). Your PRDs, specs, BDDs untouched.
 
-## First Session in a Workbench
+## First session
 
 ```zsh
 cd ~/workbenches/wb-example
-source aliases.sh    # add this line to ~/.zshrc for next time
+source aliases.sh    # add to ~/.zshrc for next time
 claude .             # or: devin .
 ```
 
-Try: `/epic-intake EPIC-001` to pull your first epic and start a PRD.
+Then `/epic-intake EPIC-001` to pull your first epic and start a PRD.

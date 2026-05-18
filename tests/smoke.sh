@@ -437,7 +437,12 @@ EOF
 cat > "$MOCK_BIN/ralph" <<'EOF'
 #!/usr/bin/env bash
 if [[ "$1" == "--help" ]]; then
-  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]"
+  cat <<'HELP'
+usage: ralph [--workspace] [--parallel N [M]] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]
+            [--max-task-attempts K] [--respawn-delay SEC] [--no-tabs]
+Continuous Parallel Execution:
+    --parallel N M          Continuous mode: keep N workers saturated until M attempts.
+HELP
   exit 0
 fi
 echo "mock ralph called with: $*"
@@ -493,6 +498,91 @@ pass "wb.ralph-dispatch --repos / --exclude mutually exclusive"
 dispatch_out=$(WB_RALPH_DISPATCH_REPOS=svc-a ./scripts/ralph-dispatch.sh --dry-run 2>&1)
 echo "$dispatch_out" | grep -q -- '--repos svc-a'                             || fail "dispatch env WB_RALPH_DISPATCH_REPOS not picked up: $dispatch_out"
 pass "WB_RALPH_DISPATCH_REPOS env var forwards to ralph --repos"
+
+# 9m.c0. wb.ralph-dispatch --dry-run with no continuous flag reports mode=batch
+dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'mode=batch'                                   || fail "dispatch banner should report mode=batch without M: $dispatch_out"
+echo "$dispatch_out" | grep -q 'max_tasks=<unset>'                            || fail "dispatch banner should show max_tasks=<unset> in batch mode: $dispatch_out"
+pass "wb.ralph-dispatch defaults to mode=batch"
+
+# 9m.c1. wb.ralph-dispatch --max-tasks N forwards as positional second arg
+dispatch_out=$(./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 30 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'mode=continuous'                              || fail "dispatch banner missing mode=continuous: $dispatch_out"
+echo "$dispatch_out" | grep -q 'max_tasks=30'                                 || fail "dispatch banner missing max_tasks=30: $dispatch_out"
+echo "$dispatch_out" | grep -qE 'ralph --workspace --parallel 3 30'           || fail "dispatch dry-run missing positional M passthrough: $dispatch_out"
+pass "wb.ralph-dispatch --max-tasks forwards as positional second arg"
+
+# 9m.c2. wb.ralph-dispatch --parallel N M (positional form) also engages continuous
+dispatch_out=$(./scripts/ralph-dispatch.sh --parallel 3 30 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'mode=continuous'                              || fail "positional --parallel N M did not engage continuous: $dispatch_out"
+echo "$dispatch_out" | grep -q 'max_tasks=30'                                 || fail "positional --parallel N M did not set max_tasks: $dispatch_out"
+echo "$dispatch_out" | grep -qE 'ralph --workspace --parallel 3 30'           || fail "positional --parallel N M did not forward: $dispatch_out"
+pass "wb.ralph-dispatch --parallel N M positional form engages continuous"
+
+# 9m.c3. continuous tuning knobs (K / SEC / --no-tabs) forwarded as separate flags
+dispatch_out=$(./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 30 --max-task-attempts 2 --respawn-delay 5 --no-tabs --dry-run 2>&1)
+echo "$dispatch_out" | grep -q -- '--max-task-attempts 2'                     || fail "dispatch --max-task-attempts not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q -- '--respawn-delay 5'                         || fail "dispatch --respawn-delay not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q -- '--no-tabs'                                 || fail "dispatch --no-tabs not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q 'tabs=off'                                     || fail "dispatch banner should show tabs=off with --no-tabs: $dispatch_out"
+pass "wb.ralph-dispatch forwards --max-task-attempts / --respawn-delay / --no-tabs"
+
+# 9m.c4. validation: --max-tasks rejects non-positive / non-integer values
+if ./scripts/ralph-dispatch.sh --max-tasks 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --max-tasks 0"
+fi
+if ./scripts/ralph-dispatch.sh --max-tasks abc --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --max-tasks abc"
+fi
+pass "wb.ralph-dispatch --max-tasks validates positive integer"
+
+# 9m.c5. validation: positional --parallel N M rejects M=0
+if ./scripts/ralph-dispatch.sh --parallel 3 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --parallel N 0 (positional M=0)"
+fi
+pass "wb.ralph-dispatch --parallel N 0 fails fast"
+
+# 9m.c6. validation: --max-task-attempts and --respawn-delay reject bad values
+if ./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 5 --max-task-attempts 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --max-task-attempts 0"
+fi
+if ./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 5 --respawn-delay abc --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --respawn-delay abc"
+fi
+pass "wb.ralph-dispatch validates --max-task-attempts and --respawn-delay"
+
+# 9m.c7. env precedence: WB_RALPH_MAX_TASKS picked up; CLI overrides env
+dispatch_out=$(WB_RALPH_MAX_TASKS=20 ./scripts/ralph-dispatch.sh --parallel 2 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'max_tasks=20'                                 || fail "dispatch env WB_RALPH_MAX_TASKS not picked up: $dispatch_out"
+echo "$dispatch_out" | grep -qE 'ralph --workspace --parallel 2 20'           || fail "dispatch env WB_RALPH_MAX_TASKS not forwarded as positional: $dispatch_out"
+dispatch_out=$(WB_RALPH_MAX_TASKS=20 ./scripts/ralph-dispatch.sh --parallel 2 --max-tasks 50 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'max_tasks=50'                                 || fail "dispatch CLI --max-tasks should override env: $dispatch_out"
+pass "WB_RALPH_MAX_TASKS env var resolved with CLI precedence"
+
+# 9m.c8. WB_RALPH_DISABLE_TABS=true env equivalent of --no-tabs
+dispatch_out=$(WB_RALPH_DISABLE_TABS=true ./scripts/ralph-dispatch.sh --parallel 2 --max-tasks 10 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'tabs=off'                                     || fail "WB_RALPH_DISABLE_TABS=true not honored: $dispatch_out"
+echo "$dispatch_out" | grep -q -- '--no-tabs'                                 || fail "WB_RALPH_DISABLE_TABS=true did not forward --no-tabs: $dispatch_out"
+pass "WB_RALPH_DISABLE_TABS=true env honored as --no-tabs"
+
+# 9m.c9. capability gate: when installed ralph does not advertise continuous,
+# --max-tasks fails fast. Swap in a stub that omits the Continuous section.
+LEGACY_BIN="$TMP/legacybin"
+mkdir -p "$LEGACY_BIN"
+cat > "$LEGACY_BIN/ralph" <<'EOF'
+#!/usr/bin/env bash
+if [[ "$1" == "--help" ]]; then
+  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]"
+  exit 0
+fi
+echo "legacy mock ralph called with: $*"
+exit 0
+EOF
+chmod +x "$LEGACY_BIN/ralph"
+if PATH="$LEGACY_BIN:$PATH" ./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 30 --dry-run >/dev/null 2>&1; then
+  fail "wb.ralph-dispatch should fail fast when ralph predates continuous mode"
+fi
+pass "wb.ralph-dispatch capability-gates --max-tasks against ralph --help"
 
 # 9m.p1. wb.ralph-plan --parallel-plan forwards to ralph-plan --parallel-plan
 plan_out=$(./scripts/ralph-plan.sh --parallel-plan 4 --dry-run 2>&1)
