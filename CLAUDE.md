@@ -169,6 +169,7 @@ Edge cases: an invalid `WB_PIN` errors loudly (never silently falls through to c
 - Never touch files under `skills/`, `scripts/`, `steering/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`, or `.workbench-manifest.json`. Those are template-owned and rewritten by `update.wb`. Team-specific steering goes in `steering.local/` (user-owned).
 - No em dashes in documents. Use commas or parentheses. Exception: code blocks preserve exact content.
 - No hype words. No "leverage", "utilize", "robust", "streamline", "unlock". Plain English.
+- A stamped wb (project.conf present) must NEVER have a `.ralph/` directory at the workbench root. The workspace lives at `$WB_ROOT/repos/.ralph/`. If a root `.ralph/` exists, it is template-dev leftover and `wb.upgrade` will back it up to `.ralph.purged.<timestamp>/` on next run. `wb.ralph-enable-check` refuses to proceed if the stub is detected.
 
 ## Versioning (agent-relevant only)
 
