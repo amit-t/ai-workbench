@@ -81,6 +81,12 @@ jobs:
             project.conf.template > project.conf
           # Verify project.conf is well-formed
           bash -n project.conf
+          # Mimic init.wb template_dev_only purge: drop entries listed in
+          # .workbench-manifest.json so the stamped wb does not inherit
+          # template-dev state. The wb-root .ralph/ stub in particular is
+          # rejected by scripts/ralph-enable-check.sh's stale-stub guard.
+          # Kept in sync with tests/smoke.sh step 1a.
+          rm -rf .ralph SESSION-HANDOFF.md
           echo "Stamped workbench at $HOME/wb-wsl-smoke"
 
       - name: Register a local target repo

@@ -21,6 +21,28 @@ Per-repo fix_plans exist and user wants ralph to execute, ideally in parallel ac
 |-------|--------|
 | Within-repo parallelism (`rpc.p N`) | ai-ralph native |
 | **Across-repo parallelism** — one loop per registered repo, pidfile + per-repo log | this skill |
+| **Continuous mode pass-through** — `--max-tasks M` / positional `--parallel N M`, plus `--max-task-attempts`, `--respawn-delay`, `--no-tabs`, capability-gated against `ralph --help` | this skill |
+
+## Continuous Mode
+
+For long unattended runs over a deep workspace fix_plan, engage ralph's **continuous mode**: workers stay saturated up to N concurrent until M total attempts have been spent, or the queue drains.
+
+Resolution: CLI flag > env > `project.conf` > unset (batch mode).
+
+| Flag | Env var | `project.conf` key | Meaning |
+|------|---------|--------------------|---------|
+| `--max-tasks M` | `WB_RALPH_MAX_TASKS` | `WB_RALPH_MAX_TASKS` | Engages continuous mode. Total attempts cap. |
+| `--max-task-attempts K` | `WB_RALPH_MAX_TASK_ATTEMPTS` | `WB_RALPH_MAX_TASK_ATTEMPTS` | Per-task retry cap. |
+| `--respawn-delay SEC` | `WB_RALPH_RESPAWN_DELAY` | `WB_RALPH_RESPAWN_DELAY` | Cooldown between worker respawns. |
+| `--no-tabs` | `WB_RALPH_DISABLE_TABS=true` | `WB_RALPH_DISABLE_TABS` | Force single-pane orchestrator. |
+
+The positional form `wb.ralph-dispatch --parallel N M` is accepted as a shorthand and forwarded identically to ralph's own `--parallel N M` shape.
+
+```bash
+wb.ralph-dispatch --parallel 3 --max-tasks 30
+wb.ralph-dispatch --parallel 3 30
+wb.ralph-dispatch --parallel 3 30 --no-tabs --respawn-delay 5
+```
 
 ## Prerequisites
 

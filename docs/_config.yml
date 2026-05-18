@@ -16,6 +16,26 @@ plugins:
 
 show_downloads: false
 
+# Setting `exclude` overrides Jekyll's default exclude list, so the build-time
+# defaults (vendor/bundle, Gemfile, etc.) must be repeated here. The trailing
+# entries are internal dev artifacts (plans, specs) that ship in the repo for
+# context but are not user-facing docs. Excluding them matches the allowlist in
+# scripts/check-docs-links.sh, which treats these as non-rendered pages
+# (hardcoded owner URLs are intentional inside plans + specs).
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - superpowers/plans
+  - superpowers/specs
+
 defaults:
   - scope:
       path: ""

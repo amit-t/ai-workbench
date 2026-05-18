@@ -63,4 +63,28 @@ EOF
   exit 1
 fi
 
+# Stale-stub guard: a stamped wb (project.conf present) must NEVER have a
+# .ralph/ directory at the workbench root. The real workspace lives at
+# $REPOS_ROOT/.ralph/ which we already validated above. A root .ralph/ is
+# template-dev leftover (init.wb's purge missed the whole-dir entry in
+# .workbench-manifest.json template_dev_only). It pollutes ai-ralph's
+# is_ralph_enabled check from any tool invoked at the wb root (e.g. bare
+# rpd.p / ralph-devin), making them report "partial" / "not enabled".
+if [[ -f "$WB_ROOT/project.conf" && -d "$WB_ROOT/.ralph" ]]; then
+  cat >&2 <<EOF
+ralph-enable-check: stale .ralph/ found at $WB_ROOT (workbench root).
+
+This is template-dev leftover that init.wb should have purged. The real
+workspace lives at $REPOS_ROOT/.ralph/ (already validated). The stub at
+$WB_ROOT/.ralph/ confuses ai-ralph's is_ralph_enabled check when any
+tool is invoked from the workbench root (e.g., bare rpd.p / ralph-devin).
+
+Heal: run \`wb.upgrade\` (ai-devkit), which backs up the stub to
+.ralph.purged.<timestamp>/ and removes the source. Manual equivalent:
+
+  mv "$WB_ROOT/.ralph" "$WB_ROOT/.ralph.purged.\$(date +%s)"
+EOF
+  exit 1
+fi
+
 exit 0

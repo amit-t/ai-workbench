@@ -28,10 +28,10 @@ A per-bundle workbench: one private repo where a dev + QA pair carry one or more
 ## Where to go
 
 - New here → [Getting started](./getting-started.html)
-- Lost in the pipeline → [Workflows](./workflows.html) or run `wb.wtd` ([ref](./skills/wtd.html))
+- Lost in the pipeline → [Workflows](./workflows.html) or `wb.wtd` ([ref](./skills/wtd.html))
 - Architecture / tree / manifests → [Architecture](./architecture.html)
 - State transitions → [Artifact lifecycle](./lifecycle.html)
-- Skills (19) → [Skills reference](./skills.html)
+- Skills (20) → [Skills reference](./skills.html)
 - Ralph integration → [Ralph](./ralph.html)
 - Steering (golden / role / overlays) → [Steering workflow](./steering/)
 - Upgrades + notifications → [Versioning](./versioning.html)

@@ -40,10 +40,9 @@
   ],
   "template_dev_only": [
     "SESSION-HANDOFF.md",
-    ".ralph/PROMPT.md",
-    ".ralph/fix_plan.md"
+    ".ralph/**"
   ],
-  "_template_dev_only_doc": "Files tracked in the ai-workbench template repo for template-dev work but purged from stamped wbs by init.wb (Step 3.4b) so collaborators do not inherit template-dev state. Update this list whenever a new template-dev-only file is added.",
+  "_template_dev_only_doc": "Files tracked in the ai-workbench template repo for template-dev work but purged from stamped wbs by init.wb (Step 3.4b) so collaborators do not inherit template-dev state. The overlap with user_owned .ralph/** is intentional: init.wb is responsible for the one-time purge of the template's .ralph/ at stamp; user_owned governs update.wb's leave-alone policy thereafter (so subsequent updates do not touch any .ralph/ a team has chosen to keep). Update this list whenever a new template-dev-only file is added.",
   "auto_generated": [
     "context/*/CONTEXT.md",
     "context/*/CONTEXT-MAP.md",

@@ -2,7 +2,7 @@
 title: Skills Reference
 layout: default
 eyebrow: Skills
-subtitle: "20 skills, one panel per hat. Lost in the pipeline? Run `wb.wtd` ([ref](skills/wtd.html)) or read [Workflows](workflows.html)."
+subtitle: "20 skills, one panel per hat. Pick a hat, scan, open any row for the deep dive. Lost in the pipeline? Run `wb.wtd` ([ref](skills/wtd.html)) or read [Workflows](workflows.html)."
 ---
 
 *Prefer the old long-form? See [V1 archive](./v1/skills.html).*

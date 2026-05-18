@@ -42,6 +42,12 @@ rsync -a --exclude 'tests' --exclude '.git' --exclude 'node_modules' \
   "$TEMPLATE_ROOT/" "$TMP/wb-smoke/"
 cd "$TMP/wb-smoke"
 
+# 1a. Mimic init.wb's template-dev purge: drop every entry listed under
+# .workbench-manifest.json template_dev_only so the stamped fixture matches
+# the post-init state (no wb-root .ralph/, no SESSION-HANDOFF.md). The
+# ralph-enable-check stub guard relies on this invariant.
+rm -rf .ralph SESSION-HANDOFF.md
+
 # 2. Render templates
 python3 - <<'PYEOF'
 import pathlib
@@ -437,13 +443,39 @@ EOF
 cat > "$MOCK_BIN/ralph" <<'EOF'
 #!/usr/bin/env bash
 if [[ "$1" == "--help" ]]; then
-  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]"
+  cat <<'HELP'
+usage: ralph [--workspace] [--parallel N [M]] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]
+            [--max-task-attempts K] [--respawn-delay SEC] [--no-tabs]
+Continuous Parallel Execution:
+    --parallel N M          Continuous mode: keep N workers saturated until M attempts.
+HELP
   exit 0
 fi
 echo "mock ralph called with: $*"
 exit 0
 EOF
-chmod +x "$MOCK_BIN/ralph-plan" "$MOCK_BIN/ralph"
+# Mock ralph-devin / ralph-codex so engine routing in wb.ralph-dispatch lands
+# on a binary whose --help advertises the full surface (--workspace, --parallel
+# N M, continuous knobs, --repos, --exclude). Real installed binaries do not
+# advertise --repos / --exclude in their --help, so the wrapper would skip
+# those passthroughs and existing tests would WARN instead of forward.
+for engine_bin in ralph-devin ralph-codex; do
+  cat > "$MOCK_BIN/$engine_bin" <<EOF
+#!/usr/bin/env bash
+if [[ "\$1" == "--help" ]]; then
+  cat <<'HELP'
+usage: $engine_bin [--workspace] [--parallel N [M]] [--live] [--monitor] [--repos LIST] [--exclude LIST]
+            [--max-task-attempts K] [--respawn-delay SEC] [--no-tabs]
+Continuous Parallel Execution:
+    --parallel N M          Continuous mode: keep N workers saturated until M attempts.
+HELP
+  exit 0
+fi
+echo "mock $engine_bin called with: \$*"
+exit 0
+EOF
+done
+chmod +x "$MOCK_BIN/ralph-plan" "$MOCK_BIN/ralph" "$MOCK_BIN/ralph-devin" "$MOCK_BIN/ralph-codex"
 export PATH="$MOCK_BIN:$PATH"
 
 mkdir -p repos/.ralph
@@ -460,9 +492,12 @@ plan_out=$(./scripts/ralph-plan.sh --dry-run --mode per-repo 2>&1)
 echo "$plan_out" | grep -q 'mode=per-repo'                                    || fail "ralph-plan --mode per-repo not honored"
 pass "wb.ralph-plan --mode per-repo override works"
 
-# 9m. wb.ralph-dispatch --dry-run invokes ralph --workspace --parallel N
+# 9m. wb.ralph-dispatch --dry-run invokes <engine-bin> --workspace --parallel N
+# Default engine resolves to devin (project.conf.template ships
+# RALPH_EXECUTION_ENGINE="devin"), so the bare-`ralph` substring no longer
+# matches; allow `ralph` or `ralph-devin` / `ralph-codex` via regex.
 dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
-echo "$dispatch_out" | grep -q 'ralph --workspace --parallel'                 || fail "dispatch dry-run missing --workspace --parallel: $dispatch_out"
+echo "$dispatch_out" | grep -qE '(^|[[:space:]])ralph(-devin|-codex)?[[:space:]]+--workspace[[:space:]]+--parallel' || fail "dispatch dry-run missing --workspace --parallel: $dispatch_out"
 echo "$dispatch_out" | grep -q "WORKSPACE_ROOT=$(pwd)/repos"                  || fail "dispatch dry-run missing WORKSPACE_ROOT export: $dispatch_out"
 pass "wb.ralph-dispatch --dry-run invokes workspace with parallel and WORKSPACE_ROOT"
 
@@ -493,6 +528,167 @@ pass "wb.ralph-dispatch --repos / --exclude mutually exclusive"
 dispatch_out=$(WB_RALPH_DISPATCH_REPOS=svc-a ./scripts/ralph-dispatch.sh --dry-run 2>&1)
 echo "$dispatch_out" | grep -q -- '--repos svc-a'                             || fail "dispatch env WB_RALPH_DISPATCH_REPOS not picked up: $dispatch_out"
 pass "WB_RALPH_DISPATCH_REPOS env var forwards to ralph --repos"
+
+# 9m.c0. wb.ralph-dispatch --dry-run with no continuous flag reports mode=batch
+dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'mode=batch'                                   || fail "dispatch banner should report mode=batch without M: $dispatch_out"
+echo "$dispatch_out" | grep -q 'max_tasks=<unset>'                            || fail "dispatch banner should show max_tasks=<unset> in batch mode: $dispatch_out"
+pass "wb.ralph-dispatch defaults to mode=batch"
+
+# 9m.c1. wb.ralph-dispatch --max-tasks N forwards as positional second arg
+dispatch_out=$(./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 30 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'mode=continuous'                              || fail "dispatch banner missing mode=continuous: $dispatch_out"
+echo "$dispatch_out" | grep -q 'max_tasks=30'                                 || fail "dispatch banner missing max_tasks=30: $dispatch_out"
+echo "$dispatch_out" | grep -qE 'ralph(-devin|-codex)? --workspace --parallel 3 30' || fail "dispatch dry-run missing positional M passthrough: $dispatch_out"
+pass "wb.ralph-dispatch --max-tasks forwards as positional second arg"
+
+# 9m.c2. wb.ralph-dispatch --parallel N M (positional form) also engages continuous
+dispatch_out=$(./scripts/ralph-dispatch.sh --parallel 3 30 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'mode=continuous'                              || fail "positional --parallel N M did not engage continuous: $dispatch_out"
+echo "$dispatch_out" | grep -q 'max_tasks=30'                                 || fail "positional --parallel N M did not set max_tasks: $dispatch_out"
+echo "$dispatch_out" | grep -qE 'ralph(-devin|-codex)? --workspace --parallel 3 30' || fail "positional --parallel N M did not forward: $dispatch_out"
+pass "wb.ralph-dispatch --parallel N M positional form engages continuous"
+
+# 9m.c3. continuous tuning knobs (K / SEC / --no-tabs) forwarded as separate flags
+dispatch_out=$(./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 30 --max-task-attempts 2 --respawn-delay 5 --no-tabs --dry-run 2>&1)
+echo "$dispatch_out" | grep -q -- '--max-task-attempts 2'                     || fail "dispatch --max-task-attempts not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q -- '--respawn-delay 5'                         || fail "dispatch --respawn-delay not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q -- '--no-tabs'                                 || fail "dispatch --no-tabs not forwarded: $dispatch_out"
+echo "$dispatch_out" | grep -q 'tabs=off'                                     || fail "dispatch banner should show tabs=off with --no-tabs: $dispatch_out"
+pass "wb.ralph-dispatch forwards --max-task-attempts / --respawn-delay / --no-tabs"
+
+# 9m.c4. validation: --max-tasks rejects non-positive / non-integer values
+if ./scripts/ralph-dispatch.sh --max-tasks 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --max-tasks 0"
+fi
+if ./scripts/ralph-dispatch.sh --max-tasks abc --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --max-tasks abc"
+fi
+pass "wb.ralph-dispatch --max-tasks validates positive integer"
+
+# 9m.c5. validation: positional --parallel N M rejects M=0
+if ./scripts/ralph-dispatch.sh --parallel 3 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --parallel N 0 (positional M=0)"
+fi
+pass "wb.ralph-dispatch --parallel N 0 fails fast"
+
+# 9m.c6. validation: --max-task-attempts and --respawn-delay reject bad values
+if ./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 5 --max-task-attempts 0 --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --max-task-attempts 0"
+fi
+if ./scripts/ralph-dispatch.sh --parallel 3 --max-tasks 5 --respawn-delay abc --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject --respawn-delay abc"
+fi
+pass "wb.ralph-dispatch validates --max-task-attempts and --respawn-delay"
+
+# 9m.c7. env precedence: WB_RALPH_MAX_TASKS picked up; CLI overrides env
+dispatch_out=$(WB_RALPH_MAX_TASKS=20 ./scripts/ralph-dispatch.sh --parallel 2 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'max_tasks=20'                                 || fail "dispatch env WB_RALPH_MAX_TASKS not picked up: $dispatch_out"
+echo "$dispatch_out" | grep -qE 'ralph(-devin|-codex)? --workspace --parallel 2 20' || fail "dispatch env WB_RALPH_MAX_TASKS not forwarded as positional: $dispatch_out"
+dispatch_out=$(WB_RALPH_MAX_TASKS=20 ./scripts/ralph-dispatch.sh --parallel 2 --max-tasks 50 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'max_tasks=50'                                 || fail "dispatch CLI --max-tasks should override env: $dispatch_out"
+pass "WB_RALPH_MAX_TASKS env var resolved with CLI precedence"
+
+# 9m.c8. WB_RALPH_DISABLE_TABS=true env equivalent of --no-tabs
+dispatch_out=$(WB_RALPH_DISABLE_TABS=true ./scripts/ralph-dispatch.sh --parallel 2 --max-tasks 10 --dry-run 2>&1)
+echo "$dispatch_out" | grep -q 'tabs=off'                                     || fail "WB_RALPH_DISABLE_TABS=true not honored: $dispatch_out"
+echo "$dispatch_out" | grep -q -- '--no-tabs'                                 || fail "WB_RALPH_DISABLE_TABS=true did not forward --no-tabs: $dispatch_out"
+pass "WB_RALPH_DISABLE_TABS=true env honored as --no-tabs"
+
+# 9m.c9. capability gate: when installed ralph does not advertise continuous,
+# --max-tasks fails fast. Swap in a stub that omits the Continuous section.
+# Force --engine claude so the wrapper probes the legacy `ralph` stub (not
+# the engine-bound ralph-devin/codex binaries the wrapper would otherwise
+# select under the default devin engine).
+LEGACY_BIN="$TMP/legacybin"
+mkdir -p "$LEGACY_BIN"
+cat > "$LEGACY_BIN/ralph" <<'EOF'
+#!/usr/bin/env bash
+if [[ "$1" == "--help" ]]; then
+  echo "usage: ralph [--workspace] [--parallel N] [--live] [--monitor] [--engine ENG] [--repos LIST] [--exclude LIST]"
+  exit 0
+fi
+echo "legacy mock ralph called with: $*"
+exit 0
+EOF
+chmod +x "$LEGACY_BIN/ralph"
+if PATH="$LEGACY_BIN:$PATH" ./scripts/ralph-dispatch.sh --engine claude --parallel 3 --max-tasks 30 --dry-run >/dev/null 2>&1; then
+  fail "wb.ralph-dispatch should fail fast when ralph predates continuous mode"
+fi
+pass "wb.ralph-dispatch capability-gates --max-tasks against ralph --help"
+
+# 9m.e0. wb.ralph-dispatch default engine resolution routes to ralph-devin
+# (project.conf.template now sets RALPH_EXECUTION_ENGINE="devin"; the smoke
+# harness renders project.conf from the template, so default = devin)
+dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE '\bralph-devin --workspace --parallel' || fail "default engine should route to ralph-devin: $dispatch_out"
+echo "$dispatch_out" | grep -q 'engine=devin' || fail "banner should reflect engine=devin by default: $dispatch_out"
+pass "wb.ralph-dispatch routes to ralph-devin by default (RALPH_EXECUTION_ENGINE=devin)"
+
+# 9m.e1. --engine claude routes to `ralph` binary
+dispatch_out=$(./scripts/ralph-dispatch.sh --engine claude --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE '> \(cd .* && WORKSPACE_ROOT=.* ralph --workspace --parallel' || fail "--engine claude should route to ralph: $dispatch_out"
+echo "$dispatch_out" | grep -q 'engine=claude' || fail "banner should reflect engine=claude: $dispatch_out"
+pass "wb.ralph-dispatch --engine claude routes to ralph binary"
+
+# 9m.e2. --engine devin routes to `ralph-devin` binary (explicit)
+dispatch_out=$(./scripts/ralph-dispatch.sh --engine devin --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE 'ralph-devin --workspace --parallel' || fail "--engine devin should route to ralph-devin: $dispatch_out"
+pass "wb.ralph-dispatch --engine devin routes to ralph-devin"
+
+# 9m.e3. --engine codex routes to `ralph-codex` binary
+dispatch_out=$(./scripts/ralph-dispatch.sh --engine codex --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE 'ralph-codex --workspace --parallel' || fail "--engine codex should route to ralph-codex: $dispatch_out"
+pass "wb.ralph-dispatch --engine codex routes to ralph-codex"
+
+# 9m.e4. WB_RALPH_ENGINE env overrides project.conf RALPH_EXECUTION_ENGINE
+dispatch_out=$(WB_RALPH_ENGINE=claude ./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE '> \(cd .* && WORKSPACE_ROOT=.* ralph --workspace --parallel' || fail "WB_RALPH_ENGINE=claude should route to ralph: $dispatch_out"
+pass "wb.ralph-dispatch env WB_RALPH_ENGINE overrides project.conf"
+
+# 9m.e5. CLI --engine wins over WB_RALPH_ENGINE
+dispatch_out=$(WB_RALPH_ENGINE=devin ./scripts/ralph-dispatch.sh --engine codex --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE 'ralph-codex --workspace --parallel' || fail "CLI --engine codex should win over env devin: $dispatch_out"
+pass "wb.ralph-dispatch CLI --engine wins over env"
+
+# 9m.e6. unknown engine rejected loudly
+if ./scripts/ralph-dispatch.sh --engine foo --dry-run 2>/dev/null; then
+  fail "wb.ralph-dispatch should reject unknown engine name"
+fi
+err_out=$(./scripts/ralph-dispatch.sh --engine foo --dry-run 2>&1 || true)
+echo "$err_out" | grep -q "unknown execution engine 'foo'" || fail "unknown engine error should name the engine: $err_out"
+pass "wb.ralph-dispatch rejects unknown engine name"
+
+# 9m.e7. RALPH_EXECUTION_ENGINE in project.conf is honored; plan engine independent
+# Patch the rendered project.conf to mix engines: plan=claude, exec=devin
+if grep -q '^RALPH_PLAN_ENGINE=' project.conf; then
+  sed -i.bak 's/^RALPH_PLAN_ENGINE=.*/RALPH_PLAN_ENGINE="claude"/' project.conf
+else
+  echo 'RALPH_PLAN_ENGINE="claude"' >> project.conf
+fi
+if grep -q '^RALPH_EXECUTION_ENGINE=' project.conf; then
+  sed -i.bak 's/^RALPH_EXECUTION_ENGINE=.*/RALPH_EXECUTION_ENGINE="devin"/' project.conf
+else
+  echo 'RALPH_EXECUTION_ENGINE="devin"' >> project.conf
+fi
+rm -f project.conf.bak
+dispatch_out=$(./scripts/ralph-dispatch.sh --dry-run 2>&1)
+echo "$dispatch_out" | grep -qE 'ralph-devin --workspace --parallel' || fail "RALPH_EXECUTION_ENGINE=devin should route to ralph-devin: $dispatch_out"
+echo "$dispatch_out" | grep -q 'engine=devin' || fail "banner engine should be devin: $dispatch_out"
+pass "wb.ralph-dispatch RALPH_EXECUTION_ENGINE wins over RALPH_PLAN_ENGINE for exec"
+
+# 9m.e8. Soft Devin warning fires when engine=devin
+err_out=$(./scripts/ralph-dispatch.sh --engine devin --dry-run 2>&1 || true)
+echo "$err_out" | grep -q 'Devin engine in workspace mode requires' || fail "soft Devin warning should fire for engine=devin: $err_out"
+echo "$err_out" | grep -q 'upstream-ralph-prompt-file-bug.md' || fail "soft warning should reference upstream bug file: $err_out"
+pass "wb.ralph-dispatch emits soft warning for engine=devin"
+
+# 9m.e9. No Devin warning for engine=claude
+err_out=$(./scripts/ralph-dispatch.sh --engine claude --dry-run 2>&1 || true)
+if echo "$err_out" | grep -q 'Devin engine in workspace mode requires'; then
+  fail "soft Devin warning should NOT fire for engine=claude: $err_out"
+fi
+pass "wb.ralph-dispatch suppresses Devin warning when engine=claude"
 
 # 9m.p1. wb.ralph-plan --parallel-plan forwards to ralph-plan --parallel-plan
 plan_out=$(./scripts/ralph-plan.sh --parallel-plan 4 --dry-run 2>&1)
@@ -555,6 +751,47 @@ else
   echo "  ~ skipping join.prompt.md asserts (ai-devkit not on disk)"
 fi
 
+# 9o.s1. ralph-enable-check refuses stamped wb with wb-root .ralph/ stub
+# Restore the workspace state torn down by 9n so the new guard is reachable
+# (otherwise the earlier "workspace not enabled" guard would fire first).
+mkdir -p repos/.ralph
+echo "WORKSPACE_MODE=true" > repos/.ralphrc
+# Construct the trap: create $WB_ROOT/.ralph at smoke harness root while the
+# repos/.ralph workspace remains valid (so we isolate the new guard).
+mkdir -p .ralph
+touch .ralph/AGENT.md
+if ./scripts/ralph-enable-check.sh 2>/dev/null; then
+  rm -rf .ralph
+  fail "ralph-enable-check should refuse stamped wb with wb-root .ralph/ stub"
+fi
+# Verify the error message contains the heal hint
+err_out=$(./scripts/ralph-enable-check.sh 2>&1 || true)
+echo "$err_out" | grep -q 'stale .ralph/' || { rm -rf .ralph; fail "stale-stub error missing 'stale .ralph/' marker: $err_out"; }
+echo "$err_out" | grep -q 'wb.upgrade'    || { rm -rf .ralph; fail "stale-stub error missing wb.upgrade heal hint: $err_out"; }
+echo "$err_out" | grep -q '.ralph.purged' || { rm -rf .ralph; fail "stale-stub error missing manual purge hint: $err_out"; }
+rm -rf .ralph
+pass "ralph-enable-check refuses wb-root .ralph/ stub in stamped wb"
+
+# 9o.s2. ralph-enable-check stub guard does NOT fire when project.conf is absent
+# (template-dev mode: the template repo itself is allowed to have wb-root .ralph/).
+mv project.conf project.conf.away
+mkdir -p .ralph
+touch .ralph/AGENT.md
+err_out=$(./scripts/ralph-enable-check.sh 2>&1 || true)
+if echo "$err_out" | grep -q 'stale .ralph/' ; then
+  rm -rf .ralph
+  mv project.conf.away project.conf
+  fail "ralph-enable-check should NOT fire stub guard without project.conf (template-dev mode): $err_out"
+fi
+rm -rf .ralph
+mv project.conf.away project.conf
+pass "ralph-enable-check stub guard fires only in stamped wb (project.conf present)"
+
+# 9o.s3. ralph-enable-check passes cleanly when wb-root has no .ralph/ stub
+# (sanity: confirm previous tests cleaned up the trap and the baseline path is green)
+./scripts/ralph-enable-check.sh >/dev/null 2>&1 || fail "ralph-enable-check should pass in clean stamped wb"
+pass "ralph-enable-check baseline pass: clean stamped wb"
+
 # 9o2. README documents the bootstrap (F2)
 README_FILE="$TEMPLATE_ROOT/README.md"
 grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$README_FILE" || fail "README.md missing F2 bootstrap command"
@@ -581,7 +818,7 @@ errs = []
 if ".ralph/**" not in m.get("user_owned", []):
     errs.append(".workbench-manifest.json user_owned missing .ralph/**")
 tdo = m.get("template_dev_only", [])
-for must in ("SESSION-HANDOFF.md", ".ralph/PROMPT.md", ".ralph/fix_plan.md"):
+for must in ("SESSION-HANDOFF.md", ".ralph/**"):
     if must not in tdo:
         errs.append(f".workbench-manifest.json template_dev_only missing {must}")
 if errs:

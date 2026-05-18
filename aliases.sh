@@ -125,6 +125,19 @@ wb.sync-context() {
 #   wb.ralph-plan [flags]           # sync context + ralph-plan (workspace by default)
 #   wb.ralph-dispatch [flags]       # cd repos/ && ralph --workspace --parallel N
 #   wb.ralph-dispatch --status      # show open ralph PRs + tail of worker logs
+#
+# Continuous mode (opt-in; ralph keeps N workers saturated until M attempts):
+#   wb.ralph-dispatch --parallel 3 --max-tasks 30        # named M
+#   wb.ralph-dispatch --parallel 3 30                    # positional M (ralph's shape)
+#   wb.ralph-dispatch --parallel 3 30 --no-tabs          # force single-pane
+#   wb.ralph-dispatch --parallel 3 30 --max-task-attempts 2 --respawn-delay 5
+# Without M (--max-tasks / WB_RALPH_MAX_TASKS / project.conf), dispatch runs
+# in V1 batch mode (byte-identical to prior behavior). Capability-gated: the
+# wrapper fails fast if the installed ralph predates continuous mode.
+#
+# Execution engine resolution (independent of plan engine):
+#   CLI --engine > WB_RALPH_ENGINE > RALPH_EXECUTION_ENGINE > RALPH_PLAN_ENGINE > devin
+#   Engine -> binary: claude -> ralph, devin -> ralph-devin, codex -> ralph-codex
 wb.ralph-enable-check() {
   _wb_resolve_root || return 1
   local WB_ROOT="$__WB_ROOT_OUT"
