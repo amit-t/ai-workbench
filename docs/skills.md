@@ -2,7 +2,7 @@
 title: Skills Reference
 layout: default
 eyebrow: Skills
-subtitle: "19 skills, one panel per hat. Pick a hat, scan, open any row for the deep dive."
+subtitle: "20 skills, one panel per hat. Lost in the pipeline? Run `wb.wtd` ([ref](skills/wtd.html)) or read [Workflows](workflows.html)."
 ---
 
 *Prefer the old long-form? See [V1 archive](./v1/skills.html).*
@@ -78,12 +78,13 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 </details>
 
 <details markdown="1">
-<summary><strong>Cross-Cutting</strong> · 3 skills · grill-me + PMO status + precise-readme</summary>
+<summary><strong>Cross-Cutting</strong> · 4 skills · grill-me + PMO status + WTD + precise-readme</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
 | [`/grill-me`](skills/grill-me.html) | Relentless decision-tree interview on any draft before publish | any draft artifact |
 | [`/pmo-status`](skills/pmo-status.html) | Terminal rollup of epics, PRDs, specs, TDDs, BDDs, fix_plan coverage, dispatch state | none (read-only) |
+| [`/wtd`](skills/wtd.html) | What-To-Do: single next command per epic. Trimmer cousin of pmo-status. | none (read-only) |
 | [`/precise-readme`](skills/precise-readme.html) | Precision-mode pass on README + `docs/`; archives originals under `docs/v1/` with cross-banners. | README + `docs/` exist |
 
 </details>
@@ -99,4 +100,4 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 | Engineering | `/eng-spec`, `/tdd`, `/erd`, `/adr` |
 | QA | `/bdd-gen`, `/test-cases-gen`, `/test-spec` |
 | Orchestrator | `/ralph-workspace-plan`, `/ralph-dispatch` |
-| Cross-cutting | `/grill-me`, `/pmo-status`, `/precise-readme` |
+| Cross-cutting | `/grill-me`, `/pmo-status`, `/wtd`, `/precise-readme` |
