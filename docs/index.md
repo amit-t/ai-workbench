@@ -3,47 +3,51 @@ title: Home
 layout: default
 ---
 
+*Prefer the old long-form? See [V1 archive](./v1/).*
+
 {% include links.html %}
 
-## What It Gives You
+A per-bundle workbench: one private repo where a dev + QA pair carry one or more Jira epics from PRD to shipped code via ralph.
 
-- **Shared private git repo** per bundle of one or more Jira epics.
+## What you get
+
+- **Private git repo per bundle**, shared between two collaborators.
 - **Five role hats** in one place: PO, Architect, Staff Eng, UX, QA.
 - **Three-stage lifecycle** for every artifact: `draft → published → approved`.
-- **Single source of truth** for ralph: `.workbench-state/approved.json`.
-- **Cross-repo ralph orchestration** — plan and dispatch across multiple service + automation repos.
-- **One-way template updates** — pull skill improvements from the `ai-workbench` template without touching your outputs.
+- **Single ralph gate**: `.workbench-state/approved.json`.
+- **Cross-repo orchestration**: workspace-mode plan + parallel dispatch.
+- **One-way template updates**: pull skill improvements without touching your outputs.
 
-## Two Repos, One Story
+## Two repos
 
 | Repo | Role |
 |------|------|
-| [`ai-workbench`]({{ links.ai_workbench_repo }}) | Template. `gh repo create --template` stamps an instance per bundle. |
-| [`ai-devkit`]({{ links.ai_devkit_repo }}) | Global CLI. Provides `init.wb`, `join.wb`, `update.wb`. |
+| [`ai-workbench`]({{ links.ai_workbench_repo }}) | Template. `init.wb` stamps a private instance per bundle. |
+| [`ai-devkit`]({{ links.ai_devkit_repo }}) | Global CLI: `init.wb`, `join.wb`, `wb.upgrade`. |
 
-## Quick Paths
+## Where to go
 
-- **New to this?** Start at [Getting started](./getting-started.html).
-- **Want the architecture?** [Architecture](./architecture.html).
-- **Want to understand state transitions?** [Artifact lifecycle](./lifecycle.html).
-- **Looking for a specific skill?** [Skills reference](./skills.html).
-- **Ralph integration questions?** [Ralph integration](./ralph.html).
-- **How steering works (golden principles, role rules, overlays)?** [Steering workflow](./steering/).
-- **Update notifications + how to upgrade?** [Versioning + upgrades](./versioning.html).
-- **Something unclear?** [FAQ](./faq.html).
+- New here → [Getting started](./getting-started.html)
+- Architecture / tree / manifests → [Architecture](./architecture.html)
+- State transitions → [Artifact lifecycle](./lifecycle.html)
+- Skills (18) → [Skills reference](./skills.html)
+- Ralph integration → [Ralph](./ralph.html)
+- Steering (golden / role / overlays) → [Steering workflow](./steering/)
+- Upgrades + notifications → [Versioning](./versioning.html)
+- Stuck → [FAQ](./faq.html)
 
-## Typical Flow
+## Typical flow
 
 ```
 Jira epic → /epic-intake → publish + approve
          → /prd-draft   → publish + approve
-         → /eng-spec    → publish + approve  (dev hat)
+         → /eng-spec    → publish + approve   (dev hat)
          → /tdd         → publish + approve
-         → /bdd-gen     → publish + approve  (QA hat)
+         → /bdd-gen     → publish + approve   (QA hat)
          → /test-cases-gen → publish + approve
          → /test-spec   → publish + approve
-         → /ralph-workspace-plan   (generates per-repo fix_plans)
-         → /ralph-dispatch         (parallel autonomous execution)
+         → /ralph-workspace-plan
+         → /ralph-dispatch
 ```
 
 ## License
