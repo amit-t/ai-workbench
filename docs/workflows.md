@@ -2,24 +2,22 @@
 title: Workflows
 layout: default
 eyebrow: If This, Then That
-subtitle: "You are somewhere in the pipeline. This page tells you what comes next. When in doubt, run `wb.wtd`."
+subtitle: "Tells you what comes next. When in doubt: `wb.wtd`."
 ---
 
 {% include links.html %}
 
-## TL;DR — Stop Reading, Run This
+## TL;DR
 
 ```zsh
 wb.wtd
 ```
 
-`wb.wtd` (What-To-Do) reads `.workbench-state/`, walks the per-epic pipeline, and prints the single next command to run. It is the answer to "I don't know what step I'm on." The rest of this page is the manual edition of the same logic — for when you want to learn the pipeline, not just clear it.
-
-See the [`/wtd` skill reference](./skills/wtd.html) for the underlying recommendation logic.
+Reads `.workbench-state/`, walks per-epic pipeline, prints the single next command. The rest of this page is the manual version, for when you want to learn the pipeline rather than just clear it. Logic ref: [/wtd skill](./skills/wtd.html).
 
 ---
 
-## The Pipeline, End to End
+## Pipeline
 
 ```mermaid
 flowchart LR
@@ -39,153 +37,147 @@ flowchart LR
     N -->|wb.ralph-dispatch| O[Ralph runs, PRs open]
 ```
 
-Every box is either `draft`, `published`, or `approved`. Ralph only consumes what is in `.workbench-state/approved.json`. Everything else is invisible to ralph.
-
-See [Artifact Lifecycle](./lifecycle.html) for the state machine that backs every box.
+Every box is `draft`, `published`, or `approved`. Ralph only consumes `.workbench-state/approved.json`. Everything else is invisible to ralph. State machine: [Artifact Lifecycle](./lifecycle.html).
 
 ---
 
-## If You Are Here, Do This Next
+## If you are here, do this next
 
-### Stage 0 — Empty Workbench
-
-| You see | Do this |
-|---------|---------|
-| You just ran `init.wb` or `join.wb` and you have never opened the workbench. | Open Claude or Devin in this directory, then run `/pmo-status` to confirm orientation, and `wb.wtd` to get your first command. |
-| `project.conf` `EPICS=(...)` is empty. | Edit `project.conf`, append the Jira epic IDs in scope, commit, push. |
-| No `.workbench-state/approved.json` yet. | Run any `wb.publish` once — it auto-creates the ledger files. |
-
-### Stage 1 — Epic Intake
+### Stage 0: Empty workbench
 
 | You see | Do this |
 |---------|---------|
-| Epic is in `project.conf` but `product/context-library/epics/<EPIC>.md` does not exist. | `/epic-intake <EPIC>` |
-| `product/context-library/epics/<EPIC>.md` exists at `status: draft`. | Review it. Then publish + approve: `wb.publish epic-<EPIC> product/context-library/epics/<EPIC>.md epic-context && wb.approve epic-<EPIC>` |
-| `epic-<EPIC>` is in `published.json` but not `approved.json`. | Counterpart should approve: `wb.approve epic-<EPIC>` |
+| Just ran `init.wb` / `join.wb`, never opened the wb. | Open Claude or Devin in this dir; run `/pmo-status` for orientation, then `wb.wtd` for the first command. |
+| `project.conf` `EPICS=(...)` empty. | Append Jira epic IDs, commit, push. |
+| No `.workbench-state/approved.json` yet. | Any `wb.publish` auto-creates the ledger files. |
 
-### Stage 2 — PRD Drafting
+### Stage 1: Epic intake
 
 | You see | Do this |
 |---------|---------|
-| Epic context is approved, no PRD exists. | `/prd-draft <EPIC>` |
-| PRD draft exists but has not been reviewed. | `/prd-review-panel <PRD_ID>` to run the 7-perspective review. |
-| Review found P0 findings. | Address the P0s in the PRD body. Re-run review. P0s must clear before publish. |
+| Epic in `project.conf` but `product/context-library/epics/<EPIC>.md` missing. | `/epic-intake <EPIC>` |
+| `epics/<EPIC>.md` at `draft`. | Review, then `wb.publish epic-<EPIC> product/context-library/epics/<EPIC>.md epic-context && wb.approve epic-<EPIC>` |
+| `epic-<EPIC>` in `published.json` but not `approved.json`. | Counterpart approves: `wb.approve epic-<EPIC>` |
+
+### Stage 2: PRD drafting
+
+| You see | Do this |
+|---------|---------|
+| Epic context approved, no PRD. | `/prd-draft <EPIC>` |
+| PRD draft, not reviewed. | `/prd-review-panel <PRD_ID>` (7-perspective review). |
+| Review found P0s. | Address P0s. Re-run review. P0s must clear before publish. |
 | Review clean. | `wb.publish <PRD_ID> product/outputs/prds/<file>.md prd` then `wb.approve <PRD_ID>` (after counterpart sign-off). |
-| One epic, multiple PRDs. | Approve in priority order from `EPIC-PIPELINE.md` "Queued PRDs" table. |
+| One epic, multiple PRDs. | Approve in priority order from `EPIC-PIPELINE.md` "Queued PRDs". |
 
-### Stage 3 — Design (Optional, UX hat)
-
-| You see | Do this |
-|---------|---------|
-| PRD approved, no Figma refs collected. | `/figma-pull <PRD_ID> <FIGMA_URL>` |
-| Figma refs parked, no screens generated. | `/ds-screen-gen <PRD_ID>` |
-| Screens generated, no design review yet. | `/design-review <PRD_ID>` |
-| Want the whole UX flow in one shot. | `/design-draft <PRD_ID>` orchestrates `figma-pull` → `ds-screen-gen` → `design-review`. |
-
-### Stage 4 — Engineering (Dev hat)
+### Stage 3: Design (optional, UX hat)
 
 | You see | Do this |
 |---------|---------|
-| PRD approved, no engineering spec. | `/eng-spec <PRD_ID>` |
-| Eng spec at `status: draft`. | Run `/grill-me` or `/domain-grill` on it, then `wb.publish <SPEC_ID> engineering/outputs/specs/<file>.md eng-spec`. |
+| PRD approved, no Figma refs. | `/figma-pull <PRD_ID> <FIGMA_URL>` |
+| Figma refs parked, no screens. | `/ds-screen-gen <PRD_ID>` |
+| Screens generated, no review. | `/design-review <PRD_ID>` |
+| Want the whole UX flow at once. | `/design-draft <PRD_ID>` (orchestrates figma-pull → ds-screen-gen → design-review). |
+
+### Stage 4: Engineering (dev hat)
+
+| You see | Do this |
+|---------|---------|
+| PRD approved, no eng spec. | `/eng-spec <PRD_ID>` |
+| Eng spec at `draft`. | `/grill-me` or `/domain-grill`, then `wb.publish <SPEC_ID> engineering/outputs/specs/<file>.md eng-spec`. |
 | Eng spec approved, no TDD. | `/tdd <SPEC_ID>` |
-| Touching a service repo and the data model is non-trivial. | `/erd <SPEC_ID>` for the ER + C4 diagram set. |
-| Making a hard-to-reverse decision (database, framework, auth model). | `/adr <SPEC_ID>` — MADR-lite ADR. May stand alone without a SPEC for cross-cutting calls. |
-| Eng spec rejected. | Read the reason in `.workbench-state/rejected.json`, fix the spec, re-publish. |
+| Service repo + non-trivial data model. | `/erd <SPEC_ID>` (ER + C4). |
+| Hard-to-reverse decision (DB, framework, auth). | `/adr <SPEC_ID>` (MADR-lite). May stand alone without a SPEC for cross-cutting calls. |
+| Eng spec rejected. | Read reason in `rejected.json`, fix, re-publish. |
 
-### Stage 5 — QA (QA hat)
+### Stage 5: QA (QA hat)
 
 | You see | Do this |
 |---------|---------|
-| PRD approved, no BDD features. | `/bdd-gen <PRD_ID>` |
+| PRD approved, no BDDs. | `/bdd-gen <PRD_ID>` |
 | BDDs approved, no test cases. | `/test-cases-gen <PRD_ID>` |
 | Test cases approved, no test spec. | `/test-spec <PRD_ID>` |
-| Test spec needs the ERD too. | `/test-spec` chains an optional TERD pass — accept it when the data model is non-trivial. |
+| Test spec needs the ERD too. | `/test-spec` chains an optional TERD pass; accept when the data model is non-trivial. |
 
-### Stage 6 — Ralph Plan + Dispatch (Orchestrator hat)
+### Stage 6: Ralph plan + dispatch (orchestrator hat)
 
 | You see | Do this |
 |---------|---------|
-| PRD + eng spec + TDD + test spec all approved, no `repos/.ralph/fix_plan.md`. | `wb.ralph-enable-check` (preflight), then `/ralph-workspace-plan`. |
+| PRD + eng-spec + TDD + test-spec all approved, no `repos/.ralph/fix_plan.md`. | `wb.ralph-enable-check`, then `/ralph-workspace-plan`. |
 | `fix_plan.md` exists per repo, ready to run. | `wb.ralph-dispatch` |
-| Only want one repo to run. | `wb.ralph-dispatch --repos <name>` |
-| Want to skip one repo. | `wb.ralph-dispatch --exclude <name>` |
-| Stakeholder changed one repo's PRD slice. | `wb.ralph-plan --replan <repo>` (regenerates only that section, splices back in). |
-| Want plan workers in parallel (workspace mode). | `wb.ralph-plan --parallel-plan N` |
-| Need to debug one repo's ralph loop interactively. | `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)` |
-| Dispatch already running. | `wb.ralph-dispatch --status` to see open PRs + tail worker logs. |
+| Only one repo. | `wb.ralph-dispatch --repos <name>` |
+| Skip a repo. | `wb.ralph-dispatch --exclude <name>` |
+| One repo's PRD slice changed. | `wb.ralph-plan --replan <repo>` (regen that section, splice back). |
+| Workspace-mode parallel planning. | `wb.ralph-plan --parallel-plan N` |
+| Long unattended run. | `wb.ralph-dispatch --parallel N --max-tasks M` (continuous mode). |
+| Debug one repo's loop. | `(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)` |
+| Dispatch already running. | `wb.ralph-dispatch --status` (open PRs + worker log tails). |
 
-### Stage 7 — Recovery Paths
+### Stage 7: Recovery
 
 | You see | Do this |
 |---------|---------|
-| Artifact approved by mistake. | `wb.reject <ID> "<reason>"` returns it to `draft`. Records reason in `.workbench-state/rejected.json`. |
-| Artifact rejected and you have addressed the reason. | Edit the file, `wb.publish` again, then `wb.approve`. |
-| `wb.publish` complains about a missing `target_repos:` field. | Open the artifact, add `target_repos: [<repo-name>, ...]` to YAML frontmatter (or `# target_repos:` to a `.feature` file), retry. |
-| `wb.publish` warns about no `grilled:` block. | Run the host skill's grill step (e.g. `/grill-me`, `/domain-grill`) and re-publish. Warnings do not block publish. |
-| Ralph PR has a footer of `steering.local/` overrides you do not recognise. | Run `wb.steering-audit` to see which template rules a teammate overrode, when, and by whom. |
-| `update.wb` overwrote a file you customised. | Move team-specific guidance to `steering.local/` (user-owned). Template paths (`skills/`, `scripts/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`) are rewritten on every `wb.upgrade`. |
-| Engine clone is out of date. | `devkit.upgrade` (ai-devkit), `ralph.upgrade` (ai-ralph), `wb.upgrade` (this stamped wb). One-step: `devkit doctor`. |
+| Artifact approved by mistake. | `wb.reject <ID> "<reason>"` (back to `draft`; reason logged in `rejected.json`). |
+| Rejected artifact, fixed. | Edit file, `wb.publish` again, `wb.approve`. |
+| `wb.publish` complains about missing `target_repos:`. | Add `target_repos: [<repo-name>, ...]` to YAML frontmatter (or `# target_repos:` in a `.feature`), retry. |
+| `wb.publish` warns about no `grilled:` block. | Run the host's grill step (`/grill-me`, `/domain-grill`), re-publish. Warnings do not block publish. |
+| Ralph PR footer lists unfamiliar `steering.local/` overrides. | `wb.steering-audit` (who overrode what, when). |
+| `wb.upgrade` overwrote a file you customised. | Move team-specific rules to `steering.local/` (user-owned). Template paths (`skills/`, `scripts/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`) rewrite on every upgrade. |
+| Engine clone stale. | `devkit.upgrade`, `ralph.upgrade`, `wb.upgrade`. One-shot: `devkit doctor`. |
 
 ---
 
-## Decision Cheatsheet by Role
+## Per-hat cheatsheet
 
-### PO Hat
-
+**PO**
 ```
 new epic → /epic-intake → approve → /prd-draft → /prd-review-panel → publish + approve
 ```
 
-### Dev Hat
-
+**Dev**
 ```
-PRD approved → /eng-spec → grill → publish + approve → /tdd → (optional /erd, /adr) → done
+PRD approved → /eng-spec → grill → publish + approve → /tdd → (optional /erd, /adr)
 ```
 
-### QA Hat
-
+**QA**
 ```
 PRD approved → /bdd-gen → publish + approve → /test-cases-gen → publish + approve → /test-spec → publish + approve
 ```
 
-### UX Hat
-
+**UX**
 ```
-PRD approved → /design-draft  (or piecewise: /figma-pull → /ds-screen-gen → /design-review)
+PRD approved → /design-draft   (or: /figma-pull → /ds-screen-gen → /design-review)
 ```
 
-### Orchestrator Hat
-
+**Orchestrator**
 ```
 all PRD-scoped artifacts approved → wb.ralph-enable-check → /ralph-workspace-plan → wb.ralph-dispatch
 ```
 
 ---
 
-## Common "But What About…" Cases
+## But what about
 
-**Cross-cutting work that does not belong to one epic.**
-Use an ADR (`/adr` without a SPEC ID) for the decision. File the implementation under the most relevant existing PRD's eng-spec, or open a tiny scoped PRD for it.
+**Cross-cutting work, not one epic.**
+Use `/adr` (without a SPEC ID) for the decision. File implementation under the closest existing PRD's eng-spec, or open a tiny scoped PRD.
 
-**Two epics share a single PRD.**
-Put both epic IDs in the PRD's `epic_id:` frontmatter as a YAML list. `/wtd` will recognise the PRD against both epics.
+**Two epics, one PRD.**
+List both IDs in `epic_id:` frontmatter (YAML list). `/wtd` recognises the PRD against both.
 
-**You inherited a workbench mid-stream and the lifecycle drifted.**
-Run `wb.wtd --json` and pipe through `jq '.recommendations[]'`. Address blockers first (priority < 30). When the recommender goes silent on an epic, that epic is unblocked.
+**Inherited a wb mid-stream, lifecycle drifted.**
+`wb.wtd --json | jq '.recommendations[]'`. Address blockers first (priority < 30). Silence on an epic means unblocked.
 
 **One repo's tests fail repeatedly under ralph.**
-`(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)` to attach a live monitor. Fix the failing test in the workbench's TDD or test-spec, re-publish, re-approve, then re-dispatch only that repo via `wb.ralph-dispatch --repos <name>`.
+`(cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)`. Fix the test in the wb's TDD or test-spec, re-publish, re-approve, re-dispatch only that repo via `wb.ralph-dispatch --repos <name>`.
 
-**Counterpart approved something while you were drafting it.**
-`git pull --rebase` is the first command every session for a reason. The shared workbench is not concurrency-safe across machines.
+**Counterpart approved something while you were drafting.**
+`git pull --rebase` is the first command every session for a reason. Shared wb is not concurrency-safe across machines.
 
 ---
 
-## See Also
+## See also
 
-- [/wtd skill](./skills/wtd.html) — recommendation engine that powers `wb.wtd`.
-- [/pmo-status skill](./skills/pmo-status.html) — full rollup when you want the whole board, not just the next step.
-- [Artifact Lifecycle](./lifecycle.html) — three stages, three ledgers, one ralph gate.
-- [Ralph Integration](./ralph.html) — workspace plan, dispatch, parallel modes.
-- [Skills reference](./skills.html) — every skill, every input gate.
+- [/wtd skill](./skills/wtd.html): recommender behind `wb.wtd`.
+- [/pmo-status skill](./skills/pmo-status.html): full board rollup.
+- [Artifact lifecycle](./lifecycle.html): three stages, three ledgers, one ralph gate.
+- [Ralph integration](./ralph.html): workspace plan, dispatch, parallel + continuous modes.
+- [Skills reference](./skills.html): every skill, every input gate.
