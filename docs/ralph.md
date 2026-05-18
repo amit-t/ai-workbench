@@ -50,9 +50,11 @@ scripts/ralph-plan.sh [--mode workspace|per-repo|auto] [--engine ...] [--thinkin
   # Workspace: (cd repos && ralph-plan --workspace --engine $E --thinking $T)
   # Per-repo fallback: loops project.conf REPOS, runs ralph-plan inside each.
 
-scripts/ralph-dispatch.sh [--parallel N] [--engine ...] [--status] [--dry-run]
-  # (cd repos && ralph --workspace --parallel N)
-  # Default N = min(len(REPOS), 4). Engine flag passed through when ralph supports it.
+scripts/ralph-dispatch.sh [--parallel N [M]] [--max-tasks M] [--max-task-attempts K] [--respawn-delay SEC] [--no-tabs] [--engine ...] [--repos a,b] [--exclude c] [--status] [--dry-run]
+  # (cd repos && ralph --workspace --parallel N [M] [--max-task-attempts K] [--respawn-delay SEC] [--no-tabs])
+  # Default N = min(len(REPOS), 4). With M set, engages ralph's continuous mode.
+  # Engine + continuous knobs passed through when ralph supports them; missing
+  # continuous support fails fast (no silent fallback to batch).
   # --status: gh pr list per repo + tail of repos/.ralph/logs/.
 
 scripts/ralph-enable-check.sh
@@ -69,6 +71,37 @@ Single-repo debugging (workbench does not wrap this):
 ```bash
 (cd "$WB_ROOT/repos/<name>" && ralph --live --monitor)
 ```
+
+## Continuous dispatch
+
+`wb.ralph-dispatch` defaults to **batch mode**: spawn N agents, each runs the workspace loop, wrapper exits when all N stop. One-shot fan-out.
+
+**Continuous mode** keeps N workers saturated until M total task attempts (success + failure both count) or queue drains. Right shape for long unattended runs over a deep workspace fix_plan.
+
+Opt-in. Setting M flips the mode:
+
+```bash
+# Named form (preferred; pairs cleanly with project.conf)
+wb.ralph-dispatch --parallel 3 --max-tasks 30
+
+# Positional form (mirrors ralph's `--parallel N M` shape byte-identically)
+wb.ralph-dispatch --parallel 3 30
+
+# Drive from project.conf so the team runs the same shape
+echo 'WB_RALPH_MAX_TASKS="50"' >> project.conf
+wb.ralph-dispatch --parallel 4
+```
+
+Tuning knobs (inert without M; ralph accepts them in batch mode but they only matter in continuous):
+
+| Flag | Env var | `project.conf` key | Default | Meaning |
+|------|---------|--------------------|---------|---------|
+| `--max-tasks M` | `WB_RALPH_MAX_TASKS` | `WB_RALPH_MAX_TASKS` | unset | Engages continuous; total attempts cap. |
+| `--max-task-attempts K` | `WB_RALPH_MAX_TASK_ATTEMPTS` | `WB_RALPH_MAX_TASK_ATTEMPTS` | 1 (ralph) | Per-task retry cap; task is skip-listed after K failures. |
+| `--respawn-delay SEC` | `WB_RALPH_RESPAWN_DELAY` | `WB_RALPH_RESPAWN_DELAY` | 0 (ralph) | Cooldown between worker respawns. |
+| `--no-tabs` | `WB_RALPH_DISABLE_TABS=true` | `WB_RALPH_DISABLE_TABS` | (off) | Force single-pane orchestrator. |
+
+Wrapper capability-gates the forwarding: continuous-mode flags pass through only when `ralph --help` advertises the `--parallel N M` surface. Older ralph causes `wb.ralph-dispatch --max-tasks` to fail fast with a clear error, not silent fallback to batch.
 
 ## Hard rules
 
