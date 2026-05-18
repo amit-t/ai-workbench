@@ -2,10 +2,12 @@
 title: Skills Reference
 layout: default
 eyebrow: Skills
-subtitle: "18 skills, one collapsible panel per role hat. Pick a hat, scan its skills, open any row for the deep dive."
+subtitle: "18 skills, one panel per hat. Pick a hat, scan, open any row for the deep dive."
 ---
 
-## Lifecycle at a Glance
+*Prefer the old long-form? See [V1 archive](./v1/skills.html).*
+
+## Lifecycle at a glance
 
 ```
 draft ──wb.publish──▶ published ──wb.approve──▶ approved ──▶ ralph consumes
@@ -17,66 +19,66 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 
 ---
 
-## Browse by Hat
+## Browse by hat
 
 <details markdown="1">
-<summary><strong>Product (PO)</strong> — 3 skills · epic intake → PRD draft → PRD review panel</summary>
+<summary><strong>Product (PO)</strong> · 3 skills · epic intake → PRD draft → PRD review panel</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
-| [`/epic-intake`](skills/epic-intake.html) | Pull Jira epic into workbench as draft context | none (entry point) |
+| [`/epic-intake`](skills/epic-intake.html) | Pull Jira epic as draft context | none (entry point) |
 | [`/prd-draft`](skills/prd-draft.html) | PRD from approved epic | epic-context approved |
-| [`/prd-review-panel`](skills/prd-review-panel.html) | 7-perspective PRD review; blocks approve on any P0 | PRD draft |
+| [`/prd-review-panel`](skills/prd-review-panel.html) | 7-perspective PRD review; blocks approve on P0 | PRD draft |
 
 </details>
 
 <details markdown="1">
-<summary><strong>UX Design</strong> — 4 skills · workflow orchestrator, Figma, screen gen, review</summary>
+<summary><strong>UX Design</strong> · 4 skills · orchestrator + Figma + screen gen + review</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
-| [`/design-draft`](skills/design-draft.html) | End-to-end UX workflow; orchestrates the three below | PRD approved |
+| [`/design-draft`](skills/design-draft.html) | End-to-end UX; orchestrates the three below | PRD approved |
 | [`/figma-pull`](skills/figma-pull.html) | Park Figma links; optional MCP export | PRD ID + Figma URL |
-| [`/ds-screen-gen`](skills/ds-screen-gen.html) | Hi-fi HTML/JSX from design-system ref in default / empty / loading / error states | PRD + design-system ref |
+| [`/ds-screen-gen`](skills/ds-screen-gen.html) | Hi-fi HTML/JSX from design-system ref (default / empty / loading / error states) | PRD + design-system ref |
 | [`/design-review`](skills/design-review.html) | 5-perspective screen review; blocks handoff on P0 | generated screen set |
 
 </details>
 
 <details markdown="1">
-<summary><strong>Engineering</strong> — 4 skills · spec → TDD → ERD → ADR</summary>
+<summary><strong>Engineering</strong> · 4 skills · spec → TDD → ERD → ADR</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
 | [`/eng-spec`](skills/eng-spec.html) | Architecture, contracts, data, rollout, observability | PRD approved |
 | [`/tdd`](skills/tdd.html) | Technical design doc: file map, interfaces, failure matrix | eng-spec approved |
-| [`/erd`](skills/erd.html) | Mermaid ER + C4-L2 component + optional sequence; renders in GitHub | SPEC (may be draft) |
+| [`/erd`](skills/erd.html) | Mermaid ER + C4-L2 + optional sequence (renders in GitHub) | SPEC (may be draft) |
 | [`/adr`](skills/adr.html) | MADR-lite Architecture Decision Record | SPEC if exists, else none |
 
 </details>
 
 <details markdown="1">
-<summary><strong>QA</strong> — 3 skills · BDDs → test cases → test spec</summary>
+<summary><strong>QA</strong> · 3 skills · BDDs → test cases → test spec</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
-| [`/bdd-gen`](skills/bdd-gen.html) | Gherkin `.feature` covering happy / edge / error / security paths | PRD approved |
-| [`/test-cases-gen`](skills/test-cases-gen.html) | Expand BDDs into priority / type / automation-flag table | BDDs approved |
-| [`/test-spec`](skills/test-spec.html) | QA engineering spec + test ERD: coverage, data, envs, flaky strategy | PRD + BDDs + test cases approved |
+| [`/bdd-gen`](skills/bdd-gen.html) | Gherkin `.feature` (happy / edge / error / security) | PRD approved |
+| [`/test-cases-gen`](skills/test-cases-gen.html) | BDDs → priority / type / automation-flag table | BDDs approved |
+| [`/test-spec`](skills/test-spec.html) | QA engg spec + test ERD: coverage, data, envs, flaky strategy | PRD + BDDs + test cases approved |
 
 </details>
 
 <details markdown="1">
-<summary><strong>Orchestrator (Ralph)</strong> — 2 skills · workspace plan → parallel dispatch</summary>
+<summary><strong>Orchestrator (Ralph)</strong> · 2 skills · workspace plan → parallel dispatch</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
-| [`/ralph-workspace-plan`](skills/ralph-workspace-plan.html) | Sync context and run workspace-mode plan; writes per-repo `fix_plan.md` | PRD + eng-spec + TDD + test-spec approved |
-| [`/ralph-dispatch`](skills/ralph-dispatch.html) | Parallel ralph loops across repos (cross-repo parallelism; ralph native is within-repo) | approved fix_plans in `repos/*/ai/` |
+| [`/ralph-workspace-plan`](skills/ralph-workspace-plan.html) | Sync context, run workspace-mode plan, write per-repo `fix_plan.md` | PRD + eng-spec + TDD + test-spec approved |
+| [`/ralph-dispatch`](skills/ralph-dispatch.html) | Parallel ralph loops across repos (cross-repo; ralph-native is within-repo) | approved fix_plans in `repos/*/ai/` |
 
 </details>
 
 <details markdown="1">
-<summary><strong>Cross-Cutting</strong> — 2 skills · grill-me interview, PMO status rollup</summary>
+<summary><strong>Cross-Cutting</strong> · 2 skills · grill-me + PMO status</summary>
 
 | Skill | Purpose | Input gate |
 |---|---|---|
@@ -87,7 +89,7 @@ Agents write `status: draft` only. Ralph reads strictly from `.workbench-state/a
 
 ---
 
-## Hat-by-Hat Summary
+## Hat-by-hat summary
 
 | Hat | Skills |
 |-----|--------|
