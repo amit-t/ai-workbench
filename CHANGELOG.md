@@ -2,6 +2,13 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.6.0](https://github.com/amit-t/ai-workbench/compare/v1.5.0...v1.6.0) (2026-05-19)
+
+
+### Features
+
+* **aliases:** add wrd.p shorthand for devin parallel dispatch ([#53](https://github.com/amit-t/ai-workbench/issues/53)) ([7a38c96](https://github.com/amit-t/ai-workbench/commit/7a38c9657691b46b54b4189feafab47de347b61e))
+
 ## [1.5.0](https://github.com/amit-t/ai-workbench/compare/v1.4.0...v1.5.0) (2026-05-18)
 
 
