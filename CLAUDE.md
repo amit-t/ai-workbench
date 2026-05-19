@@ -120,6 +120,7 @@ wb.ralph-dispatch --parallel 3 --max-tasks 30   # continuous mode: keep 3 worker
 wb.ralph-dispatch --parallel 3 30     # same, positional form (mirrors ralph's `--parallel N M`)
 wb.ralph-dispatch --engine devin       # route to ralph-devin (vs --engine claude for ralph)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
+wrd.p N M                             # shorthand: dispatch devin engine, N workers, M attempts (mirrors rpd.p N M)
 wb.register-repo <name> <url> <role>  # add code repo
 wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
 wb.approve <id>                       # published → approved (validates target_repos)

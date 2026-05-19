@@ -125,6 +125,7 @@ wb.sync-context() {
 #   wb.ralph-plan [flags]           # sync context + ralph-plan (workspace by default)
 #   wb.ralph-dispatch [flags]       # cd repos/ && ralph --workspace --parallel N
 #   wb.ralph-dispatch --status      # show open ralph PRs + tail of worker logs
+#   wrd.p N M                       # shorthand: dispatch devin engine, N workers, M attempts
 #
 # Continuous mode (opt-in; ralph keeps N workers saturated until M attempts):
 #   wb.ralph-dispatch --parallel 3 --max-tasks 30        # named M
@@ -158,6 +159,25 @@ wb.ralph-dispatch() {
   export WB_ROOT
   _wb_check
   "$WB_ROOT/scripts/ralph-dispatch.sh" "$@"
+}
+
+# ── Ralph shorthand: workbench-ralph-devin parallel ──────────────────────────
+# wrd.p N M — mirrors `rpd.p N M` (ralph-devin --parallel N M, continuous mode).
+# Expands to: wb.ralph-dispatch --engine devin --parallel N --max-tasks M
+# Both args required and must be positive integers; capability-gated by
+# wb.ralph-dispatch (fails fast if installed ralph predates continuous mode).
+wrd.p() {
+  if [[ $# -ne 2 ]]; then
+    echo "usage: wrd.p <parallel> <max-tasks>" >&2
+    echo "  shorthand for: wb.ralph-dispatch --engine devin --parallel N --max-tasks M" >&2
+    return 2
+  fi
+  local n="$1" m="$2"
+  if ! [[ "$n" =~ ^[1-9][0-9]*$ ]] || ! [[ "$m" =~ ^[1-9][0-9]*$ ]]; then
+    echo "wrd.p: both args must be positive integers (got '$n' '$m')" >&2
+    return 2
+  fi
+  wb.ralph-dispatch --engine devin --parallel "$n" --max-tasks "$m"
 }
 
 # ── Repo management ───────────────────────────────────────────────────────────
