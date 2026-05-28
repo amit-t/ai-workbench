@@ -105,6 +105,10 @@ wb.ralph-dispatch --status       # open PRs + worker log tails
 
 Daily flow, config table, `target_repos:` validation, replan/subset semantics, drift-footer (M4): [docs/ralph](https://amit-t.github.io/ai-workbench/ralph.html).
 
+### Stamped-wb bootstrap
+
+`init.wb` / `join.wb` (ai-devkit) bootstrap ralph once per stamped wb: install the `ralph` binary if missing, verify `--workspace` support, `mkdir -p repos`, purge the `template_dev_only` artifacts listed in `.workbench-manifest.json` (`.ralph/PROMPT.md`, `.ralph/fix_plan.md`, `SESSION-HANDOFF.md`, `CHANGELOG.md`), then run `ralph enable --workspace --non-interactive --skip-tasks` at `repos/`. `wb.upgrade` carries a migration step that runs the same enable for old stamped wbs missing `repos/.ralph/` (idempotent).
+
 ## Steering
 
 Layer 0 (golden) loads at session start. Layer 1 (role: dev/qa/po/uxd) loads on role-inference match. Layer 2 (artifact/topic) loads as step 0 of each skill. Template ships canonical rules under `steering/`; teams add overlays under `steering.local/`.
