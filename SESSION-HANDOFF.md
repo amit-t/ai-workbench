@@ -4,8 +4,10 @@
 >
 > **New Claude Code session starting here?** Read this top-to-bottom before doing anything. Then read `CHANGELOG.md` for detail on what has shipped.
 
-**Last session:** 2026-04-29. Plan D1, D2, D3, D4 all shipped today via parallel ralph autonomous loops (`rpc.p 5`). D1 (remaining 12 skills get Step 0 + `relevant_topics` frontmatter; PR #17). D2 (wb-side CI lint workflow seeded by `update.wb`; adds `.github/workflows/wb-ci.yml` + `scripts/wb-ci-validate.py`; smoke 29/29 → 35/35; PR #18). D3 (`wb.steering-audit` command; `scripts/steering-audit.py` surfaces overlay kind, targets, age, last-updated, promote-suggest heuristic; smoke 29/29 → 33/33; PR #16). D4 (steering loader mtime cache; smoke 29/29 → 35/35; PR #15). Earlier today: Plan E5 (upstream-ralph `--repos <subset>` filter design doc at `notes/upstream-ralph-v2/repos-subset-filter.md`) shipped via ralph autonomous loop on worktree branch `ralph-devin/E5`. Previous session: 2026-04-27. Ralph self-host at template-dev root shipped; Plan E1 (skill bodies) shipped via ralph autonomous loop (PRs amit-t/ai-workbench#12, Invenco-Cloud-Systems-ICS/ai-workbench#13, both draft, awaiting human merge); Plan F1 (stamped-wb ralph bootstrap in ai-devkit) shipped on `dev` branch awaiting PRs.
-**Branch:** `dev` (work in flight). Previous session: 2026-04-25 (main at `5ae20f6` on origin / `5136f0d` on inv; ralph adapter V1 merged; companion ai-ralph PRs `feat/workspace-plan-mode` + `feat/pr-footer-append` merged).
+**Last session:** 2026-05-27 (handoff refresh only). **Last shipping session:** 2026-05-19 — `wrd.p` devin-parallel shorthand (PR #53) + release 1.6.0 cut (#54). Releases 1.1.0 → 1.6.0 all auto-cut by release-please between 2026-05-13 and 2026-05-19; full delta documented in `## What shipped` below.
+**Branch:** `main` (clean, synced with `origin/main`). `dev` archived for now; all post-2026-04-29 work merged through main.
+**Previous handoff anchor:** 2026-04-29 (Plan D1/D2/D3/D4 + E1/E5 + F1/F2/F3 all shipped).
+**Smoke:** green (76 assertions). R1 regression fixed 2026-05-28 (README `### Stamped-wb bootstrap` subsection re-added + smoke 9o2 regex widened to accept `wb.upgrade`). Not yet committed/pushed.
 **Remotes:** `origin → amit-t/ai-workbench`, `inv → Invenco-Cloud-Systems-ICS/ai-workbench`.
 **Commit identity in use:** `user.name=amit-t`, `user.email=tiwari.m.amit@gmail.com` (personal). Set local `user.email=amit.tiwari@invenco.com` before committing if you want Invenco attribution on template-dev commits.
 **Main branch protection:** PR required, admin bypass enabled, no force-push, no deletion.
@@ -14,6 +16,60 @@
 ---
 
 ## What shipped
+
+### Release 1.6.0 — `wrd.p` devin-parallel shorthand (2026-05-19)
+- `aliases.sh`: new `wrd.p N M` shorthand → `wb.ralph-dispatch --engine devin --parallel N --max-tasks M`. Mirrors ralph's positional `--parallel N M` continuous-mode form. Pairs with the existing `rpd.p` ai-ralph shorthand. PR #53. release-please cut tag v1.6.0 (#54).
+
+### Release 1.5.0 — dispatch engine routing + continuous mode + stub purge + docs (2026-05-18)
+
+Multi-feature release. Headline items:
+
+- **Dispatch engine binary routing + plan/exec split** (`a0b77a2` / inv `ab86496`). `wb.ralph-dispatch --engine <claude|devin|codex>` now maps to the right binary (`ralph` / `ralph-devin` / `ralph-codex`). Plan engine and exec engine are independently selectable so you can run plan=claude exec=devin (or any mix). Resolution: CLI > env > `project.conf` > default devin. `aliases.sh`, `project.conf.template`, smoke updated.
+- **Continuous-mode dispatch passthrough** (`3cc85e2`). `wb.ralph-dispatch --parallel N --max-tasks M` (or positional `N M`) forwards to ralph's continuous mode — workers stay saturated up to N concurrent until M attempts spent. Extra knobs `--max-task-attempts`, `--respawn-delay`, `--no-tabs`. Capability-gated: dispatch fails fast if installed ralph predates the flag.
+- **Wb-root `.ralph/` stub purge** (`8ba2d69` / inv `02ed649`). `.workbench-manifest.json` `template_dev_only` extended to cover the full stub stack; `wb.upgrade` backs up to `.ralph.purged.<timestamp>/`. `ralph-enable-check` now refuses if a wb-root stub is present in a stamped wb. Closes a class of "ralph runs against the wrong workspace" bugs from old wbs.
+- **`/wtd` what-to-do recommender + workflows GH-Pages page** (PR #43/#44). New skill suggests the highest-leverage next action given current wb state (epics, pipeline, approvals, in-flight branches). Workflows page on the site documents the canonical sequences.
+- **`/precise-readme` skill + per-skill GH-Pages catalogue** (PRs #47/#48). Skill applies precision-mode pass to a project's README; site now exposes `docs/skills/<name>.html` per-skill pages and a catalogue index.
+- **`workflows.md` precision-mode pass** (PRs #49/#50). Dense workflows reference.
+- **Precision-mode pass on README + V1 archive** (PRs #45/#46). Whole README rewritten under precision-mode; V1 README preserved at `/v1/`. ⚠️ Side-effect: dropped three strings the smoke test asserts on (see R1).
+- **Jekyll site hardening** (`8464e07`, `2af774b`, `e72b66a`, `215f8ef`). Cross-owner link guard tightened to URL-only; `superpowers/{plans,specs}` excluded from build then re-allowed in guards; CNAME synced from inv.
+- **CI smoke-wb mimics init.wb template_dev_only purge on stamp** (`3f30c4e`). Catches regressions where stamped wbs would inherit template-dev artifacts.
+
+release-please cut tag v1.5.0 (#51).
+
+### Release 1.4.0 — precision-mode skill + wire into 9 draft hosts (2026-05-15)
+- `skills/precision-mode/SKILL.md` installed via `.claude/skills/precision-mode/`. Universal "lead-with-answer, no filler, structure over prose" directive applied to artifact body, grill session, and next-steps tail across 9 draft-producing hosts.
+- Resolution: env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`. `wb.precision` alias prints resolved value + source. Carried into artifact frontmatter as `precision_mode: on|off` (Gherkin: `# precision_mode: on|off`).
+- Review panels surface as P3 info hint; no enforcement.
+- PRs #40/#41. release-please cut tag v1.4.0 (#42).
+
+### Release 1.3.0 — implicit grill into 9 draft skills + grill workflows (2026-05-15)
+- Shared substrate `skills/grill-substrate.md` (per-artifact stance, scratch-block format, `grilled:` frontmatter schema) packaged.
+- Depth-aware generic grill skills installed: `.claude/skills/grill-me/`, `.claude/skills/domain-grill/`.
+- 9 draft-producing skills now run an implicit grill step before publishing draft. Skipping permitted; `wb.publish` warns when receipt is missing; review-panels add P2 finding.
+- PRs #37/#38 + inv companion #49/#50. release-please cut tag v1.3.0 (#39).
+
+### Release 1.2.1 — `wb.rescan` brick fix (2026-05-14)
+- `wb.rescan` was bricked by permission-mode, flag order, and stdout leak issues. Fixed in PR #35. release-please cut tag v1.2.1 (#36).
+
+### Release 1.2.0 — repo-context-scan auto-run + `wb.rescan` (2026-05-13/14)
+- `wb.rescan` alias added: re-runs the context scan against `repos/*/` to refresh `engineering/context-library/`. PR #27 (dev) → #33 (main).
+- Context scan auto-run wired into `wb.sync-context` so newly-approved artifacts trigger a context refresh.
+- release-please cut tag v1.2.0 (#34).
+
+### Release 1.1.0 — multi-wb resolution + WSL port + versioning template (2026-05-13)
+- **WSL/Windows port hardening** (PRs #28/#29/#30/#31). Shell-lint matrix (bash + zsh) on macOS + ubuntu, `.gitattributes` line-ending hygiene, dropped `TODO(windows)` markers, shellcheck warning cleanup across `scripts/` + `tests/`, `tests/smoke.sh` E2E onboarding (init.wb → publish → approve → `wb.ralph-plan --dry-run`), CI tightened to warning severity. Three repos ported (workbench, devkit, ralph); 11 PRs merged 2026-05-13 (see memory `project_wsl_port.md`).
+- **Multi-workbench resolution** (PRs #25/#26). One sourced `aliases.sh` now serves every stamped wb on the machine via `_wb_resolve_root` (`WB_PIN` env → walk-up for `project.conf` → source-baked default). New aliases: `wb.switch`, `wb.unswitch`, `wb.where`. Loud failure on invalid `WB_PIN`. Detail in "Multi-workbench resolution" section below.
+- **Versioning template-side wiring** (PRs #22/#23, 2026-05-09). `version.json` at root, `aliases.sh` preamble checks `version.json` against `requires` for peer tools (ai-ralph, ai-devkit). `wb.upgrade` / `ralph.upgrade` / `devkit.upgrade` separated; `devkit doctor` is the one-step diagnostic.
+- **Wb-side version notification pages** (PR #24, 2026-05-11). `docs/pages/versioning.md` documents the upgrade flow.
+- **`/handoff` skill** packaged so any session can compact itself for the next agent.
+- release-please cut tag v1.1.0 (#32).
+
+### Ralph V2 passthrough — `--repos` / `--exclude` / `--parallel-plan` (2026-05-08)
+- `wb.ralph-dispatch --repos <list>` / `--exclude <list>`: narrow workspace run to a subset of registered repos. Validated against `project.conf REPOS` before forwarding; typos fail in the wrapper. Mutually exclusive. Resolution: CLI > env (`WB_RALPH_DISPATCH_REPOS` / `_EXCLUDE`) > `project.conf` > unset.
+- `wb.ralph-plan --parallel-plan N`: workspace-mode only; forwards to `ralph-plan --workspace --parallel-plan N` for concurrent per-repo plan calls. Buffer-then-merge keeps section ordering stable. Resolution: CLI > `WB_RALPH_PLAN_PARALLEL` > `project.conf` > sequential.
+- env-state captured before sourcing `project.conf` so CLI / env override conf correctly.
+- 8 new smoke assertions.
+- Upstream ralph impl shipped 2026-05-07/08: amit-t/ai-ralph#51 (main) + #52 (dev), Invenco-Cloud-Systems-ICS/ai-ralph#17 (main) + #18 (dev); amit-t/ai-ralph#53 (main) + #54 (dev), Invenco-Cloud-Systems-ICS/ai-ralph#19 (main) + #20 (dev). Workbench wiring: amit-t/ai-workbench#20 (main) + #21 (dev), Invenco-Cloud-Systems-ICS/ai-workbench#34 + #35.
 
 ### Multi-workbench resolution for `wb.*` aliases (2026-05-13)
 - `aliases.sh`: every `wb.*` command now resolves the active wb per call via a new `_wb_resolve_root` helper. Priority order: `WB_PIN` env var → walk up from `$PWD` for `project.conf` → source-baked default. One sourced `aliases.sh` now serves every stamped wb on the machine; switching workbenches no longer requires re-sourcing.
@@ -111,38 +167,36 @@
 
 ## What's open (pick one to kick off next session)
 
-### C. New feature brainstorm
-- User raised wanting to "suggest more features" after Plan D shipped; steering V1 and the ralph adapter shipped since. Nothing captured yet.
-- Expected shape: user lists ideas, Claude grills each (one decision at a time) before any implementation. Start by asking the user to list the features, then loop one at a time.
+### R1. Smoke regression — README missing F2 strings — **DONE** 2026-05-28
+- Fixed via Fix-A: added `### Stamped-wb bootstrap` subsection to `README.md` (after the Multi-repo ralph block) carrying the three verbatim strings, and widened `tests/smoke.sh:799` regex to `((wb\.upgrade|update\.wb).*migrat|...)` so the assertion tracks the `update.wb`→`wb.upgrade` rename instead of freezing the deprecated alias.
+- Smoke now green (76 assertions). steering-lint clean. **Uncommitted** — needs a worktree-PR to both remotes.
 
-### D. Steering V2 polish
-Parked items from the V1 ship, ordered by leverage:
+### R2. inv remote URL via SSH alias
+- `git remote get-url inv` returns `git@github.com-atv:Invenco-Cloud-Systems-ICS/ai-workbench.git` (SSH host alias `github.com-atv` for Invenco identity).
+- Direct `git fetch inv` fails with `Permission denied (publickey)` on this machine — the SSH config block for `github.com-atv` is missing or its key is not loaded. `gh` API access also fails for the inv repo until you `gh auth switch -u amit-tiwari_vnt` (see top of file).
+- Fix: confirm `~/.ssh/config` has `Host github.com-atv` block pointing at the Invenco SSH key, or rewrite the inv remote URL to use HTTPS + gh credential helper. Not blocking shipping on origin.
 
-1. ~~Remaining 12 skills get step 0 + `relevant_topics` frontmatter (adr, erd, epic-intake, figma-pull, ds-screen-gen, design-draft, design-review, grill-me, prd-review-panel, pmo-status skill-side, ralph-workspace-plan, ralph-dispatch).~~ **DONE** 2026-04-29 (Plan D1 above). PRs: amit-t/ai-workbench#17, Invenco-Cloud-Systems-ICS/ai-workbench#18.
-2. ~~Wb-side CI lint workflow seeded by `update.wb` so PRs on stamped wbs also validate.~~ **DONE** 2026-04-29 (`.github/workflows/wb-ci.yml` + `scripts/wb-ci-validate.py`). PRs: amit-t/ai-workbench#18, Invenco-Cloud-Systems-ICS/ai-workbench#19.
-3. ~~`wb.steering-audit` command. Useful diffs: which template rules a team has touched, age of overlays, last-updated dates, suggest-promotion-candidates heuristic (override used for more than one epic).~~ **DONE** 2026-04-29 (`scripts/steering-audit.py`, smoke 29/29 → 33/33). PRs: amit-t/ai-workbench#16, Invenco-Cloud-Systems-ICS/ai-workbench#17.
-4. ~~Loader cache under `.workbench-state/steering-cache/`. Invalidate on mtime change. Cheap; only matters at scale.~~ **DONE** 2026-04-29 (`scripts/steering-load.py`, `.gitignore`, smoke 29/29 to 35/35). PRs: amit-t/ai-workbench#15, Invenco-Cloud-Systems-ICS/ai-workbench#16.
+### C. New feature brainstorm (carried over)
+- User raised wanting to "suggest more features" after Plan D shipped; subsequently shipped: steering V1 + V2, ralph adapter V1 + V2, multi-wb resolution, versioning, precision-mode, implicit grill, /wtd, /precise-readme. Nothing new captured yet.
+- Expected shape: user lists ideas, Claude grills each via `/grill-me` (one decision at a time) before any implementation. Start by asking user to list features, loop one at a time.
 
-### E. Ralph adapter V2 polish
-Follow-ups to the V1 ship that deserve their own PRs (E1 done 2026-04-27, see PRs #12 / #13):
+### Q. QA-skill PRs from `shaalinis` parked on inv (P1, awaiting review)
+Five inv-side PRs from QA collaborator `shaalinis` sitting open up to 19 days. None replicated on origin yet. After `gh auth switch -u amit-tiwari_vnt`:
 
-Reconciled with `main` (parallel ralph autonomous run shipped E1, E2, E4 under different numbering; E3 in flight; E5 cherry-picked into `dev`). Remaining work:
+- **inv#37** (2026-05-08) — `bdd-gen` updated for layer awareness, performance, impact-area scenarios.
+- **inv#43** (2026-05-11) — `test-cases-gen` Zephyr-aligned columns, AC traceability, ISTQB techniques, consolidation rule, self-review (closes #42).
+- **inv#45** (2026-05-11) — `test-spec` reads automation repo + existing tests, refuses gracefully for all-manual, architectural coverage matrix, AC→TC→entry-point traceability, self-review (closes #44).
+- **inv#59** (2026-05-17) — `test-plan-gen`: new QA strategic-plan skill between `/bdd-gen` and `/test-cases-gen` (closes #58).
+- **inv#68** (2026-05-18) — `wb.zephyr-export`: convert approved test-cases to Zephyr-importable CSV (closes #69).
 
-1. ~~Retire `wb.ralph-annotate` once every developer's installed `ralph` binary carries the `pr-footer-append` change. Simplify `sync-context.sh` accordingly and drop the alias.~~ **DONE** 2026-04-27 on `main` (commit 5e85e99 / 48e2929).
-2. ~~Parallel planning in `ralph-plan --workspace` (upstream ralph). Design doc only.~~ **DONE** 2026-04-27 on `main` (commit 37db5fb / ca78837 → `notes/upstream-ralph-v2/parallel-planning.md`). Upstream PRs raised 2026-05-07: amit-t/ai-ralph#47 (main), #48 (dev); Invenco-Cloud-Systems-ICS/ai-ralph#13 (main), #14 (dev).
-3. ~~Upstream ralph support for a `--repos <subset>` filter in `ralph --workspace`.~~ **DONE** 2026-04-29 (`notes/upstream-ralph-v2/repos-subset-filter.md`). Pure design doc; covers allowlist + denylist flags, `discover_workspace_repos()` chokepoint, cross-repo skip default, env passthrough, back-compat snapshot. Upstream PRs raised 2026-05-07: amit-t/ai-ralph#49 (main), #50 (dev); Invenco-Cloud-Systems-ICS/ai-ralph#15 (main), #16 (dev).
-4. ~~`wb.ralph-plan --replan <repo>`.~~ **DONE** 2026-04-27 on `main` (commit 37c9d1c / fa8dafb).
-5. ~~Wire `ralph-workspace-plan` and `ralph-dispatch` skill bodies to V1 aliases.~~ **DONE** 2026-04-27 cherry-picked onto `dev` from ralph branch `ralph-claude/e1-skill-rewiring` as commit 39bff2a (consolidated into Plan F PR; original ralph PRs #12/#13 closed).
+Decision needed per PR: review + merge as-is, request changes, or fork onto origin first. Order of leverage: 37 → 43 → 45 → 59 → 68 (later builds on earlier where they touch shared skills).
 
-### F. Stamped-wb ralph bootstrap — **DONE** (2026-04-27)
+### G. v2.0.0 readiness audit (proposed)
+- Six minor releases shipped between 2026-05-13 and 2026-05-19 (1.1.0 → 1.6.0). Surface area now covers steering V2, ralph adapter V2, multi-wb resolution, versioning, precision-mode, implicit grill, /wtd, /precise-readme, dispatch engine routing, continuous mode, wb-root stub purge.
+- Worth a `wb.upgrade` dry-run audit across the inv stamped wbs (via `gh search` by topic `ai-workbench` per memory `project_wb_discovery.md`) to catch fields that broke compatibility. Decide whether to cut v2.0.0 with the breaking changes batched, or keep stacking minors.
 
-1. ~~ai-devkit `init.wb` + `join.wb` install ralph globally during preflight, ensure `repos/` exists, purge `template_dev_only` artifacts, and run `ralph enable --workspace` at `repos/`.~~ **DONE** 2026-04-27.
-2. ~~Refresh `README.md` "Multi-repo execution with ralph" section to mention init.wb's bootstrap step explicitly.~~ **DONE** 2026-04-27.
-3. ~~Add an `update.wb` migration that detects an old stamped wb missing `repos/.ralph/` and runs `ralph enable --workspace` once. Idempotent.~~ **DONE** 2026-04-27 (devkit `update.zsh` post-sync block).
-
-Smoke 22/22 → 27/27.
-
-### B. Plan B ralph adapter — **DONE** (2026-04-25)
+### D/E/F. Steering V2 / Ralph adapter V2 / Stamped-wb ralph bootstrap — all **DONE**
+Detail moved to `## What shipped`. D1/D2/D3/D4 shipped 2026-04-29; E1/E2/E3/E4/E5 shipped between 2026-04-27 and 2026-05-08; F1/F2/F3 shipped 2026-04-27.
 
 ---
 
@@ -171,15 +225,19 @@ Enabled by user. Site live at expected URL.
 ```bash
 cd /Users/amittiwari/Projects/Tools-Utilities/ai-workbench
 git pull --rebase origin main
-bash tests/smoke.sh                 # must print "PASSED" (29/29)
-git log --oneline -5                # confirm the ralph-adapter merge (5ae20f6 or later) is present
-git remote -v                       # origin + inv both present
+bash tests/smoke.sh                 # currently FAILS at 9o2 (README missing F2 strings); see R1
+git log --oneline -5                # head should be 646c475 (release 1.6.0) or later
+git remote -v                       # origin (amit-t) + inv (Invenco-Cloud-Systems-ICS, via SSH alias github.com-atv)
+gh auth status                      # confirm both amit-t + amit-tiwari_vnt accounts; switch via `gh auth switch -u amit-tiwari_vnt` for inv repo access
 python3 scripts/steering-load.py golden | head -5        # loader sanity
 python3 scripts/steering-lint.py                          # linter sanity
 python3 scripts/steering-overlays.py --list               # overlay summary
+cat version.json                                          # currently 1.6.0
 ```
 
-If smoke fails, bisect against `5ae20f6` (ralph-adapter merge) or `00ac061` (steering merge) or `fd4e794` (lifecycle polish merge).
+If smoke fails at 9o2: see R1 (precision-mode README rewrite regression). Fix-A is a compact bootstrap subsection re-add to `README.md`.
+
+For other smoke failures, bisect against `5ae20f6` (ralph-adapter merge), `00ac061` (steering merge), `fd4e794` (lifecycle polish merge), `bbacea5` (precision-mode skill install), `34e880d` (implicit grill wiring), `a0b77a2` (dispatch engine routing), or `8ba2d69` (wb-root .ralph stub purge).
 
 ---
 

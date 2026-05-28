@@ -796,7 +796,7 @@ pass "ralph-enable-check baseline pass: clean stamped wb"
 README_FILE="$TEMPLATE_ROOT/README.md"
 grep -q 'ralph enable --workspace --non-interactive --skip-tasks' "$README_FILE" || fail "README.md missing F2 bootstrap command"
 grep -q 'template_dev_only'                                       "$README_FILE" || fail "README.md missing template_dev_only mention"
-grep -q -E '(update\.wb.*migrat|migrat.*update\.wb)'              "$README_FILE" || fail "README.md missing update.wb migration note"
+grep -q -E '((wb\.upgrade|update\.wb).*migrat|migrat.*(wb\.upgrade|update\.wb))' "$README_FILE" || fail "README.md missing wb.upgrade migration note"
 pass "README.md documents F1 bootstrap + F3 migration"
 
 # 9o3. update.zsh has ralph workspace migration (F3)
