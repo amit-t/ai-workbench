@@ -80,5 +80,8 @@ docs/Gemfile.lock
 .claude/worktrees/
 .worktrees/
 
+# Session handoff docs (ephemeral, per-session)
+.claude/handoffs/
+
 # Repo-context-scan worktree staging (devkit-managed, transient)
 .context-scan/
