@@ -65,26 +65,43 @@ fi
 
 # Stale-stub guard: a stamped wb (project.conf present) must NEVER have a
 # .ralph/ directory at the workbench root. The real workspace lives at
-# $REPOS_ROOT/.ralph/ which we already validated above. A root .ralph/ is
-# template-dev leftover (init.wb's purge missed the whole-dir entry in
-# .workbench-manifest.json template_dev_only). It pollutes ai-ralph's
-# is_ralph_enabled check from any tool invoked at the wb root (e.g. bare
-# rpd.p / ralph-devin), making them report "partial" / "not enabled".
+# $REPOS_ROOT/.ralph/ which we already validated above. A root .ralph/ pollutes
+# ai-ralph's is_ralph_enabled check from any tool invoked at the wb root (e.g.
+# bare rpd.p / ralph-devin), making them report "partial" / "not enabled".
+#
+# Two flavours:
+#   (a) Benign stub: only the empty docs/ , docs/generated/ , logs/ scaffold
+#       that older ai-ralph engines created at startup before bailing (fixed
+#       upstream by the loop scaffold guard). No ralph state, nothing to lose,
+#       so we auto-heal it and continue rather than blocking the user.
+#   (b) Real state: a .ralphrc, fix_plan, PROMPT, session, status, etc. means
+#       ralph was genuinely (mis)enabled at the wb root. We still hard-stop and
+#       let the human heal it, since deleting real state would be destructive.
 if [[ -f "$WB_ROOT/project.conf" && -d "$WB_ROOT/.ralph" ]]; then
-  cat >&2 <<EOF
-ralph-enable-check: stale .ralph/ found at $WB_ROOT (workbench root).
+  root_ralph="$WB_ROOT/.ralph"
+  # Any regular file or symlink anywhere under .ralph counts as ralph state.
+  # An empty (dirs-only) tree is the benign scaffold.
+  ralph_state="$(find "$root_ralph" -mindepth 1 \( -type f -o -type l \) 2>/dev/null)"
+  if [[ -z "$ralph_state" ]]; then
+    rm -rf "$root_ralph"
+    echo "ralph-enable-check: removed benign empty .ralph/ stub at $WB_ROOT (no ralph state; auto-healed)." >&2
+  else
+    cat >&2 <<EOF
+ralph-enable-check: .ralph/ with ralph state found at $WB_ROOT (workbench root).
 
-This is template-dev leftover that init.wb should have purged. The real
-workspace lives at $REPOS_ROOT/.ralph/ (already validated). The stub at
-$WB_ROOT/.ralph/ confuses ai-ralph's is_ralph_enabled check when any
-tool is invoked from the workbench root (e.g., bare rpd.p / ralph-devin).
+A stamped workbench must never have a .ralph/ at its root; the real workspace
+lives at $REPOS_ROOT/.ralph/ (already validated). This root .ralph/ holds
+actual ralph state (a .ralphrc, fix_plan, PROMPT, session, etc.), so ralph was
+enabled directly at the workbench root by mistake. It confuses ai-ralph's
+is_ralph_enabled check when any tool is invoked from the workbench root.
 
 Heal: run \`wb.upgrade\` (ai-devkit), which backs up the stub to
 .ralph.purged.<timestamp>/ and removes the source. Manual equivalent:
 
   mv "$WB_ROOT/.ralph" "$WB_ROOT/.ralph.purged.\$(date +%s)"
 EOF
-  exit 1
+    exit 1
+  fi
 fi
 
 exit 0
