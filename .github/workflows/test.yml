@@ -31,6 +31,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run wb resolver test
         run: bash tests/test-wb-resolve-root.sh
+  ralph-enable-check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ralph-enable-check stub-guard test
+        run: bash tests/test-ralph-enable-check.sh
   # Windows-via-WSL2 is covered by the ubuntu-latest matrix slot above
   # (WSL2 Ubuntu = Linux kernel + Ubuntu userspace = same shell environment).
   # Native windows-latest deferred pending team-chat survey of dev usage.
