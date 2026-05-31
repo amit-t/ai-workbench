@@ -49,7 +49,7 @@ wb.unswitch                         # release pin
 
 No re-sourcing needed when switching wbs.
 
-## Skills catalogue (20)
+## Skills catalogue (21)
 
 Outputs land at `status: draft`. Promotion is human-driven via `wb.publish` / `wb.approve`. Lost in the pipeline? Run `wb.wtd` for the next concrete command, or read [Workflows](https://amit-t.github.io/ai-workbench/workflows.html) (if-this-then-that page).
 
@@ -72,6 +72,7 @@ Outputs land at `status: draft`. Promotion is human-driven via `wb.publish` / `w
 | `/ralph-workspace-plan` | Orch | Sync approved context; produce per-repo fix_plans. |
 | `/ralph-dispatch` | Orch | Parallel ralph loops across repos. |
 | `/grill-me` | Cross | Relentless interview to stress-test a draft. |
+| `/grill-me-auto` | Cross | Batch-mode `/grill-me`: all questions in one collapsible doc, answered in one reply. |
 | `/pmo-status` | Cross | Workbench status rollup. |
 | `/wtd` | Cross | What-To-Do: one next-action command per epic. Trimmer cousin of `/pmo-status`. |
 | `/precise-readme` | Cross | Precision-mode pass on README + docs/; archives originals under `docs/v1/` with cross-banners. |
