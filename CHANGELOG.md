@@ -2,6 +2,19 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.7.0](https://github.com/amit-t/ai-workbench/compare/v1.6.0...v1.7.0) (2026-05-31)
+
+
+### Features
+
+* **skills:** add /grill-me-auto + catalogue + docs ([#58](https://github.com/amit-t/ai-workbench/issues/58)) ([0367db2](https://github.com/amit-t/ai-workbench/commit/0367db25850f555c6c9256e838146fd7af63940e))
+
+
+### Bug Fixes
+
+* **docs:** restore stamped-wb bootstrap section + refresh handoff ([#55](https://github.com/amit-t/ai-workbench/issues/55)) ([ff113f1](https://github.com/amit-t/ai-workbench/commit/ff113f14beb8bf451b6054e19aa02207dcf6329c))
+* **ralph-enable-check:** auto-heal benign empty root .ralph/ stub ([#57](https://github.com/amit-t/ai-workbench/issues/57)) ([599e3f7](https://github.com/amit-t/ai-workbench/commit/599e3f74bb7899182ae0def66ae610c3a2a1dd80))
+
 ## [1.6.0](https://github.com/amit-t/ai-workbench/compare/v1.5.0...v1.6.0) (2026-05-19)
 
 
