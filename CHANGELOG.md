@@ -2,6 +2,13 @@
 
 All notable changes to ai-workbench (template) are documented here. release-please appends entries on every merge to `main` based on Conventional Commit messages.
 
+## [1.8.0](https://github.com/amit-t/ai-workbench/compare/v1.7.0...v1.8.0) (2026-06-01)
+
+
+### Features
+
+* **graphify:** integrate graphifyy for non-graphified repos ([#60](https://github.com/amit-t/ai-workbench/issues/60)) ([89a69e9](https://github.com/amit-t/ai-workbench/commit/89a69e97df995505a81a6a566b18b32ac570738e))
+
 ## [1.7.0](https://github.com/amit-t/ai-workbench/compare/v1.6.0...v1.7.0) (2026-05-31)
 
 
