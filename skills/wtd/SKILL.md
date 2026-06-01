@@ -91,6 +91,7 @@ Priority order (lower wins, ties broken by epic order in `project.conf`):
 | 20–25 | Awaiting human approval (publish/approve gap) |
 | 30 | Missing PRD-scoped artifact (spec, TDD, BDD, …) |
 | 40 | Ready for `/ralph-workspace-plan` |
+| 55 | Non-graphified repo(s) — surfaced as queued, never the top recommendation |
 | 60 | Ready for `wb.ralph-dispatch` |
 | 90 | Pipeline idle and clean — open a new epic |
 

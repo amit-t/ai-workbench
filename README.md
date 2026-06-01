@@ -110,6 +110,21 @@ Daily flow, config table, `target_repos:` validation, replan/subset semantics, d
 
 `init.wb` / `join.wb` (ai-devkit) bootstrap ralph once per stamped wb: install the `ralph` binary if missing, verify `--workspace` support, `mkdir -p repos`, purge the `template_dev_only` artifacts listed in `.workbench-manifest.json` (`.ralph/PROMPT.md`, `.ralph/fix_plan.md`, `SESSION-HANDOFF.md`, `CHANGELOG.md`), then run `ralph enable --workspace --non-interactive --skip-tasks` at `repos/`. `wb.upgrade` carries a migration step that runs the same enable for old stamped wbs missing `repos/.ralph/` (idempotent).
 
+## Graphify integration
+
+The workbench wraps the [graphifyy](https://pypi.org/project/graphifyy/) CLI to give Devin + Claude a graph-indexed view of every registered repo. Per-repo state lives in the `graphified=<true|false>` field of each `REPOS=(...)` entry in `project.conf`. `wb.register-repo` appends `graphified=false` on add; `wb.graphify` flips to `true` on success.
+
+```bash
+wb.graphify <repo>            # build graph for one repo (graphify-out/graph.json)
+wb.graphify --all             # every non-graphified repo
+wb.graphify --check           # report-only: mode + per-repo status
+wb.graphify --install-skill   # one-time: drop SKILL.md into .agents/.claude
+```
+
+Mode resolution: CLI (`--auto` / `--manual`) > `WB_GRAPHIFY_MODE` env > `project.conf GRAPHIFY_MODE` > default `auto`. In `auto`, `wb.register-repo` and `init.wb` / `join.wb` invoke `wb.graphify` after clone. In `manual`, they print a recommendation. Auto pip-installs `graphifyy` if absent (skip via `--no-install`).
+
+`wb.info` surfaces non-graphified repos and recommends `wb.graphify --all`. `wb.graphify --install-skill` runs `graphify install --platform claude` (global) and copies the resulting `SKILL.md` into `$WB_ROOT/.agents/skills/graphify/` plus a `.claude/skills/graphify` symlink so both engines see the `/graphify` command locally.
+
 ## Steering
 
 Layer 0 (golden) loads at session start. Layer 1 (role: dev/qa/po/uxd) loads on role-inference match. Layer 2 (artifact/topic) loads as step 0 of each skill. Template ships canonical rules under `steering/`; teams add overlays under `steering.local/`.

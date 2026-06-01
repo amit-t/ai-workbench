@@ -31,7 +31,7 @@ if grep -qE "name=$NAME;" "$CONF"; then
 fi
 
 GH_USER="$(gh api user -q .login 2>/dev/null || echo unknown)"
-ENTRY="  \"name=$NAME;url=$URL;role=$ROLE;stack=$STACK;added_by=$GH_USER\""
+ENTRY="  \"name=$NAME;url=$URL;role=$ROLE;stack=$STACK;added_by=$GH_USER;graphified=false\""
 
 # Insert before closing ) of REPOS=(
 python3 - "$CONF" "$ENTRY" <<'PYEOF'
@@ -61,3 +61,32 @@ fi
 echo "Done. $NAME registered as $ROLE."
 echo
 echo "→ Build wb context for this repo:  wb.rescan ${NAME}"
+
+# ── Graphify integration ────────────────────────────────────────────────────
+# Resolve GRAPHIFY_MODE: env > project.conf > default "auto".
+_GRAPHIFY_MODE=""
+if [[ -n "${WB_GRAPHIFY_MODE:-}" ]]; then
+  _GRAPHIFY_MODE="$WB_GRAPHIFY_MODE"
+else
+  _GRAPHIFY_MODE="$(grep -E '^GRAPHIFY_MODE=' "$CONF" 2>/dev/null \
+                    | sed -E 's/^GRAPHIFY_MODE="?([^"]*)"?$/\1/' | head -1)"
+fi
+[[ -z "$_GRAPHIFY_MODE" ]] && _GRAPHIFY_MODE="auto"
+
+case "$_GRAPHIFY_MODE" in
+  auto)
+    echo
+    echo "→ GRAPHIFY_MODE=auto: invoking wb.graphify $NAME"
+    WB_ROOT="$WB_ROOT" "$SCRIPT_DIR/graphify-repos.sh" "$NAME" || {
+      echo "register-repo: wb.graphify $NAME failed (continuing — REPOS entry kept; rerun later)." >&2
+    }
+    ;;
+  manual)
+    echo
+    echo "→ GRAPHIFY_MODE=manual: run when ready:  wb.graphify ${NAME}"
+    ;;
+  *)
+    echo
+    echo "→ GRAPHIFY_MODE=$_GRAPHIFY_MODE (unknown — skipping auto-graphify). Run:  wb.graphify ${NAME}"
+    ;;
+esac

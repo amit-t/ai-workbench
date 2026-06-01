@@ -44,6 +44,13 @@ Each draft-producing skill (`prd-draft`, `design-draft`, `eng-spec`, `tdd`, `erd
 
 The same 9 hosts run a **precision check** at Step 0.5 (right after steering load): resolve `PRECISION_MODE` (env `WB_PRECISION_MODE` > `project.conf PRECISION_MODE` > default `on`) and, when `on`, invoke `Skill("precision-mode")` so artifact bodies are dense (lead with the answer, no filler, structure over prose). The resolved value is carried into the artifact frontmatter as `precision_mode: on|off` (Gherkin headers use `# precision_mode: on|off`). `wb.precision` prints the resolved value + source. Review panels surface this as a P3 info hint — never a finding. Off only if reviewers need narrative drafts.
 
+## Graphify rules
+
+- Workbench wraps the `graphifyy` CLI. Detection lives in the per-entry `graphified=<true|false>` field of each `project.conf REPOS` entry. New entries from `wb.register-repo` carry `graphified=false`; `wb.graphify <repo>` flips to `true` on success. Legacy entries without the field are treated as `false`.
+- Mode resolution: CLI (`--auto` / `--manual`) > `WB_GRAPHIFY_MODE` env > `project.conf GRAPHIFY_MODE` > default `auto`. In `auto`, `wb.register-repo` fires `wb.graphify <name>` after every clone. In `manual`, it prints a recommendation.
+- `wb.graphify --install-skill` runs `graphify install --platform claude` then copies the produced SKILL.md into `$WB_ROOT/.agents/skills/graphify/` + `.claude/skills/graphify` symlink so Devin + Claude both see `/graphify` locally.
+- Agents must not hand-edit the `graphified=` field; let `wb.graphify` flip it.
+
 ## Ralph rules
 
 - Never generate a fix_plan entry without an approved PRD (for automation repos: plus approved test spec; for service repos: plus approved engineering spec).

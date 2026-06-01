@@ -766,7 +766,7 @@ if ./scripts/ralph-enable-check.sh 2>/dev/null; then
 fi
 # Verify the error message contains the heal hint
 err_out=$(./scripts/ralph-enable-check.sh 2>&1 || true)
-echo "$err_out" | grep -q 'stale .ralph/' || { rm -rf .ralph; fail "stale-stub error missing 'stale .ralph/' marker: $err_out"; }
+echo "$err_out" | grep -qE 'stale .ralph/|with ralph state' || { rm -rf .ralph; fail "stale-stub error missing 'stale .ralph/' marker: $err_out"; }
 echo "$err_out" | grep -q 'wb.upgrade'    || { rm -rf .ralph; fail "stale-stub error missing wb.upgrade heal hint: $err_out"; }
 echo "$err_out" | grep -q '.ralph.purged' || { rm -rf .ralph; fail "stale-stub error missing manual purge hint: $err_out"; }
 rm -rf .ralph
@@ -778,7 +778,7 @@ mv project.conf project.conf.away
 mkdir -p .ralph
 touch .ralph/AGENT.md
 err_out=$(./scripts/ralph-enable-check.sh 2>&1 || true)
-if echo "$err_out" | grep -q 'stale .ralph/' ; then
+if echo "$err_out" | grep -qE 'stale .ralph/|with ralph state' ; then
   rm -rf .ralph
   mv project.conf.away project.conf
   fail "ralph-enable-check should NOT fire stub guard without project.conf (template-dev mode): $err_out"
@@ -907,6 +907,53 @@ echo "product/outputs/prds/PRD-001-smoke.md" \
   | python3 scripts/wb-ci-validate.py --stdin >/dev/null \
   || fail "wb-ci-validate.py should pass on a valid PRD"
 pass "wb-ci-validate.py passes on a valid PRD"
+
+# 9r. Graphify wiring — present in stamped wb, REPOS carries graphified flag,
+#     wb.info surfaces non-graphified, wb.graphify --check works with mock CLI.
+grep -q 'GRAPHIFY_MODE="auto"' project.conf \
+  || fail "stamped project.conf missing GRAPHIFY_MODE=\"auto\" (template default)"
+pass "stamped project.conf carries GRAPHIFY_MODE=\"auto\""
+
+grep -q '^wb.graphify()' aliases.sh \
+  || fail "aliases.sh missing wb.graphify() function"
+pass "aliases.sh exposes wb.graphify"
+
+# Register a fresh repo (synthetic bare) and assert graphified=false is appended.
+GR_BARE="$TMP/svc-gr.git"
+git init -q --bare "$GR_BARE"
+WB_GRAPHIFY_MODE=manual \
+  ./scripts/register-repo.sh svc-gr "file://$GR_BARE" service node >/dev/null \
+  || fail "register-repo svc-gr failed"
+grep -E 'name=svc-gr' project.conf | grep -q 'graphified=false' \
+  || fail "svc-gr REPOS entry missing graphified=false: $(grep svc-gr project.conf)"
+pass "register-repo appends graphified=false to new REPOS entry"
+
+# wb.info reports non-graphified.
+info_out=$(wb.info 2>&1)
+echo "$info_out" | grep -qE 'graphif' \
+  || fail "wb.info missing graphify info: $info_out"
+echo "$info_out" | grep -q 'svc-gr' \
+  || fail "wb.info did not list non-graphified svc-gr: $info_out"
+pass "wb.info reports non-graphified repos"
+
+# wb.graphify --check works under mock CLI.
+chk_out=$(WB_GRAPHIFY_CMD='echo mock' wb.graphify --check 2>&1) \
+  || fail "wb.graphify --check failed: $chk_out"
+echo "$chk_out" | grep -qE 'GRAPHIFY_MODE' \
+  || fail "wb.graphify --check missing mode line: $chk_out"
+echo "$chk_out" | grep -q 'svc-gr' \
+  || fail "wb.graphify --check did not list svc-gr: $chk_out"
+pass "wb.graphify --check renders mode + per-repo status"
+
+# wb.graphify <repo> with mock flips the flag.
+mkdir -p repos/svc-gr
+( cd repos/svc-gr && git init -q && git commit -q --allow-empty -m init 2>/dev/null || true )
+WB_GRAPHIFY_CMD='mkdir -p graphify-out && echo "{}" > graphify-out/graph.json && echo mock-done' \
+  wb.graphify svc-gr >/dev/null 2>&1 \
+  || fail "wb.graphify svc-gr (mock) failed"
+grep -E 'name=svc-gr' project.conf | grep -q 'graphified=true' \
+  || fail "wb.graphify did not flip svc-gr to graphified=true"
+pass "wb.graphify <repo> flips REPOS graphified flag to true"
 
 # 10. wb.reject round-trip
 cat > product/outputs/prds/PRD-002-reject.md <<'EOF'
