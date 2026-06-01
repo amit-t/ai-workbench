@@ -168,6 +168,33 @@ def _load_repos(root: pathlib.Path) -> list[str]:
     return repos
 
 
+def _load_non_graphified(root: pathlib.Path) -> list[str]:
+    """Return REPOS entries whose graphified= field is not 'true' (or missing)."""
+    pc = root / "project.conf"
+    if not pc.is_file():
+        return []
+    try:
+        out = subprocess.check_output(
+            ["bash", "-c",
+             f". {shlex.quote(str(pc))} && for r in \"${{REPOS[@]}}\"; do echo \"$r\"; done"],
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        return []
+    missing: list[str] = []
+    for line in out.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        kvs = {kv.split("=", 1)[0]: kv.split("=", 1)[1] for kv in line.split(";") if "=" in kv}
+        name = kvs.get("name", "").strip()
+        if not name:
+            continue
+        if kvs.get("graphified", "").strip() != "true":
+            missing.append(name)
+    return missing
+
+
 # ── Linkage ──────────────────────────────────────────────────────────────────
 def _epic_for(entry: StateEntry, epics: list[str]) -> str | None:
     """Return the EPIC id this entry belongs to, by frontmatter or id-prefix."""
@@ -327,6 +354,21 @@ def _recommend(root: pathlib.Path) -> tuple[list[Recommendation], list[str]]:
                         command="wb.ralph-dispatch",
                         priority=60,
                     ))
+
+    # Graphify hygiene: surface non-graphified repos as a low-priority queued
+    # recommendation. Never the top recommendation (priority 55 — below ralph
+    # dispatch at 60 but above "pipeline idle" at 90), so it shows in the
+    # "Also queued" section but does not derail epic-focused work.
+    non_graph = _load_non_graphified(root)
+    if non_graph:
+        names = ", ".join(non_graph[:5])
+        more  = f" (+{len(non_graph)-5} more)" if len(non_graph) > 5 else ""
+        recs.append(Recommendation(
+            scope="global",
+            headline=f"{len(non_graph)} repo(s) lack a graphify graph: {names}{more}.",
+            command="wb.graphify --all",
+            priority=55,
+        ))
 
     if not recs:
         recs.append(Recommendation(

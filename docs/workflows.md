@@ -50,6 +50,7 @@ Every box is `draft`, `published`, or `approved`. Ralph only consumes `.workbenc
 | Just ran `init.wb` / `join.wb`, never opened the wb. | Open Claude or Devin in this dir; run `/pmo-status` for orientation, then `wb.wtd` for the first command. |
 | `project.conf` `EPICS=(...)` empty. | Append Jira epic IDs, commit, push. |
 | No `.workbench-state/approved.json` yet. | Any `wb.publish` auto-creates the ledger files. |
+| `wb.info` lists non-graphified repos (or you stamped before graphify integration shipped). | `wb.graphify --install-skill` once, then `wb.graphify --all`. Set `GRAPHIFY_MODE=manual` in `project.conf` if you want to defer per-repo. |
 
 ### Stage 1: Epic intake
 

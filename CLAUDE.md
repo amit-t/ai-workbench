@@ -121,7 +121,11 @@ wb.ralph-dispatch --parallel 3 30     # same, positional form (mirrors ralph's `
 wb.ralph-dispatch --engine devin       # route to ralph-devin (vs --engine claude for ralph)
 wb.ralph-dispatch --status            # open ralph PRs + tail of worker logs
 wrd.p N M                             # shorthand: dispatch devin engine, N workers, M attempts (mirrors rpd.p N M)
-wb.register-repo <name> <url> <role>  # add code repo
+wb.register-repo <name> <url> <role>  # add code repo (auto-fires wb.graphify when GRAPHIFY_MODE=auto)
+wb.graphify <repo>                    # build graphify graph for one repo; flips REPOS graphified=true
+wb.graphify --all                     # graphify every non-graphified repo
+wb.graphify --check                   # report-only: mode + per-repo graphified status
+wb.graphify --install-skill           # one-time: install SKILL.md into .agents/.claude (Devin + Claude see /graphify)
 wb.publish <id> <path> <type>         # draft → published  (validates target_repos)
 wb.approve <id>                       # published → approved (validates target_repos)
 wb.reject <id> "<reason>"             # any → draft (with reason)
@@ -161,6 +165,16 @@ Edge cases: an invalid `WB_PIN` errors loudly (never silently falls through to c
 - **Artifact routing** flows through `target_repos:` frontmatter / Gherkin-header. Required on every PRD, eng-spec, TDD, ERD, BDD, test-cases, test-spec, test-erd. Validated at `wb.publish` and `wb.approve` via `scripts/validate-artifact.py`.
 - **M4 drift footer** (ralph PRs carry a list of `steering.local/` overrides): `sync-context.sh` writes the footer into `$WB_ROOT/repos/.ralph/pr_footer.md` and ralph appends it to every PR body via the upstream `pr-footer-append` support.
 
+## Graphify adapter (quick reference)
+
+- Workbench wraps the [graphifyy](https://pypi.org/project/graphifyy/) CLI. Workbench never re-implements graph construction or community detection; `graphify` owns those. We own detection (per-repo `graphified=` field in `project.conf REPOS`), sequencing (CLI dispatch), and the SKILL.md dual-install so Devin + Claude both see the `/graphify` slash command.
+- Per-repo state lives in the REPOS entry: `name=...;url=...;role=...;stack=...;added_by=...;graphified=<true|false>`. `wb.register-repo` appends `graphified=false` for new entries; `wb.graphify` flips to `true` on success. Legacy entries without the field are treated as `false`.
+- Mode resolution: CLI (`--auto` / `--manual`) > `WB_GRAPHIFY_MODE` env > `project.conf GRAPHIFY_MODE` > default `auto`. In `auto`, `wb.register-repo` fires `wb.graphify <name>` automatically after clone. In `manual`, it prints a recommendation.
+- `wb.graphify --install-skill` runs `graphify install --platform claude` (drops SKILL.md globally) and copies the result into `$WB_ROOT/.agents/skills/graphify/SKILL.md` plus a `.claude/skills/graphify` symlink. Idempotent. Run once per wb after first clone, or `wb.upgrade` propagates the wiring forward.
+- Auto pip install: if `graphify` is missing on PATH, `wb.graphify` runs `pip install --user graphifyy` unless `--no-install` is passed.
+- Test hook: `WB_GRAPHIFY_CMD=<shell>` short-circuits the CLI invocation; eval'd verbatim inside the target dir (mirrors `WB_SCAN_AGENT_CMD`).
+- `wb.info` lists non-graphified repos and recommends `wb.graphify --all` when any exist.
+
 ## Hard rules
 
 - Never generate a fix_plan entry for a repo without an approved PRD and (for service repos) an approved engineering spec.
@@ -170,6 +184,7 @@ Edge cases: an invalid `WB_PIN` errors loudly (never silently falls through to c
 - Never touch files under `skills/`, `scripts/`, `steering/`, `CLAUDE.md`, `AGENTS.md`, `aliases.sh`, or `.workbench-manifest.json`. Those are template-owned and rewritten by `update.wb`. Team-specific steering goes in `steering.local/` (user-owned).
 - No em dashes in documents. Use commas or parentheses. Exception: code blocks preserve exact content.
 - No hype words. No "leverage", "utilize", "robust", "streamline", "unlock". Plain English.
+- Never re-implement graphify internals inside workbench scripts. `graphify-out/` is graphify-owned; workbench only reads `graphify-out/graph.json` (to mark a repo as graphified) and delegates graph construction to the `graphify` CLI.
 - A stamped wb (project.conf present) must NEVER have a `.ralph/` directory at the workbench root. The workspace lives at `$WB_ROOT/repos/.ralph/`. If a root `.ralph/` exists, it is template-dev leftover and `wb.upgrade` will back it up to `.ralph.purged.<timestamp>/` on next run. `wb.ralph-enable-check` refuses to proceed if the stub is detected.
 
 ## Versioning (agent-relevant only)

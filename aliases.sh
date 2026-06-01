@@ -256,6 +256,29 @@ wb.rejected() {
   python3 "$WB_ROOT/scripts/lifecycle.py" list rejected
 }
 
+# ── Graphify ──────────────────────────────────────────────────────────────────
+# Wraps the graphifyy CLI for registered repos. Detects "non-graphified" repos
+# via the per-entry graphified= field in project.conf REPOS; runs `graphify
+# <repo>` and flips the flag on success.
+#
+#   wb.graphify <repo>            # graphify one repo
+#   wb.graphify --all             # every non-graphified entry
+#   wb.graphify --check           # report-only (mode + per-repo status)
+#   wb.graphify --install-skill   # one-time SKILL.md install into .agents/.claude
+#   wb.graphify --force <repo>    # rerun even if already flagged
+#   wb.graphify --no-install      # skip auto pip install of graphifyy
+#
+# Mode resolution: CLI (--auto / --manual) > WB_GRAPHIFY_MODE env >
+# project.conf GRAPHIFY_MODE > default "auto". `auto` makes register-repo
+# fire wb.graphify on every new clone; `manual` prints a recommendation.
+wb.graphify() {
+  _wb_resolve_root || return 1
+  local WB_ROOT="$__WB_ROOT_OUT"
+  export WB_ROOT
+  _wb_check
+  "$WB_ROOT/scripts/graphify-repos.sh" "$@"
+}
+
 # ── Precision ────────────────────────────────────────────────────────────────
 # Resolves PRECISION_MODE for the current workbench and prints the value + source.
 # Resolution order: env WB_PRECISION_MODE > project.conf PRECISION_MODE > default "on".
@@ -368,5 +391,20 @@ wb.info() {
     echo "  Repo:       ${WORKBENCH_REPO:-?}"
     echo "  Epics:      ${EPICS[*]:-?}"
     echo "  Repos:      ${#REPOS[@]} registered"
+    # Graphify status: count + names of non-graphified entries.
+    local entry _name _flag missing=()
+    for entry in "${REPOS[@]:-}"; do
+      [[ -z "$entry" ]] && continue
+      _name="$(echo "$entry" | awk -F';' '{for(i=1;i<=NF;i++) if ($i ~ /^name=/) print substr($i,6)}')"
+      _flag="$(echo "$entry" | awk -F';' '{for(i=1;i<=NF;i++) if ($i ~ /^graphified=/) print substr($i,12)}')"
+      [[ -z "$_name" ]] && continue
+      [[ "$_flag" == "true" ]] || missing+=("$_name")
+    done
+    if (( ${#missing[@]} > 0 )); then
+      echo "  Graphify:   ${#missing[@]} non-graphified — ${missing[*]}"
+      echo "              (run: wb.graphify --all)"
+    else
+      [[ ${#REPOS[@]} -gt 0 ]] && echo "  Graphify:   all repos graphified"
+    fi
   }
 }

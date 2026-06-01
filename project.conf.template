@@ -79,3 +79,13 @@ RALPH_EXECUTION_ENGINE="devin"
 #   env WB_PRECISION_MODE > project.conf PRECISION_MODE > default "on".
 # Off only if reviewers explicitly need narrative-heavy drafts.
 PRECISION_MODE="on"
+
+# Graphify integration mode. When "auto", wb.register-repo fires `wb.graphify
+# <name>` after every successful clone so Devin + Claude get a graph-indexed
+# context (graphify-out/graph.json + SKILL.md wiring) for the new repo. When
+# "manual", register-repo prints a recommendation instead. Per-repo state
+# lives in the `graphified=` field of each REPOS entry; flipping that field
+# to `true` happens automatically on `wb.graphify` success.
+#   env WB_GRAPHIFY_MODE > project.conf GRAPHIFY_MODE > default "auto".
+# Use --auto / --manual on the wb.graphify CLI to override per call.
+GRAPHIFY_MODE="auto"
